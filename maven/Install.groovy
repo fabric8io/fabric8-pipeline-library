@@ -1,7 +1,7 @@
-node('docker') {
+node {
+  git GIT_URL
+  withEnv(["PATH+MAVEN=${tool 'maven-3.3.1'}/bin"]) {
 
-  docker.image('fabric8/maven-nexus').inside {
-    git GIT_URL
     sh 'mvn clean install'
   }
 }
