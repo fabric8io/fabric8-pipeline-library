@@ -54,7 +54,7 @@ node {
 
     // now lets stage it
     echo "Staging to kubernetes environment ${stageNamespace} in domain ${stageDomain}"
-    sh "mvn io.fabric8:fabric8-maven-plugin:2.2.11:json io.fabric8:fabric8-maven-plugin:2.2.11:apply -Dfabric8.namespace=${stageNamespace} -Dfabric8.domain=${stageDomain}"
+    sh "mvn io.fabric8:fabric8-maven-plugin:2.2.11:json io.fabric8:fabric8-maven-plugin:2.2.11:apply -Dfabric8.namespace=${stageNamespace} -Dfabric8.domain=${stageDomain} -Dfabric8.dockerUser=fabric8"
 
     input """
 
@@ -65,7 +65,7 @@ Please check out the Staging environment at ${stageNamespace} and decide if you 
 """
 
     echo "Promoting to kubernetes environment ${promoteNamespace} in domain ${promoteDomain}"
-    sh "mvn io.fabric8:fabric8-maven-plugin:2.2.11:apply -Dfabric8.namespace=${promoteNamespace} -Dfabric8.domain=${promoteDomain}"
+    sh "mvn io.fabric8:fabric8-maven-plugin:2.2.11:apply -Dfabric8.namespace=${promoteNamespace} -Dfabric8.domain=${promoteDomain} -Dfabric8.dockerUser=fabric8"
 
   }
 }
