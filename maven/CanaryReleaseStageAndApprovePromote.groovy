@@ -51,11 +51,7 @@ node {
     sh 'mvn clean install org.apache.maven.plugins:maven-deploy-plugin:2.8.2:deploy org.jolokia:docker-maven-plugin:0.13.2:build -Dfabric8.dockerUser=fabric8/'
 
     def fabric8Console = "${env.FABRIC8_CONSOLE ?: ''}"
-
-    def stagingLink = ""
-    if (fabric8Console.length() > 0) {
-      stagingLink = "View the staging environment at ${fabric8Console}/kubernetes/pods?namespace=${stageNamespace}"
-    }
+    def stagingLink = "View the staging environment at ${fabric8Console}/kubernetes/pods?namespace=${stageNamespace}"
 
     // TODO docker push?
 
