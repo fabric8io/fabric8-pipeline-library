@@ -32,12 +32,12 @@ node {
     def canaryVersion = "${versionPrefix}.${env.BUILD_NUMBER}"
     sh "git checkout -b ${env.JOB_NAME}-${canaryVersion}"
     sh "mvn org.codehaus.mojo:versions-maven-plugin:2.2:set -DnewVersion=${canaryVersion}"
-    sh 'mvn clean install org.apache.maven.plugins:maven-deploy-plugin:2.8.2:deploy org.jolokia:docker-maven-plugin:0.13.2:build -Dfabric8.dockerUser=fabric8'
+    sh 'mvn clean install org.apache.maven.plugins:maven-deploy-plugin:2.8.2:deploy org.jolokia:docker-maven-plugin:0.13.2:build -Dfabric8.dockerUser=fabric8/'
 
     // TODO docker push?
 
     // now lets stage it
     echo "Now staging to kubernetes environment ${stageNamespace} in domain ${stageDomain}"
-    sh "mvn io.fabric8:fabric8-maven-plugin:2.2.11:json io.fabric8:fabric8-maven-plugin:2.2.11:apply -Dfabric8.namespace=${stageNamespace} -Dfabric8.domain=${stageDomain} -Dfabric8.dockerUser=fabric8"
+    sh "mvn io.fabric8:fabric8-maven-plugin:2.2.11:json io.fabric8:fabric8-maven-plugin:2.2.11:apply -Dfabric8.namespace=${stageNamespace} -Dfabric8.domain=${stageDomain} -Dfabric8.dockerUser=fabric8/"
   }
 }
