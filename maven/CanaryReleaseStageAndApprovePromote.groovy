@@ -50,6 +50,13 @@ node {
     sh "mvn org.codehaus.mojo:versions-maven-plugin:2.2:set -DnewVersion=${canaryVersion}"
     sh 'mvn clean install org.apache.maven.plugins:maven-deploy-plugin:2.8.2:deploy org.jolokia:docker-maven-plugin:0.13.2:build -Dfabric8.dockerUser=fabric8/'
 
+    def fabric8Console = "${env.FABRIC8_CONSOLE ?: ''}"
+
+    def stagingLink = ""
+    if (fabric8Console.length() > 0) {
+      stagingLink = "View the staging environment at ${fabric8Console}/kubernetes/pods?namespace=${stageNamespace}"
+    }
+
     // TODO docker push?
 
     // now lets stage it
@@ -58,7 +65,12 @@ node {
 
     input """
 
-About to promote version ${canaryVersion} to the ${promoteNamespace} namespace.
+The version ${canaryVersion} has now been staged to the ${stageNamespace}
+
+${stagingLink}
+
+
+Warning: about to promote version ${canaryVersion} to the ${promoteNamespace} namespace!!!
 
 Please check out the Staging environment at ${stageNamespace} and decide if you wish to Proceed. Otherwise click Abort!
 
