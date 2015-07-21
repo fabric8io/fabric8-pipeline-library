@@ -29,6 +29,8 @@ node {
       stageDomain = "${env.JOB_NAME}.${env.KUBERNETES_DOMAIN ?: 'vagrant.f8'}"
     }
 
+    def fabric8Console = "${env.FABRIC8_CONSOLE ?: ''}"
+
     def canaryVersion = "${versionPrefix}.${env.BUILD_NUMBER}"
     sh "git checkout -b ${env.JOB_NAME}-${canaryVersion}"
     sh "mvn org.codehaus.mojo:versions-maven-plugin:2.2:set -DnewVersion=${canaryVersion}"
@@ -39,5 +41,13 @@ node {
     // now lets stage it
     echo "Now staging to kubernetes environment ${stageNamespace} in domain ${stageDomain}"
     sh "mvn io.fabric8:fabric8-maven-plugin:2.2.12:json io.fabric8:fabric8-maven-plugin:2.2.12:apply -Dfabric8.namespace=${stageNamespace} -Dfabric8.domain=${stageDomain} -Dfabric8.dockerUser=fabric8/"
+
+    echo """
+
+Version ${canaryVersion} has now been staged to the ${stageNamespace} namespace
+View the Staging environment at:
+${fabric8Console}/kubernetes/pods?namespace=${stageNamespace}
+
+"""
   }
 }
