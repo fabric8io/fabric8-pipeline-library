@@ -64,7 +64,7 @@ node {
 
     stage 'approve'
 
-    input id: 'approvePromote', message: """
+    input id: 'ApprovePromote', message: """
 
 Version ${canaryVersion} has now been staged to the ${stageNamespace} namespace
 View the Staging environment at:
