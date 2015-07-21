@@ -60,7 +60,7 @@ node {
 
     // now lets stage it
     echo "Staging to kubernetes environment ${stageNamespace} in domain ${stageDomain}"
-    sh "mvn io.fabric8:fabric8-maven-plugin:2.2.12:json io.fabric8:fabric8-maven-plugin:2.2.12:apply -Dfabric8.namespace=${stageNamespace} -Dfabric8.domain=${stageDomain} -Dfabric8.dockerUser=fabric8/"
+    sh "mvn io.fabric8:fabric8-maven-plugin:2.2.14:json io.fabric8:fabric8-maven-plugin:2.2.14:apply -Dfabric8.namespace=${stageNamespace} -Dfabric8.domain=${stageDomain} -Dfabric8.dockerUser=fabric8/"
 
     stage 'approve'
 
@@ -78,7 +78,7 @@ Please check out the Staging environment at ${stageNamespace} and decide if you 
     stage 'promote'
 
     echo "Promoting to kubernetes environment ${promoteNamespace} in domain ${promoteDomain}"
-    sh "mvn io.fabric8:fabric8-maven-plugin:2.2.12:apply -Dfabric8.namespace=${promoteNamespace} -Dfabric8.domain=${promoteDomain} -Dfabric8.dockerUser=fabric8/"
+    sh "mvn io.fabric8:fabric8-maven-plugin:2.2.14:apply -Dfabric8.namespace=${promoteNamespace} -Dfabric8.domain=${promoteDomain} -Dfabric8.dockerUser=fabric8/"
 
     echo """
 
