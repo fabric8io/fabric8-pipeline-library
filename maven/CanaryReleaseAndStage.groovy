@@ -4,6 +4,8 @@ node {
   // lets install maven onto the path
   withEnv(["PATH+MAVEN=${tool 'maven-3.3.1'}/bin"]) {
 
+    stage 'canary release'
+
     // lets allow the VERSION_PREFIX to be specified as a parameter to the build
     // but if not lets just default to 1.0
     def versionPrefix = ""
@@ -38,7 +40,28 @@ node {
 
     // TODO docker push?
 
-    // now lets stage it
+
+    stage 'integration test'
+
+    def itestPattern = ""
+    try {
+      itestPattern = ITEST_PATTERN
+    } catch (Throwable e) {
+      itestPattern = "*KT"
+    }
+
+    def failIfNoTests = ""
+    try {
+      failIfNoTests = ITEST_FAIL_IF_NO_TEST
+    } catch (Throwable e) {
+      failIfNoTests = "false"
+    }
+
+    sh "mvn org.apache.maven.plugins:maven-failsafe-plugin:2.18.1:integration-test -Dit.test=${itestPattern} -DfailIfNoTests=${failIfNoTests}"
+
+
+    stage 'stage'
+
     echo "Now staging to kubernetes environment ${stageNamespace} in domain ${stageDomain}"
     sh "mvn io.fabric8:fabric8-maven-plugin:2.2.14:json io.fabric8:fabric8-maven-plugin:2.2.14:apply -Dfabric8.namespace=${stageNamespace} -Dfabric8.domain=${stageDomain} -Dfabric8.dockerUser=fabric8/"
 

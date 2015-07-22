@@ -56,6 +56,25 @@ node {
 
     // TODO docker push?
 
+    stage 'integration test'
+
+    def itestPattern = ""
+    try {
+      itestPattern = ITEST_PATTERN
+    } catch (Throwable e) {
+      itestPattern = "*KT"
+    }
+
+    def failIfNoTests = ""
+    try {
+      failIfNoTests = ITEST_FAIL_IF_NO_TEST
+    } catch (Throwable e) {
+      failIfNoTests = "false"
+    }
+
+    sh "mvn org.apache.maven.plugins:maven-failsafe-plugin:2.18.1:integration-test -Dit.test=${itestPattern} -DfailIfNoTests=${failIfNoTests}"
+
+
     stage 'stage'
 
     // now lets stage it
