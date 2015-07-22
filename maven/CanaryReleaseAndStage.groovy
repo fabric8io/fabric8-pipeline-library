@@ -57,7 +57,7 @@ node {
       failIfNoTests = "false"
     }
 
-    sh "mvn org.apache.maven.plugins:maven-failsafe-plugin:2.18.1:integration-test -Dit.test=${itestPattern} -DfailIfNoTests=${failIfNoTests}"
+    sh "mvn org.apache.maven.plugins:maven-failsafe-plugin:2.18.1:integration-test -Dit.test=${itestPattern} -DfailIfNoTests=${failIfNoTests} org.apache.maven.plugins:maven-failsafe-plugin:2.18.1:verify"
 
 
     stage 'stage'
