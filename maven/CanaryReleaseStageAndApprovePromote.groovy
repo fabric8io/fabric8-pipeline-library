@@ -83,16 +83,14 @@ node {
 
     stage 'approve'
 
-    input id: 'ApprovePromote', message: """
 
-Version ${canaryVersion} has now been staged to the ${stageNamespace} namespace
-View the Staging environment at:
+    def proceedMessage = """Version ${canaryVersion} has now been staged to the ${stageNamespace} namespace at:
 ${fabric8Console}/kubernetes/pods?namespace=${stageNamespace}
 
-Warning: about to promote version ${canaryVersion} to the ${promoteNamespace} namespace!!!
-Please check out the Staging environment at ${stageNamespace} and decide if you wish to Proceed. Otherwise click Abort!
-
+Would you like to promote version ${canaryVersion} to the ${promoteNamespace} namespace?
 """
+    hubotApprove proceedMessage
+    input id: 'Proceed', message: "\n${proceedMessage}"
 
     stage 'promote'
 
