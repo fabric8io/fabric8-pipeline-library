@@ -79,7 +79,7 @@ node {
 
     // now lets stage it
     echo "Staging to kubernetes environment ${stageNamespace} in domain ${stageDomain}"
-    sh "mvn io.fabric8:fabric8-maven-plugin:2.2.14:json io.fabric8:fabric8-maven-plugin:2.2.14:apply -Dfabric8.namespace=${stageNamespace} -Dfabric8.domain=${stageDomain} -Dfabric8.dockerUser=fabric8/"
+    sh "mvn io.fabric8:fabric8-maven-plugin:2.2.16:json io.fabric8:fabric8-maven-plugin:2.2.16:apply -Dfabric8.namespace=${stageNamespace} -Dfabric8.domain=${stageDomain} -Dfabric8.dockerUser=fabric8/"
 
     stage 'approve'
 
@@ -95,7 +95,7 @@ Would you like to promote version ${canaryVersion} to the ${promoteNamespace} na
     stage 'promote'
 
     echo "Promoting to kubernetes environment ${promoteNamespace} in domain ${promoteDomain}"
-    sh "mvn io.fabric8:fabric8-maven-plugin:2.2.14:apply -Dfabric8.namespace=${promoteNamespace} -Dfabric8.domain=${promoteDomain} -Dfabric8.dockerUser=fabric8/"
+    sh "mvn io.fabric8:fabric8-maven-plugin:2.2.16:apply -Dfabric8.namespace=${promoteNamespace} -Dfabric8.domain=${promoteDomain} -Dfabric8.dockerUser=fabric8/"
 
     echo """
 

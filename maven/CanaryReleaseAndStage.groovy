@@ -63,7 +63,7 @@ node {
     stage 'stage'
 
     echo "Now staging to kubernetes environment ${stageNamespace} in domain ${stageDomain}"
-    sh "mvn io.fabric8:fabric8-maven-plugin:2.2.14:json io.fabric8:fabric8-maven-plugin:2.2.14:apply -Dfabric8.namespace=${stageNamespace} -Dfabric8.domain=${stageDomain} -Dfabric8.dockerUser=fabric8/"
+    sh "mvn io.fabric8:fabric8-maven-plugin:2.2.16:json io.fabric8:fabric8-maven-plugin:2.2.16:apply -Dfabric8.namespace=${stageNamespace} -Dfabric8.domain=${stageDomain} -Dfabric8.dockerUser=fabric8/"
 
     echo """
 
