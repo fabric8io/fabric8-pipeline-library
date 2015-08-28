@@ -116,7 +116,7 @@ stage 'canary release quickstarts'
 node {
   ws ('quickstarts'){
     withEnv(["PATH+MAVEN=${tool 'maven-3.3.1'}/bin"]) {
-      git "https://github.com/fabric8io/quickstarts"
+      git "https://github.com/rawlingsj/quickstarts"
       sh "git checkout -b ${env.JOB_NAME}-${canaryVersion}"
 
       sh "git tag -d \$(git tag)"
