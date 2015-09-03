@@ -107,7 +107,7 @@ node {
       //sh "mvn clean install -U -Dgpg.passphrase=${env.GPG_PASSPHRASE}"
 
       sh "mvn org.codehaus.mojo:versions-maven-plugin:2.2:set -DnewVersion=${canaryVersion}"
-      sh 'mvn clean install -DskipTests=true'
+      sh 'mvn clean install'
 
         //      REPO_ID=$(mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-list -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org | grep OPEN | grep -Eo 'iofabric8-[[:digit:]]+') && \
       //      mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-close -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${REPO_ID} -Ddescription="Next release is ready" -DstagingProgressTimeoutMinutes=60 && \
@@ -122,7 +122,7 @@ stage 'canary release quickstarts'
 node {
   ws ('quickstarts'){
     withEnv(["PATH+MAVEN=${tool 'maven-3.3.1'}/bin"]) {
-      git "https://github.com/rawlingsj/quickstarts"
+      git "https://github.com/fabric8io/quickstarts"
       sh "git checkout -b ${env.JOB_NAME}-${canaryVersion}"
 
       sh "git tag -d \$(git tag)"
