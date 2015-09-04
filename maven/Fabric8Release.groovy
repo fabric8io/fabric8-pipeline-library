@@ -71,6 +71,10 @@ node {
   ws ('kubernetes-client'){
     withEnv(["PATH+MAVEN=${tool 'maven-3.3.1'}/bin"]) {
       git "https://github.com/fabric8io/kubernetes-client"
+
+      sh "git config user.email fabric8-admin@googlegroups.com"
+      sh "git config user.name fabric8"
+
       sh "git checkout -b ${env.JOB_NAME}-${canaryVersion}"
 
       sh "git tag -d \$(git tag)"
