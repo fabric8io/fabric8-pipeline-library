@@ -41,13 +41,20 @@ try {
 
 def canaryVersion = "${versionPrefix}.${env.BUILD_NUMBER}"
 
-def repoId="$(mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-list -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org | grep OPEN | grep -Eo 'iofabric8-[[:digit:]]+')"
+def getReleaseVersion(String project) {
+  def modelMetaData = new XmlSlurper().parse("https://oss.sonatype.org/content/repositories/releases/io/fabric8/"+project+"/maven-metadata.xml")
+  def version = modelMetaData.versioning.release.text()
+  return version
+}
+
+def repoId="\$(mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-list -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org | grep OPEN | grep -Eo 'iofabric8-[[:digit:]]+')"
 
 stage 'canary release kubernetes-model'
 node {
   ws ('kubernetes-model') {
     // lets install maven onto the path
     withEnv(["PATH+MAVEN=${tool 'maven-3.3.1'}/bin"]) {
+
       git "https://github.com/fabric8io/kubernetes-model"
       sh "git checkout -b ${env.JOB_NAME}-${canaryVersion}"
 
@@ -67,9 +74,7 @@ node {
    }
 }
 
-
 stage 'canary release kubernetes-client'
-
 node {
   ws ('kubernetes-client'){
     withEnv(["PATH+MAVEN=${tool 'maven-3.3.1'}/bin"]) {
@@ -84,7 +89,8 @@ node {
       sh "git fetch"
       sh "git reset --hard origin/master"
 
-      // bump kubernetes-model version from the previous stage - what about double digits in the version number below?
+      // bump dependency version from the previous stage
+      def kubernetesModelVersion = getReleaseVersion("kubernetes-model")
       sh "sed -i -r 's/<kubernetes.model.version>[0-9][0-9]{0,2}.[0-9][0-9]{0,2}.[0-9][0-9]{0,2}/<kubernetes.model.version>${kubernetesModelVersion}/g' pom.xml"
       sh "git commit -a -m 'Bump kubernetes-model version'"
 
@@ -98,7 +104,6 @@ node {
 }
 
 stage 'canary release fabric8'
-
 node {
   ws ('fabric8'){
     withEnv(["PATH+MAVEN=${tool 'maven-3.3.1'}/bin"]) {
@@ -113,7 +118,9 @@ node {
       sh "git fetch"
       sh "git reset --hard origin/master"
 
-      // bump kubernetes-model version from the previous stage - what about double digits in the version number below?
+      // bump dependency versions from the previous stage
+      def kubernetesClientVersion = getReleaseVersion("kubernetes-client")
+      def kubernetesModelVersion = getReleaseVersion("kubernetes-model")
       sh "sed -i -r 's/<kubernetes.model.version>[0-9][0-9]{0,2}.[0-9][0-9]{0,2}.[0-9][0-9]{0,2}/<kubernetes.model.version>${kubernetesModelVersion}/g' pom.xml"
       sh "sed -i -r 's/<kubernetes.client.version>[0-9][0-9]{0,2}.[0-9][0-9]{0,2}.[0-9][0-9]{0,2}/<kubernetes.client.version>${kubernetesClientVersion}/g' pom.xml"
       sh "git commit -a -m 'Bump kubernetes-model and kubernetes-client version'"
@@ -128,7 +135,6 @@ node {
 }
 
 stage 'canary release quickstarts'
-
 node {
   ws ('quickstarts'){
     withEnv(["PATH+MAVEN=${tool 'maven-3.3.1'}/bin"]) {
@@ -139,9 +145,10 @@ node {
       sh "git fetch --tags"
       sh "git reset --hard origin/master"
 
-      // bump kubernetes-model version from the previous stage - what about double digits in the version number below?
+      // bump dependency versions from the previous stage
+      def fabric8Version = getReleaseVersion("fabric8-maven-plugin")
       sh "find -type f -name 'pom.xml' | xargs sed -i -r 's/<fabric8.version>[0-9][0-9]{0,2}.[0-9][0-9]{0,2}.[0-9][0-9]{0,2}/<fabric8.version>${fabric8Version}/g'"
-      sh "git commit -a -m 'Bump kubernetes-model and kubernetes-client version'"
+      sh "git commit -a -m 'Bump fabric8 version'"
 
       retry(3) {
           // pushing to dockerhub can fail sometimes so lets retry
