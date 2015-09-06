@@ -85,7 +85,7 @@ node {
       sh "git reset --hard origin/master"
 
       // bump kubernetes-model version from the previous stage - what about double digits in the version number below?
-      sh "sed -i 's/<kubernetes.model.version>[0-9][0-9]{0,2}.[0-9][0-9]{0,2}.[0-9][0-9]{0,2}/<kubernetes.model.version>${kubernetesModelVersion}/g' pom.xml"
+      sh "sed -i -r 's/<kubernetes.model.version>[0-9][0-9]{0,2}.[0-9][0-9]{0,2}.[0-9][0-9]{0,2}/<kubernetes.model.version>${kubernetesModelVersion}/g' pom.xml"
       sh "git commit -a -m 'Bump kubernetes-model version'"
 
       sh "mvn -DdryRun=false -Dresume=false release:prepare release:perform -Prelease -DautoVersionSubmodules=true"
@@ -114,8 +114,8 @@ node {
       sh "git reset --hard origin/master"
 
       // bump kubernetes-model version from the previous stage - what about double digits in the version number below?
-      sh "sed -i 's/<kubernetes.model.version>[0-9][0-9]{0,2}.[0-9][0-9]{0,2}.[0-9][0-9]{0,2}/<kubernetes.model.version>${kubernetesModelVersion}/g' pom.xml"
-      sh "sed -i 's/<kubernetes.client.version>[0-9][0-9]{0,2}.[0-9][0-9]{0,2}.[0-9][0-9]{0,2}/<kubernetes.client.version>${kubernetesClientVersion}/g' pom.xml"
+      sh "sed -i -r 's/<kubernetes.model.version>[0-9][0-9]{0,2}.[0-9][0-9]{0,2}.[0-9][0-9]{0,2}/<kubernetes.model.version>${kubernetesModelVersion}/g' pom.xml"
+      sh "sed -i -r 's/<kubernetes.client.version>[0-9][0-9]{0,2}.[0-9][0-9]{0,2}.[0-9][0-9]{0,2}/<kubernetes.client.version>${kubernetesClientVersion}/g' pom.xml"
       sh "git commit -a -m 'Bump kubernetes-model and kubernetes-client version'"
 
       sh "mvn -DdryRun=false -Dresume=false release:prepare release:perform -Prelease -DautoVersionSubmodules=true"
@@ -138,6 +138,10 @@ node {
       sh "git tag -d \$(git tag)"
       sh "git fetch --tags"
       sh "git reset --hard origin/master"
+
+      // bump kubernetes-model version from the previous stage - what about double digits in the version number below?
+      sh "find -type f -name 'pom.xml' | xargs sed -i -r 's/<fabric8.version>[0-9][0-9]{0,2}.[0-9][0-9]{0,2}.[0-9][0-9]{0,2}/<fabric8.version>${fabric8Version}/g'"
+      sh "git commit -a -m 'Bump kubernetes-model and kubernetes-client version'"
 
       retry(3) {
           // pushing to dockerhub can fail sometimes so lets retry
