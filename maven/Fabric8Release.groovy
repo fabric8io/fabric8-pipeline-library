@@ -41,98 +41,124 @@ try {
 
 def canaryVersion = "${versionPrefix}.${env.BUILD_NUMBER}"
 
+def getReleaseVersion(String project) {
+  def modelMetaData = new XmlSlurper().parse("https://oss.sonatype.org/content/repositories/releases/io/fabric8/"+project+"/maven-metadata.xml")
+  def version = modelMetaData.versioning.release.text()
+  return version
+}
+
+def repoId="\$(mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-list -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org | grep OPEN | grep -Eo 'iofabric8-[[:digit:]]+')"
+
 stage 'canary release kubernetes-model'
 node {
   ws ('kubernetes-model') {
     // lets install maven onto the path
     withEnv(["PATH+MAVEN=${tool 'maven-3.3.1'}/bin"]) {
-      git "https://github.com/rawlingsj-testproject/kubernetes-model"
+
+      git "https://github.com/fabric8io/kubernetes-model"
       sh "git checkout -b ${env.JOB_NAME}-${canaryVersion}"
+
+      sh "git config user.email fabric8-admin@googlegroups.com"
+      sh "git config user.name fabric8"
 
       sh "git tag -d \$(git tag)"
       sh "git fetch"
       sh "git reset --hard origin/master"
 
-      //sh "echo your_password | gpg --batch --no-tty --yes --passphrase-fd 0 pubring.gpg"
       sh "mvn -DdryRun=false -Dresume=false release:prepare release:perform -Prelease -DautoVersionSubmodules=true"
+      sh "mvn clean org.apache.maven.plugins:maven-deploy-plugin:2.8.2:deploy -U -DaltDeploymentRepository=https://oss.sonatype.org/service/local/staging/deploy/maven2/"
 
-      sh "mvn clean install -U -Dgpg.passphrase=${env.GPG_PASSPHRASE}"
-
-      //       REPO_ID=$(mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-list -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org | grep OPEN | grep -Eo 'iofabric8-[[:digit:]]+') && \
-      //       mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-close -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${REPO_ID} -Ddescription="Next release is ready" -DstagingProgressTimeoutMinutes=60 && \
-      //       mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-release -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${REPO_ID} -Ddescription="Next release is ready" -DstagingProgressTimeoutMinutes=60
+      sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-close -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoId} -Ddescription=\"Next release is ready\" -DstagingProgressTimeoutMinutes=60"
+      sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-release -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoId} -Ddescription=\"Next release is ready\" -DstagingProgressTimeoutMinutes=60"
      }
    }
 }
 
-
 stage 'canary release kubernetes-client'
-
 node {
   ws ('kubernetes-client'){
     withEnv(["PATH+MAVEN=${tool 'maven-3.3.1'}/bin"]) {
-      git "https://github.com/rawlingsj-testproject/kubernetes-client"
+      git "https://github.com/fabric8io/kubernetes-client"
+
+      sh "git config user.email fabric8-admin@googlegroups.com"
+      sh "git config user.name fabric8"
+
       sh "git checkout -b ${env.JOB_NAME}-${canaryVersion}"
 
       sh "git tag -d \$(git tag)"
       sh "git fetch"
       sh "git reset --hard origin/master"
 
+      // bump dependency version from the previous stage
+      def kubernetesModelVersion = getReleaseVersion("kubernetes-model")
+      sh "sed -i -r 's/<kubernetes.model.version>[0-9][0-9]{0,2}.[0-9][0-9]{0,2}.[0-9][0-9]{0,2}/<kubernetes.model.version>${kubernetesModelVersion}/g' pom.xml"
+      sh "git commit -a -m 'Bump kubernetes-model version'"
+
       sh "mvn -DdryRun=false -Dresume=false release:prepare release:perform -Prelease -DautoVersionSubmodules=true"
+      sh "mvn clean org.apache.maven.plugins:maven-deploy-plugin:2.8.2:deploy -U -DaltDeploymentRepository=https://oss.sonatype.org/service/local/staging/deploy/maven2/"
 
-      sh "mvn clean install -U -Dgpg.passphrase=${env.GPG_PASSPHRASE}"
-
-      //       REPO_ID=$(mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-list -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org | grep OPEN | grep -Eo 'iofabric8-[[:digit:]]+') && \
-      //       mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-close -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${REPO_ID} -Ddescription="Next release is ready" -DstagingProgressTimeoutMinutes=60 && \
-      //       mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-release -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${REPO_ID} -Ddescription="Next release is ready" -DstagingProgressTimeoutMinutes=60
+      sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-close -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoId} -Ddescription=\"Next release is ready\" -DstagingProgressTimeoutMinutes=60"
+      sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-release -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoId} -Ddescription=\"Next release is ready\" -DstagingProgressTimeoutMinutes=60"
     }
   }
 }
 
 stage 'canary release fabric8'
-
 node {
   ws ('fabric8'){
     withEnv(["PATH+MAVEN=${tool 'maven-3.3.1'}/bin"]) {
-      git "https://github.com/rawlingsj-testproject/fabric8"
+      git "https://github.com/fabric8io/fabric8"
+
+      sh "git config user.email fabric8-admin@googlegroups.com"
+      sh "git config user.name fabric8"
+
       sh "git checkout -b ${env.JOB_NAME}-${canaryVersion}"
 
       sh "git tag -d \$(git tag)"
       sh "git fetch"
       sh "git reset --hard origin/master"
 
+      // bump dependency versions from the previous stage
+      def kubernetesClientVersion = getReleaseVersion("kubernetes-client")
+      def kubernetesModelVersion = getReleaseVersion("kubernetes-model")
+      sh "sed -i -r 's/<kubernetes.model.version>[0-9][0-9]{0,2}.[0-9][0-9]{0,2}.[0-9][0-9]{0,2}/<kubernetes.model.version>${kubernetesModelVersion}/g' pom.xml"
+      sh "sed -i -r 's/<kubernetes.client.version>[0-9][0-9]{0,2}.[0-9][0-9]{0,2}.[0-9][0-9]{0,2}/<kubernetes.client.version>${kubernetesClientVersion}/g' pom.xml"
+      sh "git commit -a -m 'Bump kubernetes-model and kubernetes-client version'"
+
       sh "mvn -DdryRun=false -Dresume=false release:prepare release:perform -Prelease -DautoVersionSubmodules=true"
+      sh "mvn org.apache.maven.plugins:maven-deploy-plugin:2.8.2:deploy -U -DaltDeploymentRepository=https://oss.sonatype.org/service/local/staging/deploy/maven2/"
 
-      sh "mvn clean install -U -Dgpg.passphrase=${env.GPG_PASSPHRASE}"
-
-      //      REPO_ID=$(mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-list -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org | grep OPEN | grep -Eo 'iofabric8-[[:digit:]]+') && \
-      //      mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-close -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${REPO_ID} -Ddescription="Next release is ready" -DstagingProgressTimeoutMinutes=60 && \
-      //      mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-release -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${REPO_ID} -Ddescription="Next release is ready" -DstagingProgressTimeoutMinutes=60
-
+      sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-close -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoId} -Ddescription=\"Next release is ready\" -DstagingProgressTimeoutMinutes=60"
+      sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-release -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoId} -Ddescription=\"Next release is ready\" -DstagingProgressTimeoutMinutes=60"
     }
   }
 }
 
 stage 'canary release quickstarts'
-
 node {
   ws ('quickstarts'){
     withEnv(["PATH+MAVEN=${tool 'maven-3.3.1'}/bin"]) {
-      git "https://github.com/rawlingsj-testproject/quickstarts"
+      git "https://github.com/fabric8io/quickstarts"
       sh "git checkout -b ${env.JOB_NAME}-${canaryVersion}"
 
       sh "git tag -d \$(git tag)"
       sh "git fetch --tags"
       sh "git reset --hard origin/master"
 
-      sh "mvn -Dresume=false release:prepare release:perform  -Prelease,apps,quickstarts -Ddocker.username=${env.DOCKER_USERNAME} -Ddocker.password=${env.DOCKER_PASSWORD} -Ddocker.registry=docker.io"
+      // bump dependency versions from the previous stage
+      def fabric8Version = getReleaseVersion("fabric8-maven-plugin")
+      sh "find -type f -name 'pom.xml' | xargs sed -i -r 's/<fabric8.version>[0-9][0-9]{0,2}.[0-9][0-9]{0,2}.[0-9][0-9]{0,2}/<fabric8.version>${fabric8Version}/g'"
+      sh "git commit -a -m 'Bump fabric8 version'"
 
-      sh "mvn -V -B -U clean install -Dgpg.passphrase=${env.GPG_PASSPHRASE}"
+      retry(3) {
+          // pushing to dockerhub can fail sometimes so lets retry
+          sh "mvn -Dresume=false release:prepare release:perform  -Prelease,apps,quickstarts -Ddocker.username=${env.DOCKER_USERNAME} -Ddocker.password=${env.DOCKER_PASSWORD} -Ddocker.registry=docker.io"
+      }
 
-      //      REPO_ID=$(mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-list -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org | grep OPEN | grep -Eo 'iofabric8-[[:digit:]]+') && \
-      //      mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-close -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${REPO_ID} -Ddescription="Next release is ready" -DstagingProgressTimeoutMinutes=60 && \
-      //      mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-release -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${REPO_ID} -Ddescription="Next release is ready" -DstagingProgressTimeoutMinutes=60
+      sh "mvn -V -B -U org.apache.maven.plugins:maven-deploy-plugin:2.8.2:deploy -DaltDeploymentRepository=https://oss.sonatype.org/service/local/staging/deploy/maven2/"
 
+      sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-close -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoId} -Ddescription=\"Next release is ready\" -DstagingProgressTimeoutMinutes=60"
+      sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-release -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoId} -Ddescription=\"Next release is ready\" -DstagingProgressTimeoutMinutes=60"
     }
   }
 }
