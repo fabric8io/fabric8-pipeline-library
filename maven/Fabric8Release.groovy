@@ -52,11 +52,9 @@ def repoId="\$(mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-list
 stage 'canary release kubernetes-model'
 node {
   ws ('kubernetes-model') {
+    git "https://github.com/fabric8io/kubernetes-model"
     // lets install maven onto the path
     withEnv(["PATH+MAVEN=${tool 'maven-3.3.1'}/bin"]) {
-
-
-      git "https://github.com/fabric8io/kubernetes-model"
       sh "git checkout -b ${env.JOB_NAME}-${canaryVersion}"
 
       sh "git config user.email fabric8-admin@googlegroups.com"
