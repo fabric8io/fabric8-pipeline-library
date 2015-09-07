@@ -59,7 +59,7 @@ node {
       sh "git checkout -b ${env.JOB_NAME}-${canaryVersion}"
 
       sh "git config user.email fabric8-admin@googlegroups.com"
-      sh "git config user.name fabric8"
+      sh "git config user.name fusesource-ci"
 
       sh "git tag -d \$(git tag)"
       sh "git fetch"
@@ -81,7 +81,7 @@ node {
       git "https://github.com/fabric8io/kubernetes-client"
 
       sh "git config user.email fabric8-admin@googlegroups.com"
-      sh "git config user.name fabric8"
+      sh "git config user.name fusesource-ci"
 
       sh "git checkout -b ${env.JOB_NAME}-${canaryVersion}"
 
@@ -110,7 +110,7 @@ node {
       git "https://github.com/fabric8io/fabric8"
 
       sh "git config user.email fabric8-admin@googlegroups.com"
-      sh "git config user.name fabric8"
+      sh "git config user.name fusesource-ci"
 
       sh "git checkout -b ${env.JOB_NAME}-${canaryVersion}"
 
@@ -139,6 +139,10 @@ node {
   ws ('quickstarts'){
     withEnv(["PATH+MAVEN=${tool 'maven-3.3.1'}/bin"]) {
       git "https://github.com/fabric8io/quickstarts"
+
+      sh "git config user.email fabric8-admin@googlegroups.com"
+      sh "git config user.name fusesource-ci"
+      
       sh "git checkout -b ${env.JOB_NAME}-${canaryVersion}"
 
       sh "git tag -d \$(git tag)"
