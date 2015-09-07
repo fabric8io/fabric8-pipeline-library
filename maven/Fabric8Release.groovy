@@ -55,7 +55,6 @@ node {
     git "https://github.com/fabric8io/kubernetes-model"
     // lets install maven onto the path
     withEnv(["PATH+MAVEN=${tool 'maven-3.3.1'}/bin"]) {
-      sh "git checkout -b ${env.JOB_NAME}-${canaryVersion}"
 
       sh "git config user.email fabric8-admin@googlegroups.com"
       sh "git config user.name fusesource-ci"
@@ -92,8 +91,6 @@ node {
       sh "git config user.email fabric8-admin@googlegroups.com"
       sh "git config user.name fusesource-ci"
 
-      sh "git checkout -b ${env.JOB_NAME}-${canaryVersion}"
-
       sh "git tag -d \$(git tag)"
       sh "git fetch"
       sh "git reset --hard origin/master"
@@ -119,8 +116,6 @@ node {
 
       sh "git config user.email fabric8-admin@googlegroups.com"
       sh "git config user.name fusesource-ci"
-
-      sh "git checkout -b ${env.JOB_NAME}-${canaryVersion}"
 
       sh "git tag -d \$(git tag)"
       sh "git fetch"
@@ -149,8 +144,6 @@ node {
 
       sh "git config user.email fabric8-admin@googlegroups.com"
       sh "git config user.name fusesource-ci"
-
-      sh "git checkout -b ${env.JOB_NAME}-${canaryVersion}"
 
       sh "git tag -d \$(git tag)"
       sh "git fetch --tags"
