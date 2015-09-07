@@ -152,7 +152,7 @@ node {
 
       retry(3) {
           // pushing to dockerhub can fail sometimes so lets retry
-          sh "mvn -Dresume=false release:prepare release:perform  -Prelease,apps,quickstarts -Ddocker.username=${env.DOCKER_USERNAME} -Ddocker.password=${env.DOCKER_PASSWORD} -Ddocker.registry=docker.io"
+          sh "mvn -Dresume=false release:prepare release:perform  -Prelease,apps,quickstarts -Ddocker.username=${env.DOCKER_REGISTRY_USERNAME} -Ddocker.password=${env.DOCKER_REGISTRY_PASSWORD} -Ddocker.registry=docker.io"
       }
 
       sh "mvn -V -B -U org.apache.maven.plugins:maven-deploy-plugin:2.8.2:deploy -DaltDeploymentRepository=https://oss.sonatype.org/service/local/staging/deploy/maven2/"
