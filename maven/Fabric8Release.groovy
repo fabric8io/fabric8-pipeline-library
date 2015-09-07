@@ -55,6 +55,7 @@ node {
     // lets install maven onto the path
     withEnv(["PATH+MAVEN=${tool 'maven-3.3.1'}/bin"]) {
 
+
       git "https://github.com/fabric8io/kubernetes-model"
       sh "git checkout -b ${env.JOB_NAME}-${canaryVersion}"
 
@@ -65,11 +66,21 @@ node {
       sh "git fetch"
       sh "git reset --hard origin/master"
 
-      sh "mvn -DdryRun=false -Dresume=false release:prepare release:perform -Prelease -DautoVersionSubmodules=true"
-      sh "mvn clean org.apache.maven.plugins:maven-deploy-plugin:2.8.2:deploy -U -DaltDeploymentRepository=oss.sonatype.org:default:https://oss.sonatype.org/service/local/staging/deploy/maven2/"
 
-      sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-close -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoId} -Ddescription=\"Next release is ready\" -DstagingProgressTimeoutMinutes=60"
-      sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-release -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoId} -Ddescription=\"Next release is ready\" -DstagingProgressTimeoutMinutes=60"
+      try {
+        sh "mvn -DdryRun=false -Dresume=false release:prepare release:perform -Prelease -DautoVersionSubmodules=true -Darguments=-DaltDeploymentRepository=oss.sonatype.org::default::https://oss.sonatype.org/service/local/staging/deploy/maven2"
+        sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-close -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoId} -Ddescription=\"Next release is ready\" -DstagingProgressTimeoutMinutes=60"
+        sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-release -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoId} -Ddescription=\"Next release is ready\" -DstagingProgressTimeoutMinutes=60"
+
+      } catch (err) {
+        echo "Caught: ${err}"
+        echo "Cleaning up"
+
+        sh "git tag -d \$(git describe)"
+        sh "git push origin :refs/tags/\$(git describe)"
+
+        currentBuild.result = 'FAILURE'
+      }
      }
    }
 }
@@ -94,8 +105,7 @@ node {
       sh "sed -i -r 's/<kubernetes.model.version>[0-9][0-9]{0,2}.[0-9][0-9]{0,2}.[0-9][0-9]{0,2}/<kubernetes.model.version>${kubernetesModelVersion}/g' pom.xml"
       sh "git commit -a -m 'Bump kubernetes-model version'"
 
-      sh "mvn -DdryRun=false -Dresume=false release:prepare release:perform -Prelease -DautoVersionSubmodules=true"
-      sh "mvn clean org.apache.maven.plugins:maven-deploy-plugin:2.8.2:deploy -U -DaltDeploymentRepository=oss.sonatype.org:default:https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+      sh "mvn -DdryRun=false -Dresume=false release:prepare release:perform -Prelease -DautoVersionSubmodules=true -Darguments=-DaltDeploymentRepository=oss.sonatype.org::default::https://oss.sonatype.org/service/local/staging/deploy/maven2"
 
       sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-close -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoId} -Ddescription=\"Next release is ready\" -DstagingProgressTimeoutMinutes=60"
       sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-release -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoId} -Ddescription=\"Next release is ready\" -DstagingProgressTimeoutMinutes=60"
@@ -125,8 +135,7 @@ node {
       sh "sed -i -r 's/<kubernetes.client.version>[0-9][0-9]{0,2}.[0-9][0-9]{0,2}.[0-9][0-9]{0,2}/<kubernetes.client.version>${kubernetesClientVersion}/g' pom.xml"
       sh "git commit -a -m 'Bump kubernetes-model and kubernetes-client version'"
 
-      sh "mvn -DdryRun=false -Dresume=false release:prepare release:perform -Prelease -DautoVersionSubmodules=true"
-      sh "mvn org.apache.maven.plugins:maven-deploy-plugin:2.8.2:deploy -U -DaltDeploymentRepository=oss.sonatype.org:default:https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+      sh "mvn -DdryRun=false -Dresume=false release:prepare release:perform -Prelease -DautoVersionSubmodules=true -Darguments=-DaltDeploymentRepository=oss.sonatype.org::default::https://oss.sonatype.org/service/local/staging/deploy/maven2"
 
       sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-close -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoId} -Ddescription=\"Next release is ready\" -DstagingProgressTimeoutMinutes=60"
       sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-release -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoId} -Ddescription=\"Next release is ready\" -DstagingProgressTimeoutMinutes=60"
@@ -156,10 +165,8 @@ node {
 
       retry(3) {
           // pushing to dockerhub can fail sometimes so lets retry
-          sh "mvn -Dresume=false release:prepare release:perform  -Prelease,apps,quickstarts -Ddocker.username=${env.DOCKER_REGISTRY_USERNAME} -Ddocker.password=${env.DOCKER_REGISTRY_PASSWORD} -Ddocker.registry=docker.io"
+          sh "mvn -Dresume=false release:prepare release:perform -Darguments=-DaltDeploymentRepository=oss.sonatype.org::default::https://oss.sonatype.org/service/local/staging/deploy/maven2 -Prelease,apps,quickstarts -Ddocker.username=${env.DOCKER_REGISTRY_USERNAME} -Ddocker.password=${env.DOCKER_REGISTRY_PASSWORD} -Ddocker.registry=docker.io"
       }
-
-      sh "mvn -V -B -U org.apache.maven.plugins:maven-deploy-plugin:2.8.2:deploy -DaltDeploymentRepository=oss.sonatype.org:default:https://oss.sonatype.org/service/local/staging/deploy/maven2/"
 
       sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-close -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoId} -Ddescription=\"Next release is ready\" -DstagingProgressTimeoutMinutes=60"
       sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-release -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoId} -Ddescription=\"Next release is ready\" -DstagingProgressTimeoutMinutes=60"
