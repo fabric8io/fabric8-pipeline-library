@@ -1,20 +1,45 @@
-stage 'test'
+def valid = 'true'
+
+stage 'test-fabric8-devops'
 node {
-   ws ('kubernetes-model') {
+   ws ('fabric8-devops') {
     // lets install maven onto the path
     withEnv(["PATH+MAVEN=${tool 'maven-3.3.1'}/bin"]) {
+      sh "rm -rf *.*"
+      git 'https://github.com/fabric8io/fabric8-devops'
+      sh "git remote set-url origin git@github.com:fabric8io/fabric8-devops.git"
+      sh "git config user.email fabric8-admin@googlegroups.com"
+      sh "git config user.name fusesource-ci"
 
-      //sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-list -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org  > repoId.txt"
-      def repoId = readFile('repoId.txt').trim()
+      sh "git tag -d \$(git tag)"
+      sh "git fetch --tags"
+      sh "git reset --hard origin/master"
 
-      sh "echo ${repoId}"
-      sh "echo ====================================="
-      sh "echo ${repoId}"
-
+      sh "git tag -a test -m 'test'"
+      sh "git push origin test"
     }
   }
 }
 
+
+
+// stage 'test'
+// node {
+//    ws ('kubernetes-model') {
+//     // lets install maven onto the path
+//     withEnv(["PATH+MAVEN=${tool 'maven-3.3.1'}/bin"]) {
+//
+//       //sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-list -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org  > repoId.txt"
+//       def repoId = readFile('repoId.txt').trim()
+//
+//       sh "echo ${repoId}"
+//       sh "echo ====================================="
+//       sh "echo ${repoId}"
+//
+//     }
+//   }
+// }
+//
 
 // def repoId="iofabric8-1398"
 //
