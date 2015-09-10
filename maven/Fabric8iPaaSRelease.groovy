@@ -33,11 +33,11 @@ stage 'canary release fabric8-devop'
 node {
   ws ('fabric8-devop'){
     withEnv(["PATH+MAVEN=${tool 'maven-3.3.1'}/bin"]) {
-      def project = "rawlingsj/fabric8-devops"
+      def project = "fabric8io/fabric8-ipaas"
 
       sh "rm -rf *.*"
       git "https://github.com/${project}"
-      sh "git remote origin add git://github.com/${project}.git"
+      sh "git remote set-url origin git@github.com:${project}.git"
 
       sh "git config user.email fabric8-admin@googlegroups.com"
       sh "git config user.name fusesource-ci"
@@ -70,11 +70,6 @@ node {
         sh "git push origin master"
         sh "git tag -a v${releaseVersion} -m 'Release version ${releaseVersion}'"
         sh "git push origin v${releaseVersion}"
-
-        // intermittent errors can occur when pushing to dockerhub
-        retry(3){
-          sh "mvn docker:push -P release -Ddocker.username=${env.DOCKER_REGISTRY_USERNAME} -Ddocker.password=${env.DOCKER_REGISTRY_PASSWORD}"
-        }
 
         try {
           // close and release the sonartype staging repo
