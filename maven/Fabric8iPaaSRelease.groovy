@@ -71,6 +71,11 @@ node {
         sh "git tag -a v${releaseVersion} -m 'Release version ${releaseVersion}'"
         sh "git push origin v${releaseVersion}"
 
+        // update poms back to snapshot again
+        sh "git commit -a -m '[CD] prepare for next development iteration'"
+        sh "mvn org.codehaus.mojo:versions-maven-plugin:2.2:set -DnewVersion=${nextSnapshotVersion}"
+        sh "git push origin master"
+        
         // intermittent errors can occur when pushing to dockerhub
         retry(3){
           sh "mvn docker:push -P release"
@@ -86,10 +91,7 @@ node {
           sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-drop -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoId} -Ddescription=\"Error during release: ${err}\" -DstagingProgressTimeoutMinutes=60"
         }
 
-        // update poms back to snapshot again
-        sh "git commit -a -m '[CD] prepare for next development iteration'"
-        sh "mvn org.codehaus.mojo:versions-maven-plugin:2.2:set -DnewVersion=${nextSnapshotVersion}"
-        sh "git push origin master"
+
 
       } else {
         echo "Not a real release so closing sonartype repo"
