@@ -29,9 +29,9 @@ def getReleaseVersion(String project) {
   return version
 }
 
-stage 'canary release fabric8-devop'
+stage 'canary release fabric8-ipaas'
 node {
-  ws ('fabric8-devop'){
+  ws ('fabric8-ipaas'){
     withEnv(["PATH+MAVEN=${tool 'maven-3.3.1'}/bin"]) {
       def project = "fabric8io/fabric8-ipaas"
 
@@ -52,7 +52,7 @@ node {
       if(updateFabric8ReleaseDeps == 'true'){
         def fabric8Version = getReleaseVersion("fabric8-maven-plugin")
         sh "find -type f -name 'pom.xml' | xargs sed -i -r 's/<fabric8.version>[0-9][0-9]{0,2}.[0-9][0-9]{0,2}.[0-9][0-9]{0,2}/<fabric8.version>${fabric8Version}/g'"
-        sh "git commit -a -m 'Bump fabric8 version'"
+        sh "git commit -a -m \"Bump fabric8 version\""
       }
 
       // lets avoid using the maven release plugin so we have more control over the release
@@ -63,10 +63,9 @@ node {
       sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-list -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org | grep OPEN | grep -Eo 'iofabric8-[[:digit:]]+' > repoId.txt"
       def repoId = readFile('repoId.txt').trim()
 
-
       if(isRelease == 'true'){
         // push release versions and tag it
-        sh "git commit -a -m '[CD] prepare release v${releaseVersion}'"
+        sh "git commit -a -m \"[CD] prepare release v${releaseVersion}\""
         sh "git push origin master"
         sh "git tag -a v${releaseVersion} -m 'Release version ${releaseVersion}'"
         sh "git push origin v${releaseVersion}"
@@ -80,6 +79,11 @@ node {
         retry(3){
           sh "mvn docker:push -P release"
         }
+
+        // update poms back to snapshot again
+        sh "mvn org.codehaus.mojo:versions-maven-plugin:2.2:set -DnewVersion=${nextSnapshotVersion}"
+        sh "git commit -a -m \"[CD] prepare for next development iteration\""
+        sh "git push origin master"
 
         try {
           // close and release the sonartype staging repo
