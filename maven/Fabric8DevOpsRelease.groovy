@@ -33,7 +33,6 @@ stage 'canary release fabric8-devop'
 node {
   ws ('fabric8-devop'){
     withEnv(["PATH+MAVEN=${tool 'maven-3.3.1'}/bin"]) {
-
       def project = "rawlingsj/fabric8-devops"
 
       sh "rm -rf *.*"

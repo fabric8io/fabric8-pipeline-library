@@ -7,16 +7,26 @@ node {
     withEnv(["PATH+MAVEN=${tool 'maven-3.3.1'}/bin"]) {
       sh "rm -rf *.*"
       git 'https://github.com/fabric8io/fabric8-devops'
+
       sh "git remote set-url origin git@github.com:fabric8io/fabric8-devops.git"
       sh "git config user.email fabric8-admin@googlegroups.com"
       sh "git config user.name fusesource-ci"
 
+      
       sh "git tag -d \$(git tag)"
       sh "git fetch --tags"
       sh "git reset --hard origin/master"
 
-      sh "git tag -a test -m 'test'"
-      sh "git push origin test"
+      def test = "test-tag4"
+      sh "git tag -a ${test} -m 'Release version ${test}'"
+      sh "git push origin ${test}"
+
+      sh "echo 'Test for CD release'>> README.md"
+      sh "git commit -a -m 'Dummy commit to test auth from CD infra'"
+      sh "git push origin master"
+
+      sh "git tag -d ${test}"
+      sh "git push origin :refs/tags/${test}"
     }
   }
 }
