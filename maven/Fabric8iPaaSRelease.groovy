@@ -71,6 +71,11 @@ node {
         sh "git tag -a v${releaseVersion} -m 'Release version ${releaseVersion}'"
         sh "git push origin v${releaseVersion}"
 
+        // intermittent errors can occur when pushing to dockerhub
+        retry(3){
+          sh "mvn docker:push -P release"
+        }
+
         try {
           // close and release the sonartype staging repo
           sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-close -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoId} -Ddescription=\"Next release is ready\" -DstagingProgressTimeoutMinutes=60"
