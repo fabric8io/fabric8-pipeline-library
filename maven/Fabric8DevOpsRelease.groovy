@@ -73,7 +73,7 @@ node {
 
         // intermittent errors can occur when pushing to dockerhub
         retry(3){
-          sh "mvn docker:push -P release"
+          sh "mvn docker:push -P release -Ddocker.username=${env.DOCKER_REGISTRY_USERNAME} -Ddocker.password=${env.DOCKER_REGISTRY_PASSWORD}"
         }
 
         try {
