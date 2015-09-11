@@ -79,6 +79,7 @@ node {
         } catch (err) {
           sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-drop -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoId} -Ddescription=\"Error during release: ${err}\" -DstagingProgressTimeoutMinutes=60"
           currentBuild.result = 'FAILURE'
+          return
         }
 
         // push release versions and tag it
