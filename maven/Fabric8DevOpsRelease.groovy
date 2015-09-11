@@ -33,11 +33,11 @@ stage 'canary release fabric8-devop'
 node {
   ws ('fabric8-devop'){
     withEnv(["PATH+MAVEN=${tool 'maven-3.3.1'}/bin"]) {
-      def project = "rawlingsj/fabric8-devops"
+      def project = "fabric8io/fabric8-devops"
 
       sh "rm -rf *.*"
       git "https://github.com/${project}"
-      sh "git remote origin add git://github.com/${project}.git"
+      sh "git remote set-url origin git@github.com:${project}.git"
 
       sh "git config user.email fabric8-admin@googlegroups.com"
       sh "git config user.name fusesource-ci"
@@ -65,21 +65,12 @@ node {
 
       if(isRelease == 'true'){
         try {
-          // push release versions and tag it
-          sh "git commit -a -m '[CD] prepare release v${releaseVersion}'"
-          sh "git push origin master"
-          sh "git tag -a v${releaseVersion} -m 'Release version ${releaseVersion}'"
-          sh "git push origin v${releaseVersion}"
+
 
           // intermittent errors can occur when pushing to dockerhub
           retry(3){
             sh "mvn docker:push -P release"
           }
-
-          // update poms back to snapshot again
-          sh "mvn org.codehaus.mojo:versions-maven-plugin:2.2:set -DnewVersion=${nextSnapshotVersion}"
-          sh "git commit -a -m '[CD] prepare for next development iteration'"
-          sh "git push origin master"
 
           // close and release the sonartype staging repo
           sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-close -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoId} -Ddescription=\"Next release is ready\" -DstagingProgressTimeoutMinutes=60"
@@ -90,10 +81,22 @@ node {
           sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-drop -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoId} -Ddescription=\"Error during release: ${err}\" -DstagingProgressTimeoutMinutes=60"
         }
 
+        // push release versions and tag it
+        sh "git commit -a -m '[CD] prepare release v${releaseVersion}'"
+        sh "git push origin master"
+        sh "git tag -a v${releaseVersion} -m 'Release version ${releaseVersion}'"
+        sh "git push origin v${releaseVersion}"
+
+        // update poms back to snapshot again
+        sh "mvn org.codehaus.mojo:versions-maven-plugin:2.2:set -DnewVersion=${nextSnapshotVersion}"
+        sh "git commit -a -m '[CD] prepare for next development iteration'"
+        sh "git push origin master"
+        
       } else {
         echo "Not a real release so closing sonartype repo"
         sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-drop -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoId} -Ddescription=\"Relase not needed\" -DstagingProgressTimeoutMinutes=60"
       }
+
     }
   }
 }
