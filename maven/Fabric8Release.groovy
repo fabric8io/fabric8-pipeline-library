@@ -31,9 +31,9 @@ def getReleaseVersion(String project) {
 
 stage 'canary release fabric8-devop'
 node {
-  ws ('fabric8-devop'){
+  ws ('fabric8'){
     withEnv(["PATH+MAVEN=${tool 'maven-3.3.1'}/bin"]) {
-      def project = "fabric8io/fabric8-devops"
+      def project = "fabric8io/fabric8"
 
       sh "rm -rf *.*"
       git "https://github.com/${project}"
