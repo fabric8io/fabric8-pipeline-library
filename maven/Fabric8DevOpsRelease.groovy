@@ -63,25 +63,24 @@ node {
       sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-list -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org | grep OPEN | grep -Eo 'iofabric8-[[:digit:]]+' > repoId.txt"
       def repoId = readFile('repoId.txt').trim()
 
-
       if(isRelease == 'true'){
-        // push release versions and tag it
-        sh "git commit -a -m '[CD] prepare release v${releaseVersion}'"
-        sh "git push origin master"
-        sh "git tag -a v${releaseVersion} -m 'Release version ${releaseVersion}'"
-        sh "git push origin v${releaseVersion}"
-
-        // update poms back to snapshot again
-        sh "git commit -a -m '[CD] prepare for next development iteration'"
-        sh "mvn org.codehaus.mojo:versions-maven-plugin:2.2:set -DnewVersion=${nextSnapshotVersion}"
-        sh "git push origin master"
-        
-        // intermittent errors can occur when pushing to dockerhub
-        retry(3){
-          sh "mvn docker:push -P release -Ddocker.username=${env.DOCKER_REGISTRY_USERNAME} -Ddocker.password=${env.DOCKER_REGISTRY_PASSWORD}"
-        }
-
         try {
+          // push release versions and tag it
+          sh "git commit -a -m '[CD] prepare release v${releaseVersion}'"
+          sh "git push origin master"
+          sh "git tag -a v${releaseVersion} -m 'Release version ${releaseVersion}'"
+          sh "git push origin v${releaseVersion}"
+
+          // intermittent errors can occur when pushing to dockerhub
+          retry(3){
+            sh "mvn docker:push -P release"
+          }
+
+          // update poms back to snapshot again
+          sh "mvn org.codehaus.mojo:versions-maven-plugin:2.2:set -DnewVersion=${nextSnapshotVersion}"
+          sh "git commit -a -m '[CD] prepare for next development iteration'"
+          sh "git push origin master"
+
           // close and release the sonartype staging repo
           sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-close -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoId} -Ddescription=\"Next release is ready\" -DstagingProgressTimeoutMinutes=60"
           sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-release -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoId} -Ddescription=\"Next release is ready\" -DstagingProgressTimeoutMinutes=60"
