@@ -50,9 +50,13 @@ node {
 
       // bump dependency versions from the previous stage
       if(updateFabric8ReleaseDeps == 'true'){
-        def fabric8Version = getReleaseVersion("fabric8-maven-plugin")
-        sh "find -type f -name 'pom.xml' | xargs sed -i -r 's/<fabric8.version>[0-9][0-9]{0,2}.[0-9][0-9]{0,2}.[0-9][0-9]{0,2}/<fabric8.version>${fabric8Version}/g'"
-        sh "git commit -a -m 'Bump fabric8 version'"
+        try {
+          def fabric8Version = getReleaseVersion("fabric8-maven-plugin")
+          sh "find -type f -name 'pom.xml' | xargs sed -i -r 's/<fabric8.version>[0-9][0-9]{0,2}.[0-9][0-9]{0,2}.[0-9][0-9]{0,2}/<fabric8.version>${fabric8Version}/g'"
+          sh "git commit -a -m 'Bump fabric8 version'"
+        } catch (err) {
+          echo "Already on the latest versions of fabric8 dependencies"
+        }
       }
 
       // lets avoid using the maven release plugin so we have more control over the release
