@@ -1,23 +1,17 @@
-def getRepoId() {
-  new File("/var/jenkins_home/fabric8-ipaas/target/nexus-staging/staging").eachFileMatch(~/.*\.properties/) { filter ->
-    def props = new java.util.Properties()
-    props.load(new FileInputStream(filter))
-    def config = new ConfigSlurper().parse(props)
-    //def repoId = config.stagingRepository.id
-    return config.stagingRepository.id
-
-  }
-}
-
 stage 'test'
 node {
-   ws ('fabric8-ipaas-2') {
+   ws ('kubernetes-model') {
     // lets install maven onto the path
     withEnv(["PATH+MAVEN=${tool 'maven-3.3.1'}/bin"]) {
 
-      def repoId = getRepoId()
+      def matcher = readFile('target/nexus-staging/staging/\*.properties')
 
-      sh "echo ${repoId}"
+      echo matcher
+      //def repoId readFile
+      //def repoId = getRepoId()
+      //def repoId = getRepoId()
+
+      //sh "echo ${repoId}"
     }
   }
 }
