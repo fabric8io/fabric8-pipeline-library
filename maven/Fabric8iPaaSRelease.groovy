@@ -61,7 +61,7 @@ node {
 
       // lets avoid using the maven release plugin so we have more control over the release
       sh "mvn org.codehaus.mojo:versions-maven-plugin:2.2:set -DnewVersion=${releaseVersion}"
-      sh "mvn -V -B -U clean install org.apache.maven.plugins:maven-deploy-plugin:2.8.2:deploy -P release -DaltReleaseDeploymentRepository=oss-sonatype-staging::default::https://oss.sonatype.org/service/local/staging/deploy/maven2"
+      sh "mvn -V -B -U clean install org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:deploy -P release -DnexusUrl=https://oss.sonatype.org -DserverId=oss-sonatype-staging"
 
       // get the repo id and store it in a file see https://issues.jenkins-ci.org/browse/JENKINS-26133
       sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-list -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org | grep OPEN | grep -Eo 'iofabric8-[[:digit:]]+' > repoId.txt"
