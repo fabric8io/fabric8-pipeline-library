@@ -29,11 +29,11 @@ def getReleaseVersion(String project) {
   return version
 }
 
-stage 'canary release fabric8-devop'
+stage 'canary release ipaas-quickstarts'
 node {
-  ws ('fabric8'){
+  ws ('ipaas-quickstarts'){
     withEnv(["PATH+MAVEN=${tool 'maven-3.3.1'}/bin"]) {
-      def project = "fabric8io/fabric8"
+      def project = "fabric8io/ipaas-quickstarts"
 
       sh "rm -rf *.*"
       git "https://github.com/${project}"
@@ -51,12 +51,9 @@ node {
       // bump dependency versions from the previous stage
       if(updateFabric8ReleaseDeps == 'true'){
         try {
-          // bump dependency versions from the previous stage
-          def kubernetesClientVersion = getReleaseVersion("kubernetes-client")
-          def kubernetesModelVersion = getReleaseVersion("kubernetes-model")
-          sh "sed -i -r 's/<kubernetes-model.version>[0-9][0-9]{0,2}.[0-9][0-9]{0,2}.[0-9][0-9]{0,2}/<kubernetes-model.version>${kubernetesModelVersion}/g' pom.xml"
-          sh "sed -i -r 's/<kubernetes-client.version>[0-9][0-9]{0,2}.[0-9][0-9]{0,2}.[0-9][0-9]{0,2}/<kubernetes-client.version>${kubernetesClientVersion}/g' pom.xml"
-          sh "git commit -a -m 'Bump fabric8 version'"
+          def fabric8Version = getReleaseVersion("fabric8-maven-plugin")
+          sh "find -type f -name 'pom.xml' | xargs sed -i -r 's/<fabric8.version>[0-9][0-9]{0,2}.[0-9][0-9]{0,2}.[0-9][0-9]{0,2}/<fabric8.version>${fabric8Version}/g'"
+          sh "git commit -a -m \"Bump fabric8 version\""
         } catch (err) {
           echo "Already on the latest versions of fabric8 dependencies"
         }
@@ -64,7 +61,7 @@ node {
 
       // lets avoid using the maven release plugin so we have more control over the release
       sh "mvn org.codehaus.mojo:versions-maven-plugin:2.2:set -DnewVersion=${releaseVersion}"
-      sh "mvn -V -B -U clean install org.apache.maven.plugins:maven-deploy-plugin:2.8.2:deploy -P release -DaltReleaseDeploymentRepository=oss-sonatype-staging::default::https://oss.sonatype.org/service/local/staging/deploy/maven2"
+      sh "mvn -V -B -U clean install org.apache.maven.plugins:maven-deploy-plugin:2.8.2:deploy -P release,quickstarts -DaltReleaseDeploymentRepository=oss-sonatype-staging::default::https://oss.sonatype.org/service/local/staging/deploy/maven2"
 
       // get the repo id and store it in a file see https://issues.jenkins-ci.org/browse/JENKINS-26133
       sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-list -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org | grep OPEN | grep -Eo 'iofabric8-[[:digit:]]+' > repoId.txt"
@@ -72,6 +69,12 @@ node {
 
       if(isRelease == 'true'){
         try {
+
+          // intermittent errors can occur when pushing to dockerhub
+          retry(3){
+            sh "mvn docker:push -P release,quickstarts"
+          }
+
           // close and release the sonartype staging repo
           sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-close -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoId} -Ddescription=\"Next release is ready\" -DstagingProgressTimeoutMinutes=60"
           sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-release -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoId} -Ddescription=\"Next release is ready\" -DstagingProgressTimeoutMinutes=60"
@@ -83,14 +86,14 @@ node {
         }
 
         // push release versions and tag it
-        sh "git commit -a -m '[CD] prepare release v${releaseVersion}'"
+        sh "git commit -a -m \"[CD] prepare release v${releaseVersion}\""
         sh "git push origin master"
         sh "git tag -a v${releaseVersion} -m 'Release version ${releaseVersion}'"
         sh "git push origin v${releaseVersion}"
 
         // update poms back to snapshot again
         sh "mvn org.codehaus.mojo:versions-maven-plugin:2.2:set -DnewVersion=${nextSnapshotVersion}"
-        sh "git commit -a -m '[CD] prepare for next development iteration'"
+        sh "git commit -a -m \"[CD] prepare for next development iteration\""
         sh "git push origin master"
 
       } else {

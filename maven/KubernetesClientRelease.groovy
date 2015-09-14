@@ -29,11 +29,11 @@ def getReleaseVersion(String project) {
   return version
 }
 
-stage 'canary release fabric8-devop'
+stage 'canary release kubernetes client'
 node {
-  ws ('fabric8'){
+  ws ('kubernetes-client'){
     withEnv(["PATH+MAVEN=${tool 'maven-3.3.1'}/bin"]) {
-      def project = "fabric8io/fabric8"
+      def project = "fabric8io/kubernetes-client"
 
       sh "rm -rf *.*"
       git "https://github.com/${project}"
@@ -52,11 +52,9 @@ node {
       if(updateFabric8ReleaseDeps == 'true'){
         try {
           // bump dependency versions from the previous stage
-          def kubernetesClientVersion = getReleaseVersion("kubernetes-client")
           def kubernetesModelVersion = getReleaseVersion("kubernetes-model")
-          sh "sed -i -r 's/<kubernetes-model.version>[0-9][0-9]{0,2}.[0-9][0-9]{0,2}.[0-9][0-9]{0,2}/<kubernetes-model.version>${kubernetesModelVersion}/g' pom.xml"
-          sh "sed -i -r 's/<kubernetes-client.version>[0-9][0-9]{0,2}.[0-9][0-9]{0,2}.[0-9][0-9]{0,2}/<kubernetes-client.version>${kubernetesClientVersion}/g' pom.xml"
-          sh "git commit -a -m 'Bump fabric8 version'"
+          sh "sed -i -r 's/<kubernetes.model.version>[0-9][0-9]{0,2}.[0-9][0-9]{0,2}.[0-9][0-9]{0,2}/<kubernetes.model.version>${kubernetesModelVersion}/g' pom.xml"
+          sh "git commit -a -m 'Bump kubernetes model version'"
         } catch (err) {
           echo "Already on the latest versions of fabric8 dependencies"
         }
@@ -79,7 +77,6 @@ node {
         } catch (err) {
           sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-drop -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoId} -Ddescription=\"Error during release: ${err}\" -DstagingProgressTimeoutMinutes=60"
           currentBuild.result = 'FAILURE'
-          return
         }
 
         // push release versions and tag it
