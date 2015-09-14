@@ -66,7 +66,7 @@ node {
           def kubernetesModelVersion = getReleaseVersion("kubernetes-model")
           sh "sed -i -r 's/<kubernetes-model.version>[0-9][0-9]{0,2}.[0-9][0-9]{0,2}.[0-9][0-9]{0,2}/<kubernetes-model.version>${kubernetesModelVersion}/g' pom.xml"
           sh "sed -i -r 's/<kubernetes-client.version>[0-9][0-9]{0,2}.[0-9][0-9]{0,2}.[0-9][0-9]{0,2}/<kubernetes-client.version>${kubernetesClientVersion}/g' pom.xml"
-          sh "git commit -a -m 'Bump fabric8 version'"
+          sh "git commit -a -m 'Bump kubernetes-client and kubernetes-model versions'"
         } catch (err) {
           echo "Already on the latest versions of fabric8 dependencies"
         }

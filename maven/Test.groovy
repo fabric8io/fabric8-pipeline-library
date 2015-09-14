@@ -4,14 +4,9 @@ node {
     // lets install maven onto the path
     withEnv(["PATH+MAVEN=${tool 'maven-3.3.1'}/bin"]) {
 
-      def matcher = readFile('target/nexus-staging/staging/\*.properties')
+      def matcher = readFile('target/nexus-staging/staging/*.properties')
 
       echo matcher
-      //def repoId readFile
-      //def repoId = getRepoId()
-      //def repoId = getRepoId()
-
-      //sh "echo ${repoId}"
     }
   }
 }
