@@ -29,6 +29,16 @@ def getReleaseVersion(String project) {
   return version
 }
 
+def getRepoId() {
+  new File("/var/jenkins_home/fabric8-ipaas/target/nexus-staging/staging").eachFileMatch(~/.*\.properties/) { filter ->
+    def props = new java.util.Properties()
+    props.load(new FileInputStream(filter))
+    def config = new ConfigSlurper().parse(props)
+    // return after matching the first file
+    return config.stagingRepository.id
+  }
+}
+
 stage 'canary release fabric8-ipaas'
 node {
   ws ('fabric8-ipaas'){
@@ -61,11 +71,9 @@ node {
 
       // lets avoid using the maven release plugin so we have more control over the release
       sh "mvn org.codehaus.mojo:versions-maven-plugin:2.2:set -DnewVersion=${releaseVersion}"
-      sh "mvn -V -B -U clean install org.apache.maven.plugins:maven-deploy-plugin:2.8.2:deploy -P release -DaltReleaseDeploymentRepository=oss-sonatype-staging::default::https://oss.sonatype.org/service/local/staging/deploy/maven2"
+      sh "mvn -V -B -U clean install org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:deploy -P release -DnexusUrl=https://oss.sonatype.org -DserverId=oss-sonatype-staging"
 
-      // get the repo id and store it in a file see https://issues.jenkins-ci.org/browse/JENKINS-26133
-      sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-list -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org | grep OPEN | grep -Eo 'iofabric8-[[:digit:]]+' > repoId.txt"
-      def repoId = readFile('repoId.txt').trim()
+      def repoId = getRepoId()
 
       if(isRelease == 'true'){
         try {
@@ -75,8 +83,7 @@ node {
             sh "mvn docker:push -P release -Ddocker.username=${env.DOCKER_REGISTRY_USERNAME} -Ddocker.password=${env.DOCKER_REGISTRY_PASSWORD}"
           }
 
-          // close and release the sonartype staging repo
-          sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-close -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoId} -Ddescription=\"Next release is ready\" -DstagingProgressTimeoutMinutes=60"
+          // release the sonartype staging repo
           sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-release -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoId} -Ddescription=\"Next release is ready\" -DstagingProgressTimeoutMinutes=60"
 
         } catch (err) {

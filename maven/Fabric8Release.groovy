@@ -29,6 +29,16 @@ def getReleaseVersion(String project) {
   return version
 }
 
+def getRepoId() {
+  new File("/var/jenkins_home/fabric8/target/nexus-staging/staging").eachFileMatch(~/.*\.properties/) { filter ->
+    def props = new java.util.Properties()
+    props.load(new FileInputStream(filter))
+    def config = new ConfigSlurper().parse(props)
+    // return after matching the first file
+    return config.stagingRepository.id
+  }
+}
+
 stage 'canary release fabric8-devop'
 node {
   ws ('fabric8'){
@@ -56,7 +66,7 @@ node {
           def kubernetesModelVersion = getReleaseVersion("kubernetes-model")
           sh "sed -i -r 's/<kubernetes-model.version>[0-9][0-9]{0,2}.[0-9][0-9]{0,2}.[0-9][0-9]{0,2}/<kubernetes-model.version>${kubernetesModelVersion}/g' pom.xml"
           sh "sed -i -r 's/<kubernetes-client.version>[0-9][0-9]{0,2}.[0-9][0-9]{0,2}.[0-9][0-9]{0,2}/<kubernetes-client.version>${kubernetesClientVersion}/g' pom.xml"
-          sh "git commit -a -m 'Bump fabric8 version'"
+          sh "git commit -a -m 'Bump kubernetes-client and kubernetes-model versions'"
         } catch (err) {
           echo "Already on the latest versions of fabric8 dependencies"
         }
@@ -64,16 +74,13 @@ node {
 
       // lets avoid using the maven release plugin so we have more control over the release
       sh "mvn org.codehaus.mojo:versions-maven-plugin:2.2:set -DnewVersion=${releaseVersion}"
-      sh "mvn -V -B -U clean install org.apache.maven.plugins:maven-deploy-plugin:2.8.2:deploy -P release -DaltReleaseDeploymentRepository=oss-sonatype-staging::default::https://oss.sonatype.org/service/local/staging/deploy/maven2"
+      sh "mvn -V -B -U clean install org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:deploy -P release -DnexusUrl=https://oss.sonatype.org -DserverId=oss-sonatype-staging"
 
-      // get the repo id and store it in a file see https://issues.jenkins-ci.org/browse/JENKINS-26133
-      sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-list -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org | grep OPEN | grep -Eo 'iofabric8-[[:digit:]]+' > repoId.txt"
-      def repoId = readFile('repoId.txt').trim()
+      def repoId = getRepoId()
 
       if(isRelease == 'true'){
         try {
-          // close and release the sonartype staging repo
-          sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-close -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoId} -Ddescription=\"Next release is ready\" -DstagingProgressTimeoutMinutes=60"
+          // release the sonartype staging repo
           sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-release -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoId} -Ddescription=\"Next release is ready\" -DstagingProgressTimeoutMinutes=60"
 
         } catch (err) {
