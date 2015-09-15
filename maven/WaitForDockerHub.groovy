@@ -11,7 +11,6 @@ def dockerDockerImageTags(String image) {
   try {
     return "https://registry.hub.docker.com/v1/repositories/${image}/tags".toURL().getText()
   } catch (err) {
-    println err
     return "NO_IMAGE_FOUND"
   }
 }

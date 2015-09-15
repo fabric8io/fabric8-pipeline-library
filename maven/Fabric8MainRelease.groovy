@@ -16,18 +16,13 @@ try {
 } catch (Throwable e) {
   nextSnapshotVersion = "${env.NEXT_SNAPSHOT_VERSION}"
 }
-
-def project = 'fabric8-model'
-stage 'canary release ' + project
+def updateFabric8ReleaseDeps = ""
+try {
+  updateFabric8ReleaseDeps = UPDATE_FABRIC8_RELEASE_DEPENDENCIES
+} catch (Throwable e) {
+  updateFabric8ReleaseDeps = "${env.UPDATE_FABRIC8_RELEASE_DEPENDENCIES ?: 'false'}"
+}
+stage 'canary release fabric8'
 node {
-  ws (project){
-    withEnv(["PATH+MAVEN=${tool 'maven-3.3.1'}/bin"]) {
-
-      def flow = new io.fabric8.Release()
-
-      flow.setupWorkspace 'fabric8io/' + project
-
-      flow.release releaseVersion nextSnapshotVersion "release" isRelease
-    }
-  }
+    load 'https://raw.githubusercontent.com/rawlingsj/jenkins-workflow-library/working/maven/KubernetesModelRelease.groovy'
 }

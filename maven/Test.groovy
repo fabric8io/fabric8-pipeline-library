@@ -1,13 +1,9 @@
 stage 'test'
 node {
    ws ('kubernetes-model') {
-    // lets install maven onto the path
-    withEnv(["PATH+MAVEN=${tool 'maven-3.3.1'}/bin"]) {
 
-      def matcher = readFile('target/nexus-staging/staging/*.properties')
-
-      echo matcher
-    }
+     def flow = new io.fabric8.Release()
+     flow.testRepos()
   }
 }
 
