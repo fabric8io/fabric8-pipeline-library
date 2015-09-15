@@ -71,8 +71,9 @@ node {
 
       // lets avoid using the maven release plugin so we have more control over the release
       sh "mvn org.codehaus.mojo:versions-maven-plugin:2.2:set -DnewVersion=${releaseVersion}"
-      sh "mvn -V -B -U clean install org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:deploy -P release,quickstarts -DnexusUrl=https://oss.sonatype.org -DserverId=oss-sonatype-staging"
-
+      retry(3){
+        sh "mvn -V -B -U clean install org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:deploy -P release,quickstarts -DnexusUrl=https://oss.sonatype.org -DserverId=oss-sonatype-staging"
+      }
       def repoId = getRepoId()
 
       if(isRelease == 'true'){

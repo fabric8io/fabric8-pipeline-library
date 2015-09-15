@@ -30,10 +30,9 @@ node {
         echo "No previous version found"
         return
       }
-      echo oldVersion
       def newVersion = getReleaseVersion("fabric8-maven-plugin")
 
-      // use perl so that we we can easily turn off regex in the SED query
+      // use perl so that we we can easily turn off regex in the SED query as using dots in version numbers returns unwanted results otherwise
       sh "find . -name '*.md' ! -name Changes.md ! -path '*/docs/jube/**.*' | xargs perl -p -i -e 's/\\Q${oldVersion}/${newVersion}/g'"
       sh "find . -path '*/website/src/**.*' | xargs perl -p -i -e 's/\\Q${oldVersion}/${newVersion}/g'"
 
