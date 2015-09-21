@@ -16,21 +16,14 @@ node {
     withEnv(["PATH+MAVEN=${tool 'maven-3.3.1'}/bin"]) {
       def project = "fabric8io/fabric8"
 
-      sh "rm -rf *.*"
-      git "https://github.com/${project}"
-      sh "git remote set-url origin git@github.com:${project}.git"
-
-      sh "git config user.email fabric8-admin@googlegroups.com"
-      sh "git config user.name fusesource-ci"
-
-      sh "git checkout master"
+      flow.setupWorkspace 'fabric8io/kubernetes-client'
 
       def oldVersion = oldVersion()
       if (oldVersion == null){
         echo "No previous version found"
         return
       }
-      def newVersion = getReleaseVersion("fabric8-maven-plugin")
+      def newVersion = getReleaseVersion "fabric8-maven-plugin"
 
       // use perl so that we we can easily turn off regex in the SED query as using dots in version numbers returns unwanted results otherwise
       sh "find . -name '*.md' ! -name Changes.md ! -path '*/docs/jube/**.*' | xargs perl -p -i -e 's/\\Q${oldVersion}/${newVersion}/g'"

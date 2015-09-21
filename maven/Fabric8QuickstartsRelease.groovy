@@ -1,21 +1,3 @@
-def isRelease = ""
-try {
-  isRelease = IS_RELEASEBUILD
-} catch (Throwable e) {
-  isRelease = "${env.IS_RELEASEBUILD ?: 'false'}"
-}
-def releaseVersion = ""
-try {
-  releaseVersion = RELEASE_VERSION
-} catch (Throwable e) {
-  releaseVersion = "${env.RELEASE_VERSION}"
-}
-def nextSnapshotVersion = ""
-try {
-  nextSnapshotVersion = NEXT_SNAPSHOT_VERSION
-} catch (Throwable e) {
-  nextSnapshotVersion = "${env.NEXT_SNAPSHOT_VERSION}"
-}
 def updateFabric8ReleaseDeps = ""
 try {
   updateFabric8ReleaseDeps = UPDATE_FABRIC8_RELEASE_DEPENDENCIES
@@ -34,11 +16,11 @@ node {
       flow.setupWorkspace 'fabric8io/'+project
 
       // bump dependency versions from the previous stage
-      if updateFabric8ReleaseDeps == 'true' {
+      if (updateFabric8ReleaseDeps == 'true') {
         def kubernetesModelVersion = flow.getReleaseVersion "fabric8-maven-plugin"
         flow.searchAndReplaceMavenVersionProperty "<fabric8.version>" kubernetesModelVersion
       }
 
-      flow.releaseAndDockerPush releaseVersion nextSnapshotVersion "release,quickstarts"
+      flow.releaseAndDockerPush "release,quickstarts"
   }
 }
