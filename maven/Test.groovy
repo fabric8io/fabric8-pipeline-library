@@ -14,7 +14,6 @@ node {
   }
 }
 
-
 // def valid = 'true'
 //
 // stage 'test-fabric8-devops'
