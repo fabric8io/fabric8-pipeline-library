@@ -5,13 +5,22 @@ try {
   updateFabric8ReleaseDeps = "${env.UPDATE_FABRIC8_RELEASE_DEPENDENCIES ?: 'false'}"
 }
 
-stage 'release quickstarts'
-releaseiPaaSQuickstarts{
-  updateDeps = updateFabric8ReleaseDeps
+stage 'release apps and quickstarts'
+parallel(quickstarts: {
+  releaseFabric8{
+    updateDeps = updateFabric8ReleaseDeps
+  }
+}, ipaas: {
+  releaseiPaaSApps{
+    updateDeps = updateFabric8ReleaseDeps
+  }
+}, devops:{
+  releaseiPaaSQuickstarts{
+    updateDeps = updateFabric8ReleaseDeps
+  }
 }
-
 
 stage 'wait for fabric8-maven-plugin to be synced with maven central'
 waitUntilArtifactSyncedWithCentral {
-  artifact = 'archetypes/archetypes-catalog'
+  artifact = 'quickstarts/project'
 }

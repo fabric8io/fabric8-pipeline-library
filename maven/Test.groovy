@@ -1,16 +1,18 @@
 stage 'test'
 node {
    ws ('kubernetes-model') {
-    // lets install maven onto the path
-    withEnv(["PATH+MAVEN=${tool 'maven-3.3.1'}/bin"]) {
-
-      def matcher = readFile('target/nexus-staging/staging/*.properties')
-
-      echo matcher
+    sh "git log --name-status HEAD^..HEAD -1 --grep=\"prepare for next development iteration\" --author='fusesource-ci' >> gitlog.tmp"
+    def myfile = readFile('gitlog.tmp')
+    sh "rm gitlog.tmp"
+    if (myfile.length() == 0 ) {
+     currentBuild.result = 'FAILURE'
+     echo "failing build"
+     return
+    } else {
+      echo 'continue'
     }
   }
 }
-
 
 // def valid = 'true'
 //
