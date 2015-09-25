@@ -15,8 +15,8 @@ def call(body) {
           flow.setupWorkspace ('fabric8io/kubernetes-model')
 
           //if (flow.hasChangedSinceLastRelease()){
-            flow.release "release"
-            flow.updateGithub()
+            flow.release ("release", config.isRelease)
+            flow.updateGithub(config.isRelease)
           //}
         }
       }

@@ -30,9 +30,9 @@ def call(body) {
         }
 
         //if (flow.hasChangedSinceLastRelease()){
-          flow.release "release,quickstarts"
-          flow.dockerPush "release,quickstarts"
-          flow.updateGithub()
+          flow.release("release,quickstarts", config.isRelease)
+          flow.dockerPush("release,quickstarts", config.isRelease)
+          flow.updateGithub(config.isRelease)
         //}
       }
     }
