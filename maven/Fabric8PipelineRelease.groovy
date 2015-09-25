@@ -5,16 +5,16 @@ try {
   updateFabric8ReleaseDeps = "${env.UPDATE_FABRIC8_RELEASE_DEPENDENCIES ?: 'false'}"
 }
 
-def isRelease = ""
+def release = ""
 try {
-  isRelease = IS_RELEASE
+  release = IS_RELEASE
 } catch (Throwable e) {
-  isRelease = "${env.IS_RELEASE ?: 'true'}"
+  release = "${env.IS_RELEASE ?: 'true'}"
 }
 
 stage 'canary release kubernetes-model'
 releaseKubernetesModel{
-  isRelease = isRelease
+  isRelease = release
 }
 stage 'wait for kubernetes-model to be synced with maven central'
 waitUntilArtifactSyncedWithCentral {
@@ -24,7 +24,7 @@ waitUntilArtifactSyncedWithCentral {
 stage 'canary release kubernetes-client'
 releaseKubernetesClient{
   updateDeps = updateFabric8ReleaseDeps
-  isRelease = isRelease
+  isRelease = release
 }
 
 stage 'wait for kubernetes-client to be synced with maven central'
@@ -35,7 +35,7 @@ waitUntilArtifactSyncedWithCentral {
 stage 'canary release fabric8'
 releaseFabric8{
   updateDeps = updateFabric8ReleaseDeps
-  isRelease = isRelease
+  isRelease = release
 }
 
 stage 'wait for fabric8-maven-plugin to be synced with maven central'
@@ -64,17 +64,17 @@ waitUntilArtifactSyncedWithCentral {
 stage 'release apps and quickstarts'
 releaseiPaaSQuickstarts{
   updateDeps = updateFabric8ReleaseDeps
-  isRelease = isRelease
+  isRelease = release
 }
 
 releaseDevOpsApps{
   updateDeps = updateFabric8ReleaseDeps
-  isRelease = isRelease
+  isRelease = release
 }
 
 releaseiPaaSApps{
   updateDeps = updateFabric8ReleaseDeps
-  isRelease = isRelease
+  isRelease = release
 }
 
 stage 'wait for fabric8-maven-plugin to be synced with maven central'
@@ -84,5 +84,5 @@ waitUntilArtifactSyncedWithCentral {
 
 stage 'update the docs and website'
 updateDocs{
-  isRelease = isRelease
+  isRelease = release
 }

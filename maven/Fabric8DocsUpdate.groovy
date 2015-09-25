@@ -1,12 +1,12 @@
 stage 'update the docs and website'
 
-def isRelease = ""
+def release = ""
 try {
-  isRelease = IS_RELEASE
+  release = IS_RELEASE
 } catch (Throwable e) {
-  isRelease = "${env.IS_RELEASE ?: 'true'}"
+  release = "${env.IS_RELEASE ?: 'true'}"
 }
 
 updateDocs{
-  isRelease = isRelease
+  isRelease = release
 }
