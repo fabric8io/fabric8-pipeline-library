@@ -86,36 +86,47 @@ def setupWorkspace(String project){
   sh "git commit -a -m '[CD] released v${releaseVersion}'"
 }
 
-def dockerPush (String commaDelimetedProfiles) {
-  // intermittent errors can occur when pushing to dockerhub
-  retry(3){
-    sh "mvn docker:push -P ${commaDelimetedProfiles}"
+def dockerPush (String commaDelimetedProfiles, String isRelease) {
+  if (isRelease == 'true') {
+    // intermittent errors can occur when pushing to dockerhub
+    retry(3){
+      sh "mvn docker:push -P ${commaDelimetedProfiles}"
+    }
+  } else {
+    sh "Not a release so not pushing to dockerhub"
   }
 }
 
-def release (String commaDelimetedProfiles) {
+def release (String commaDelimetedProfiles, String isRelease) {
   retry(3){
     sh "mvn -V -B -U clean install org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:deploy -P ${commaDelimetedProfiles} -DnexusUrl=https://oss.sonatype.org -DserverId=oss-sonatype-staging"
   }
   // the sonartype staging repo id gets written to a file in the workspace
   def repoIds = getRepoIds()
 
-  try {
-    // release the sonartype staging repo
-    for(int i = 0; i < repoIds.size(); i++){
-      sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-release -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoIds[i]} -Ddescription=\"Next release is ready\" -DstagingProgressTimeoutMinutes=60"
-    }
+  if (isRelease == 'true') {
+    try {
+      // release the sonartype staging repo
+      for(int i = 0; i < repoIds.size(); i++){
+        sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-release -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoIds[i]} -Ddescription=\"Next release is ready\" -DstagingProgressTimeoutMinutes=60"
+      }
 
-  } catch (err) {
+    } catch (err) {
+      for(int i = 0; i < repoIds.size(); i++){
+        sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-drop -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoIds[i]} -Ddescription=\"Error during release: ${err}\" -DstagingProgressTimeoutMinutes=60"
+        currentBuild.result = 'FAILURE'
+      }
+      return
+    }
+  } else {
+    sh "Not a release so dropping staging repos"
     for(int i = 0; i < repoIds.size(); i++){
       sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-drop -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoIds[i]} -Ddescription=\"Error during release: ${err}\" -DstagingProgressTimeoutMinutes=60"
-      currentBuild.result = 'FAILURE'
     }
-    return
   }
 }
 
-def updateGithub(){
+def updateGithub(String isRelease){
   // push release versions and tag it
   def releaseVersion = getProjectVersion()
   sh "git push origin master"
@@ -126,7 +137,12 @@ def updateGithub(){
   sh 'mvn build-helper:parse-version versions:set -DnewVersion=\\\${parsedVersion.majorVersion}.\\\${parsedVersion.minorVersion}.\\\${parsedVersion.nextIncrementalVersion}-SNAPSHOT'
   def snapshotVersion = getProjectVersion()
   sh "git commit -a -m '[CD] prepare for next development iteration ${snapshotVersion}'"
-  sh "git push origin master"
+
+  if (isRelease == 'true') {
+    sh "git push origin master"
+  } else {
+    sh "Not a release so changes will not be pushed to GitHub"
+  }
 }
 
 def hasChangedSinceLastRelease(){

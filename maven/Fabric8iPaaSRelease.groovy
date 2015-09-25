@@ -5,6 +5,13 @@ try {
   updateFabric8ReleaseDeps = "${env.UPDATE_FABRIC8_RELEASE_DEPENDENCIES ?: 'false'}"
 }
 
+def isRelease = ""
+try {
+  isRelease = IS_RELEASE
+} catch (Throwable e) {
+  isRelease = "${env.IS_RELEASE ?: 'true'}"
+}
+
 stage 'release ipaas apps'
 releaseiPaaSApps{
   updateDeps = updateFabric8ReleaseDeps

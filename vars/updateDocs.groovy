@@ -40,7 +40,13 @@ def call(body) {
           sh "find . -path '*/website/src/**.*' | xargs perl -p -i -e 's/\\Q${oldVersion}/${newVersion}/g'"
 
           sh "git commit -a -m '[CD] Update docs following ${newVersion} release'"
-          sh "git push origin master"
+
+          if (config.isRelease == 'true') {
+            sh "git push origin master"
+          } else {
+            sh "Not a release so not updating github"
+          }
+
        }
       }
     }

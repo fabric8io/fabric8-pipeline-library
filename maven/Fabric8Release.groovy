@@ -5,6 +5,13 @@ try {
   updateFabric8ReleaseDeps = "${env.UPDATE_FABRIC8_RELEASE_DEPENDENCIES ?: 'false'}"
 }
 
+def isRelease = ""
+try {
+  isRelease = IS_RELEASE
+} catch (Throwable e) {
+  isRelease = "${env.IS_RELEASE ?: 'true'}"
+}
+
 stage 'wait for kubernetes-client to be synced with maven central'
 waitUntilArtifactSyncedWithCentral {
   artifact = 'kubernetes-client'
@@ -13,6 +20,7 @@ waitUntilArtifactSyncedWithCentral {
 stage 'canary release fabric8'
 releaseFabric8{
   updateDeps = updateFabric8ReleaseDeps
+  isRelease = isRelease
 }
 
 stage 'wait for fabric8-maven-plugin to be synced with maven central'
