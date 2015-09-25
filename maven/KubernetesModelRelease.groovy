@@ -5,16 +5,16 @@ try {
   updateFabric8ReleaseDeps = "${env.UPDATE_FABRIC8_RELEASE_DEPENDENCIES ?: 'false'}"
 }
 
-def isRelease = ""
+def release = ""
 try {
-  isRelease = IS_RELEASE
+  release = IS_RELEASE
 } catch (Throwable e) {
-  isRelease = "${env.IS_RELEASE ?: 'true'}"
+  release = "${env.IS_RELEASE ?: 'true'}"
 }
 
 stage 'canary release kubernetes-model'
 releaseKubernetesModel{
-  isRelease = isRelease
+  isRelease = release
 }
 
 stage 'wait for kubernetes-model to be synced with maven central'

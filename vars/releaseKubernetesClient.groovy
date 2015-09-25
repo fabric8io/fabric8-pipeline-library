@@ -18,9 +18,11 @@ def call(body) {
           def kubernetesModelVersion = flow.getReleaseVersion "kubernetes-model"
           flow.searchAndReplaceMavenVersionProperty("<kubernetes.model.version>", kubernetesModelVersion)
         }
+        echo "is a release ${config.isRelease}"
+        echo "is a release ${config.isRelease}"
         //if (flow.hasChangedSinceLastRelease()){
         flow.release ("release", config.isRelease)
-        flow.updateGithub(config.isRelease)
+        flow.updateGithub config.isRelease
         //}
       }
     }

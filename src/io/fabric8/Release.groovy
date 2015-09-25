@@ -93,7 +93,7 @@ def dockerPush (String commaDelimetedProfiles, String isRelease) {
       sh "mvn docker:push -P ${commaDelimetedProfiles}"
     }
   } else {
-    sh "Not a release so not pushing to dockerhub"
+    echo "Not a release so not pushing to dockerhub"
   }
 }
 
@@ -119,9 +119,9 @@ def release (String commaDelimetedProfiles, String isRelease) {
       return
     }
   } else {
-    sh "Not a release so dropping staging repos"
+    echo "Not a release so dropping staging repos"
     for(int i = 0; i < repoIds.size(); i++){
-      sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-drop -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoIds[i]} -Ddescription=\"Error during release: ${err}\" -DstagingProgressTimeoutMinutes=60"
+      sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-drop -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoIds[i]} -Ddescription=\"Dry run\" -DstagingProgressTimeoutMinutes=60"
     }
   }
 }
@@ -141,7 +141,7 @@ def updateGithub(String isRelease){
   if (isRelease == 'true') {
     sh "git push origin master"
   } else {
-    sh "Not a release so changes will not be pushed to GitHub"
+    echo "Not a release so changes will not be pushed to GitHub"
   }
 }
 
