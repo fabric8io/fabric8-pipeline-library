@@ -20,7 +20,7 @@ def call(body) {
         }
         //if (flow.hasChangedSinceLastRelease()){
         flow.release ("release", config.isRelease)
-        flow.updateGithub(config.isRelease)
+        flow.updateGithub (config.isRelease)
         //}
       }
     }

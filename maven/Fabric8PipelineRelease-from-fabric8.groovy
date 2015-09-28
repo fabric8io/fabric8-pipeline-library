@@ -12,26 +12,6 @@ try {
   release = "${env.IS_RELEASE ?: 'true'}"
 }
 
-stage 'canary release kubernetes-model'
-releaseKubernetesModel{
-  isRelease = release
-}
-stage 'wait for kubernetes-model to be synced with maven central'
-waitUntilArtifactSyncedWithCentral {
-  artifact = 'kubernetes-model'
-}
-
-stage 'canary release kubernetes-client'
-releaseKubernetesClient{
-  updateDeps = updateFabric8ReleaseDeps
-  isRelease = release
-}
-
-stage 'wait for kubernetes-client to be synced with maven central'
-waitUntilArtifactSyncedWithCentral {
-  artifact = 'kubernetes-client'
-}
-
 stage 'canary release fabric8'
 releaseFabric8{
   updateDeps = updateFabric8ReleaseDeps

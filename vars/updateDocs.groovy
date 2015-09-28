@@ -44,7 +44,7 @@ def call(body) {
           if (config.isRelease == 'true') {
             sh "git push origin master"
           } else {
-            sh "Not a release so not updating github"
+            echo "Not a release so not updating github"
           }
 
        }
