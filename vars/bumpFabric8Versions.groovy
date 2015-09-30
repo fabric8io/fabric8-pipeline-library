@@ -11,18 +11,20 @@ def call(body) {
       withEnv(["PATH+MAVEN=${tool 'maven-3.3.1'}/bin"]) {
 
         def flow = new io.fabric8.Release()
+        flow.setupWorkspace (project)
 
-        flow.setupWorkspace ('fabric8io/' + project)
+        def uid = UUID.randomUUID().toString()
+        sh "git checkout -b versionUpdate${uid}"
 
         // bump fabric8 release dependency versions
         def kubernetesModelVersion = flow.getReleaseVersion 'kubernetes-model'
-        def kubernetesClientVersion = flow.getReleaseVersion 'kubernetes-client'
         flow.searchAndReplaceMavenVersionProperty('<kubernetes-model.version>', kubernetesModelVersion)
+
+        def kubernetesClientVersion = flow.getReleaseVersion 'kubernetes-client'
         flow.searchAndReplaceMavenVersionProperty('<kubernetes-client.version>', kubernetesClientVersion)
 
-        submitPullRequest{
-
-        }
+        sh "git push origin versionUpdate${uid}"
+        return flow.createPullRequest("[CD] Update release dependencies")
       }
     }
   }

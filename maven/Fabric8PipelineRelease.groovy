@@ -1,88 +1,194 @@
-def updateFabric8ReleaseDeps = ""
-try {
-  updateFabric8ReleaseDeps = UPDATE_FABRIC8_RELEASE_DEPENDENCIES
-} catch (Throwable e) {
-  updateFabric8ReleaseDeps = "${env.UPDATE_FABRIC8_RELEASE_DEPENDENCIES ?: 'false'}"
-}
-
 def release = ""
 try {
   release = IS_RELEASE
 } catch (Throwable e) {
-  release = "${env.IS_RELEASE ?: 'true'}"
+  release = "${env.IS_RELEASE ?: 'false'}"
 }
 
-stage 'canary release kubernetes-model'
-releaseKubernetesModel{
-  isRelease = release
-}
-stage 'wait for kubernetes-model to be synced with maven central'
-waitUntilArtifactSyncedWithCentral {
-  artifact = 'kubernetes-model'
+def stagedProjects = []
+
+stage 'stage kubernetes-model'
+stagedProjects << stageProject{
+  project = 'kubernetes-model'
 }
 
-stage 'canary release kubernetes-client'
-releaseKubernetesClient{
-  updateDeps = updateFabric8ReleaseDeps
-  isRelease = release
+stage 'release kubernetes-model'
+modelReleasePR = release {
+   projectStagingDetails = stagedProjects
+   project = 'kubernetes-model'
 }
 
-stage 'wait for kubernetes-client to be synced with maven central'
-waitUntilArtifactSyncedWithCentral {
-  artifact = 'kubernetes-client'
+stage 'update kubernetes-client release dependency versions'
+try {
+pullRequest = bumpKubernetesClientVersions{}
+if (pullRequest != null){
+  waitUntilPullRequestMerged{
+    name = 'kubernetes-client'
+    prId = pullRequest
+  }
 }
 
-stage 'canary release fabric8'
-releaseFabric8{
-  updateDeps = updateFabric8ReleaseDeps
-  isRelease = release
+stage 'stage kubernetes-client'
+stagedProjects << stageProject{
+  project = 'kubernetes-client'
 }
 
-stage 'wait for fabric8-maven-plugin to be synced with maven central'
-waitUntilArtifactSyncedWithCentral {
-  artifact = 'fabric8-maven-plugin'
+stage 'release kubernetes-client'
+clientReleasePR = release {
+  projectStagingDetails = stagedProjects
+  project = 'kubernetes-client'
 }
 
-// running parallel builds with only one node doesnt work too well
-
-// stage 'release apps and quickstarts'
-// parallel(quickstarts: {
-//   releaseiPaaSQuickstarts{
-//     updateDeps = updateFabric8ReleaseDeps
-//   }
-// }, ipaas: {
-//   releaseiPaaSApps{
-//     updateDeps = updateFabric8ReleaseDeps
-//   }
-// }, devops:{
-//   releaseDevOpsApps{
-//     updateDeps = updateFabric8ReleaseDeps
-//   }
-// }
-// )
-
-stage 'release apps and quickstarts'
-releaseiPaaSQuickstarts{
-  updateDeps = updateFabric8ReleaseDeps
-  isRelease = release
+stage 'update fabric8 release dependency versions'
+pullRequest = bumpFabric8Versions{}
+if (pullRequest != null){
+  waitUntilPullRequestMerged{
+    name = 'fabric8'
+    prId = pullRequest
+  }
 }
 
-releaseDevOpsApps{
-  updateDeps = updateFabric8ReleaseDeps
-  isRelease = release
+stage 'stage fabric8'
+stagedProjects << stageProject{
+  project = 'fabric8'
 }
 
-releaseiPaaSApps{
-  updateDeps = updateFabric8ReleaseDeps
-  isRelease = release
+stage 'release fabric8'
+fabric8ReleasePR = release {
+  projectStagingDetails = stagedProjects
+  project = 'fabric8'
 }
 
-stage 'wait for fabric8-maven-plugin to be synced with maven central'
-waitUntilArtifactSyncedWithCentral {
-  artifact = 'archetypes/archetypes-catalog'
+stage 'bump apps and quickstarts release dependency versions'
+parallel(quickstarts: {
+  quickstartPr = bumpiPaaSQuickstartsVersions{}
+  if (quickstartPr != null){
+    waitUntilPullRequestMerged{
+      name = 'ipaas-quickstarts'
+      prId = quickstartPr
+    }
+  }
+}, devops: {
+  devopsPr = bumpDevOpsVersions{}
+  if (devopsPr != null){
+    waitUntilPullRequestMerged{
+      name = 'fabric8-devops'
+      prId = devopsPr
+    }
+  }
+}, ipaas: {
+  ipaasPr = bumpiPaaSVersions{}
+  if (ipaasPr != null){
+    waitUntilPullRequestMerged{
+      name = 'fabric8-ipaas'
+      prId = ipaasPr
+    }
+  }
+})
+
+stage 'stage apps and quickstarts release'
+parallel(quickstarts: {
+  stagedProjects << stageProject{
+    project = 'ipaas-quickstarts'
+  }
+}, devops: {
+  stagedProjects << stageProject{
+    project = 'fabric8-devops'
+  }
+}, ipaas: {
+  stagedProjects << stageProject{
+    project = 'fabric8-ipaas'
+  }
+})
+
+// stage 'run system test'
+// runSystemTests{
+//   projects = stagedProjects
+//}
+
+if (release == true){
+  // trigger pull requests
+  echo 'would be a release'
+  stage 'release'
+  parallel(ipaasQuickstarts: {
+    def quickstartsReleasePR = release {
+      projectStagingDetails = stagedProjects
+      project = 'ipaas-quickstarts'
+    }
+  }, fabric8DevOps: {
+    def devopsReleasePR = release {
+      projectStagingDetails = stagedProjects
+      project = 'fabric8-devops'
+    }
+  }, fabric8iPaaS: {
+    def ipaasReleasePR = release {
+      projectStagingDetails = stagedProjects
+      project = 'fabric8-ipaas'
+    }
+  })
+  
+  stage 'wait for fabric8 projects to be synced with maven central and release Pull Requests merged'
+  parallel(model: {
+    waitUntilArtifactSyncedWithCentral {
+      artifact = 'kubernetes-model'
+    }
+    waitUntilPullRequestMerged{
+      name = 'kubernetes-model'
+      prId = modelReleasePR
+    }
+  }, client: {
+    waitUntilArtifactSyncedWithCentral {
+      artifact = 'kubernetes-client'
+    }
+    waitUntilPullRequestMerged{
+      name = 'kubernetes-client'
+      prId = clientPRPr
+    }
+  }, fabric8: {
+    waitUntilArtifactSyncedWithCentral {
+      artifact = 'fabric8-maven-plugin'
+    }
+    waitUntilPullRequestMerged{
+      name = 'fabric8'
+      prId = fabric8ReleasePR
+    }
+  }, ipaasQuickstarts: {
+    waitUntilArtifactSyncedWithCentral {
+      artifact = 'archetypes/archetypes-catalog'
+    }
+    waitUntilPullRequestMerged{
+      name = 'ipaas-quickstarts'
+      prId = quickstartsReleasePR
+    }
+  }, fabric8DevOps: {
+    waitUntilArtifactSyncedWithCentral {
+      artifact = 'devops/distro/distro'
+    }
+    waitUntilPullRequestMerged{
+      name = 'fabric8-devops'
+      prId = devopsReleasePR
+    }
+  }, fabric8iPaaS: {
+    waitUntilArtifactSyncedWithCentral {
+      artifact = 'ipaas/distro/distro'
+    }
+    waitUntilPullRequestMerged{
+      name = 'fabric8-ipaas'
+      prId = ipaasReleasePR
+    }
+  })
+
+  stage 'tag fabric8 docker images'
+  dockerImages = 'hubot-irc' << 'eclipse-orion' << 'nexus' << 'gerrit' << 'fabric8-kiwiirc' << 'brackets' << 'jenkins-swarm-client' << 'taiga-front' << 'taiga-back' << 'hubot-slack' << 'lets-chat' << 'jenkernetes'
+  tagDockerImage{
+    images = dockerImages
+  }
+
+} else {
+  stage 'drop dryrun release'
+  dropRelease{
+    projects = stagedProjects
+  }
 }
 
-stage 'update the docs and website'
-updateDocs{
-  isRelease = release
-}
+hubotProject "release finished"

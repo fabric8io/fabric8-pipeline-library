@@ -5,12 +5,17 @@ def call(body) {
     body.delegate = config
     body()
 
+    // now build, based on the configuration provided
     node {
       def flow = new io.fabric8.Release()
-      def newVersion = flow.mavenSonartypeReleaseVersion config.artifact
 
-      waitUntil {
-        flow.mavenCentralVersion(config.artifact) == newVersion
+      ws ('test'){
+        echo 'working'
+        stagedProject.name = config.name
+        stagedProject.version = config.version
+        stagedProject.repoId = config.repoId
+
+        return stagedProject
       }
     }
 }
