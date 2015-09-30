@@ -51,7 +51,7 @@ def mavenSonartypeReleaseVersion(String artifact) {
 def searchAndReplaceMavenVersionProperty(String property, String newVersion){
   // example matches <fabric8.version>2.3</fabric8.version> <fabric8.version>2.3.12</fabric8.version> <fabric8.version>2.3.12.5</fabric8.version>
   try {
-    sh "find -type f -name 'pom.xml' | xargs sed -i -r 's/${property}[0-9][0-9]{0,2}.[0-9][0-9]{0,2}(\.[0-9][0-9]{0,2})?(\.[0-9][0-9]{0,2})?</${property}${newVersion}</g'"
+    sh "find -type f -name 'pom.xml' | xargs sed -i -r 's/${property}[0-9][0-9]{0,2}.[0-9][0-9]{0,2}(\\\.[0-9][0-9]{0,2})?(\\\.[0-9][0-9]{0,2})?</${property}${newVersion}</g'"
     sh "git commit -a -m 'Bump ${property} version'"
   } catch (err) {
     echo "Already on the latest versions of fabric8 dependencies"
@@ -61,7 +61,7 @@ def searchAndReplaceMavenVersionProperty(String property, String newVersion){
 def searchAndReplaceMavenSnapshotProfileVersionProperty(String property, String newVersion){
   // example matches <fabric8.version>2.3-SNAPSHOT</fabric8.version> <fabric8.version>2.3.12-SNAPSHOT</fabric8.version> <fabric8.version>2.3.12.5-SNAPSHOT</fabric8.version>
   try {
-    sh "find -type f -name 'pom.xml' | xargs sed -i -r 's/${property}[0-9][0-9]{0,2}.[0-9][0-9]{0,2}(\.[0-9][0-9]{0,2})?(\.[0-9][0-9]{0,2})?-SNAPSHOT</${property}${newVersion}-SNAPSHOT</g'"
+    sh "find -type f -name 'pom.xml' | xargs sed -i -r 's/${property}[0-9][0-9]{0,2}.[0-9][0-9]{0,2}(\\\.[0-9][0-9]{0,2})?(\\\.[0-9][0-9]{0,2})?-SNAPSHOT</${property}${newVersion}-SNAPSHOT</g'"
     sh "git commit -a -m 'Bump ${property} development profile SNAPSHOT version'"
   } catch (err) {
     echo "Already on the latest SNAPSHOT versions of fabric8 dependencies"
