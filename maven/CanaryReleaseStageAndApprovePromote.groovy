@@ -47,6 +47,9 @@ node {
       promoteDomain = "${env.JOB_NAME}.${env.KUBERNETES_DOMAIN ?: 'prod.vagrant.f8'}"
     }
 
+    def flow = new io.fabric8.Release()
+    def fabricMavenPluginVersion = flow.getReleaseVersion "fabric8-maven-plugin"
+
     def canaryVersion = "${versionPrefix}.${env.BUILD_NUMBER}"
     sh "git checkout -b ${env.JOB_NAME}-${canaryVersion}"
     sh "mvn org.codehaus.mojo:versions-maven-plugin:2.2:set -DnewVersion=${canaryVersion}"
@@ -79,7 +82,7 @@ node {
 
     // now lets stage it
     echo "Staging to kubernetes environment ${stageNamespace} in domain ${stageDomain}"
-    sh "mvn io.fabric8:fabric8-maven-plugin:2.2.35:json io.fabric8:fabric8-maven-plugin:2.2.35:apply -Dfabric8.namespace=${stageNamespace} -Dfabric8.domain=${stageDomain} -Dfabric8.dockerUser=fabric8/"
+    sh "mvn io.fabric8:fabric8-maven-plugin:${fabricMavenPluginVersion}:json io.fabric8:fabric8-maven-plugin:${fabricMavenPluginVersion}:apply -Dfabric8.namespace=${stageNamespace} -Dfabric8.domain=${stageDomain} -Dfabric8.dockerUser=fabric8/"
 
     stage 'approve'
 
@@ -95,7 +98,7 @@ Would you like to promote version ${canaryVersion} to the ${promoteNamespace} na
     stage 'promote'
 
     echo "Promoting to kubernetes environment ${promoteNamespace} in domain ${promoteDomain}"
-    sh "mvn io.fabric8:fabric8-maven-plugin:2.2.35:apply -Dfabric8.namespace=${promoteNamespace} -Dfabric8.domain=${promoteDomain} -Dfabric8.dockerUser=fabric8/"
+    sh "mvn io.fabric8:fabric8-maven-plugin:${fabricMavenPluginVersion}:apply -Dfabric8.namespace=${promoteNamespace} -Dfabric8.domain=${promoteDomain} -Dfabric8.dockerUser=fabric8/"
 
     echo """
 
