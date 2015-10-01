@@ -34,6 +34,10 @@ node {
     def fabric8Console = "${env.FABRIC8_CONSOLE ?: ''}"
 
     def canaryVersion = "${versionPrefix}.${env.BUILD_NUMBER}"
+
+    def flow = new io.fabric8.Release()
+    def fabricMavenPluginVersion = flow.getReleaseVersion "fabric8-maven-plugin"
+
     sh "git checkout -b ${env.JOB_NAME}-${canaryVersion}"
     sh "mvn org.codehaus.mojo:versions-maven-plugin:2.2:set -DnewVersion=${canaryVersion}"
     sh 'mvn clean install -U org.apache.maven.plugins:maven-deploy-plugin:2.8.2:deploy org.jolokia:docker-maven-plugin:0.13.2:build -Dfabric8.dockerUser=fabric8/'
@@ -63,7 +67,7 @@ node {
     stage 'stage'
 
     echo "Now staging to kubernetes environment ${stageNamespace} in domain ${stageDomain}"
-    sh "mvn io.fabric8:fabric8-maven-plugin:2.2.35:json io.fabric8:fabric8-maven-plugin:2.2.35:apply -Dfabric8.namespace=${stageNamespace} -Dfabric8.domain=${stageDomain} -Dfabric8.dockerUser=fabric8/"
+    sh "mvn io.fabric8:fabric8-maven-plugin:${fabricMavenPluginVersion}:json io.fabric8:fabric8-maven-plugin:${fabricMavenPluginVersion}:apply -Dfabric8.namespace=${stageNamespace} -Dfabric8.domain=${stageDomain} -Dfabric8.dockerUser=fabric8/"
 
     echo """
 
