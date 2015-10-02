@@ -24,7 +24,7 @@ def call(body) {
         }
 
         //if (flow.hasChangedSinceLastRelease()){
-        flow.release ("release,archetypes", config.isRelease)
+        flow.release ("release,quickstarts", config.isRelease)
         flow.updateGithub(config.isRelease)
         //}
       }
