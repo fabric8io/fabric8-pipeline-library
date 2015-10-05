@@ -1,4 +1,4 @@
-node('swarm') {
+node {
   git GIT_URL
 
   // lets install maven onto the path
