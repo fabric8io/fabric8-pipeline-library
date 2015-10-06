@@ -100,9 +100,9 @@ def dockerPush (String commaDelimetedProfiles, String isRelease) {
 }
 
 def release (String commaDelimetedProfiles, String isRelease) {
-  retry(3){
-    sh "mvn -V -B -U clean install org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:deploy -P ${commaDelimetedProfiles} -DnexusUrl=https://oss.sonatype.org -DserverId=oss-sonatype-staging"
-  }
+
+  sh "mvn -V -B -U clean install org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:deploy -P ${commaDelimetedProfiles} -DnexusUrl=https://oss.sonatype.org -DserverId=oss-sonatype-staging"
+
   // the sonartype staging repo id gets written to a file in the workspace
   def repoIds = getRepoIds()
 
