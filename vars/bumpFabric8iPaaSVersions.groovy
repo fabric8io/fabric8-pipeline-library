@@ -6,7 +6,7 @@ def call(body) {
   body()
 
   def project = 'fabric8-ipaas'
-  node {
+  node (swarm){
     ws (project){
       withEnv(["PATH+MAVEN=${tool 'maven-3.3.1'}/bin"]) {
 

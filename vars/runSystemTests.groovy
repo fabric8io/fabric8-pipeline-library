@@ -9,7 +9,7 @@ def call(body) {
   for(int i = 0; i < stagedProjects.size(); i++){
     // currently system tests only exist fot fabric8-devops
     if (stagedProjects[i].name == 'fabric8-devops'){
-      node {
+      node (swarm){
         ws (stagedProjects[i].name){
           withEnv(["PATH+MAVEN=${tool 'maven-3.3.1'}/bin"]) {
 

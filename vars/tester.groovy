@@ -6,7 +6,7 @@ def call(body) {
     body()
 
     // now build, based on the configuration provided
-    node {
+    node (swarm){
       def flow = new io.fabric8.Release()
 
       ws ('test'){

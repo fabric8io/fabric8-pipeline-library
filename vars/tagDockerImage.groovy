@@ -5,7 +5,7 @@ def call(body) {
     body.delegate = config
     body()
 
-    node {
+    node (swarm){
       ws ('tag'){
         def flow = new io.fabric8.Release()
         def tag = flow.getReleaseVersion('devops/distro/distro')
@@ -19,7 +19,7 @@ def call(body) {
             sg "docker tag docker.io/fabric8/${image}:release docker.io/fabric8/${image}:${tag}"
             sh "docker push docker.io/fabric8/${image}:${tag}"
           } catch (err) {
-            hubotProject "WARNING No release tag found for image ${image} so unable to tag new version" 
+            hubotProject "WARNING No release tag found for image ${image} so unable to tag new version"
           }
         }
       }

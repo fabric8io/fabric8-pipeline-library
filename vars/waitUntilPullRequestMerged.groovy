@@ -7,7 +7,7 @@ def call(body) {
     body.delegate = config
     body()
 
-    node {
+    node (swarm){
       ws (config.name){
         def flow = new io.fabric8.Release()
         flow.setupWorkspace (config.name)

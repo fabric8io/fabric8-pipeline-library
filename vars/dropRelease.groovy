@@ -7,7 +7,7 @@ def call(body) {
 
     // loop over each staged project and delete release branch and nexus staged repo
     for(int i = 0; i < config.projects.size(); i++){
-      node {
+      node (swarm){
         ws (config.projects[i].name){
           withEnv(["PATH+MAVEN=${tool 'maven-3.3.1'}/bin"]) {
             flow.dropStagingRepo(config.projects[i].repoId)
