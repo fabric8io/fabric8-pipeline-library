@@ -24,12 +24,6 @@ def getPullRequestState(String project, String id){
   return pr.state
 }
 
-def getBranchName(String project, String id){
-  def gitRepo = getGitRepo()
-  def pr = new JsonSlurper().parse("https://api.github.com/repos/${gitRepo}/${project}/pulls/${id}")
-  return pr.head.ref
-}
-
 def getRepoIds() {
   // we could have multiple staging repos created, we need to write the names of all the generated files to a well known
   // filename so we can use the workflow readFile (wildcards wont works and new File wont with slaves as groovy is executed on the master jenkins
@@ -68,22 +62,14 @@ def mavenSonartypeReleaseVersion(String artifact) {
 
 def searchAndReplaceMavenVersionProperty(String property, String newVersion){
   // example matches <fabric8.version>2.3</fabric8.version> <fabric8.version>2.3.12</fabric8.version> <fabric8.version>2.3.12.5</fabric8.version>
-  try {
-    sh "find -type f -name 'pom.xml' | xargs sed -i -r 's/${property}[0-9][0-9]{0,2}.[0-9][0-9]{0,2}(.[0-9][0-9]{0,2})?(.[0-9][0-9]{0,2})?</${property}${newVersion}</g'"
-    sh "git commit -a -m 'Bump ${property} version'"
-  } catch (err) {
-    echo "Already on the latest versions of fabric8 dependencies"
-  }
+  sh "find -type f -name 'pom.xml' | xargs sed -i -r 's/${property}[0-9][0-9]{0,2}.[0-9][0-9]{0,2}(.[0-9][0-9]{0,2})?(.[0-9][0-9]{0,2})?</${property}${newVersion}</g'"
+  sh "git commit -a -m 'Bump ${property} version'"
 }
 
 def searchAndReplaceMavenSnapshotProfileVersionProperty(String property, String newVersion){
   // example matches <fabric8.version>2.3-SNAPSHOT</fabric8.version> <fabric8.version>2.3.12-SNAPSHOT</fabric8.version> <fabric8.version>2.3.12.5-SNAPSHOT</fabric8.version>
-  try {
-    sh "find -type f -name 'pom.xml' | xargs sed -i -r 's/${property}[0-9][0-9]{0,2}.[0-9][0-9]{0,2}(.[0-9][0-9]{0,2})?(.[0-9][0-9]{0,2})?-SNAPSHOT</${property}${newVersion}-SNAPSHOT</g'"
-    sh "git commit -a -m 'Bump ${property} development profile SNAPSHOT version'"
-  } catch (err) {
-    echo "Already on the latest SNAPSHOT versions of fabric8 dependencies"
-  }
+  sh "find -type f -name 'pom.xml' | xargs sed -i -r 's/${property}[0-9][0-9]{0,2}.[0-9][0-9]{0,2}(.[0-9][0-9]{0,2})?(.[0-9][0-9]{0,2})?-SNAPSHOT</${property}${newVersion}-SNAPSHOT</g'"
+  sh "git commit -a -m 'Bump ${property} development profile SNAPSHOT version'"
 }
 
 def setupWorkspace(String project){
@@ -100,7 +86,6 @@ def setupWorkspace(String project){
 
 def setupWorkspaceForRelease(String project){
   setupWorkspace (project)
-
 
   sh "git tag -d \$(git tag)"
   sh "git fetch --tags"
@@ -122,7 +107,9 @@ def dockerPush () {
 }
 
 def stageSonartypeRepo () {
-  sh "mvn -V -B -U clean install org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:deploy -P release -DnexusUrl=https://oss.sonatype.org -DserverId=oss-sonatype-staging"
+  retry(3){
+    sh "mvn -V -B -U clean install org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:deploy -P release -DnexusUrl=https://oss.sonatype.org -DserverId=oss-sonatype-staging"
+  }
   // the sonartype staging repo id gets written to a file in the workspace
   return getRepoIds()
 }

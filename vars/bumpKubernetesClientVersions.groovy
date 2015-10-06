@@ -16,9 +16,16 @@ def call(body) {
         def uid = UUID.randomUUID().toString()
         sh "git checkout -b versionUpdate${uid}"
 
-        // bump dependency versions from the previous stage
-        def kubernetesModelVersion = flow.getReleaseVersion "kubernetes-model"
-        flow.searchAndReplaceMavenVersionProperty("<kubernetes.model.version>", kubernetesModelVersion)
+        try{
+          // bump dependency versions from the previous stage
+          def kubernetesModelVersion = flow.getReleaseVersion "kubernetes-model"
+          flow.searchAndReplaceMavenVersionProperty("<kubernetes.model.version>", kubernetesModelVersion)
+
+        } catch (err) {
+          echo "Already on the latest versions of kubernetes-model"
+          // only make a pull request if we've updated a version
+          return
+        }
 
         sh "git push origin versionUpdate${uid}"
         return flow.createPullRequest("[CD] Update release dependencies")

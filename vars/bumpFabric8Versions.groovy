@@ -16,15 +16,30 @@ def call(body) {
         def uid = UUID.randomUUID().toString()
         sh "git checkout -b versionUpdate${uid}"
 
-        // bump fabric8 release dependency versions
-        def kubernetesModelVersion = flow.getReleaseVersion 'kubernetes-model'
-        flow.searchAndReplaceMavenVersionProperty('<kubernetes-model.version>', kubernetesModelVersion)
+        def updated = false
+        try {
+          // bump fabric8 release dependency versions
+          def kubernetesModelVersion = flow.getReleaseVersion 'kubernetes-model'
+          flow.searchAndReplaceMavenVersionProperty('<kubernetes-model.version>', kubernetesModelVersion)
+          updated = true
+        } catch (err) {
+          echo "Already on the latest versions of kubernetes-model"
+        }
 
-        def kubernetesClientVersion = flow.getReleaseVersion 'kubernetes-client'
-        flow.searchAndReplaceMavenVersionProperty('<kubernetes-client.version>', kubernetesClientVersion)
-
-        sh "git push origin versionUpdate${uid}"
-        return flow.createPullRequest("[CD] Update release dependencies")
+        try {
+          def kubernetesClientVersion = flow.getReleaseVersion 'kubernetes-client'
+          flow.searchAndReplaceMavenVersionProperty('<kubernetes-client.version>', kubernetesClientVersion)
+          updated = true
+        } catch (err) {
+          echo "Already on the latest versions of kubernetes-client"
+        }
+        // only make a pull request if we've updated a version
+        if updated {
+          sh "git push origin versionUpdate${uid}"
+          return flow.createPullRequest("[CD] Update release dependencies")
+        } else {
+          return
+        }
       }
     }
   }
