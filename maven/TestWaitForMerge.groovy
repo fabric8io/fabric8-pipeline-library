@@ -3,6 +3,6 @@ def stagedRepo = []
 
 stage 'one'
 waitUntilPullRequestMerged{
-  name = 'kubernetes-client'
-  prId = '3'
+  name = 'fabric8-devops'
+  prId = '79'
 }

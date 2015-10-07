@@ -19,7 +19,7 @@ def call(body) {
             sg "docker tag docker.io/fabric8/${image}:release docker.io/fabric8/${image}:${tag}"
             sh "docker push docker.io/fabric8/${image}:${tag}"
           } catch (err) {
-            hubotProject "WARNING No release tag found for image ${image} so unable to tag new version"
+            hubot room: 'release', message: "WARNING No release tag found for image ${image} so unable to tag new version"
           }
         }
       }

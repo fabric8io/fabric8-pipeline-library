@@ -36,7 +36,8 @@ def call(body) {
             git commit -a -m 'resolved merge issues caused by release dependency updates'
             git push origin fixPR${config.prId}:${branchName}
             """
-            hubotProject message
+
+            hubot room: 'release', message: message
             notified = true
           }
           pr.merged == true
