@@ -6,7 +6,7 @@ def call(body) {
   body()
 
   def project = 'fabric8-devops'
-  node (swarm){
+  node ('swarm'){
     ws (project){
       withEnv(["PATH+MAVEN=${tool 'maven-3.3.1'}/bin"]) {
 
@@ -35,10 +35,14 @@ def call(body) {
         }
 
         // only make a pull request if we've updated a version
-        if updated {
+        if (updated) {
           sh "git push origin versionUpdate${uid}"
-          return flow.createPullRequest("[CD] Update release dependencies")
+          prId = flow.createPullRequest("[CD] Update release dependencies")
+          echo "received pull request id ${prId}"
+          return prId
         } else {
+          message = "fabric8-devops already on the latest release versions"
+          hubot room: 'release', message: message
           return
         }
       }

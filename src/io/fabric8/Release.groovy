@@ -3,7 +3,7 @@ package io.fabric8;
 import groovy.json.JsonSlurper
 
 def getGitRepo(){
-  'rawlingsj'
+  'fabric8io'
 }
 
 def getProjectVersion(){
@@ -96,19 +96,29 @@ def setupWorkspaceForRelease(String project){
 
   sh "git checkout -b release-v${releaseVersion}"
 
+  // delete any previous branches of this release
+  try {
+    deleteRemoteBranch("release-v${releaseVersion}")
+  } catch (err){
+  }
+
   sh "git commit -a -m '[CD] released v${releaseVersion}'"
 }
 
 def dockerPush () {
   // intermittent errors can occur when pushing to dockerhub
   retry(3){
+    //sh 'docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD -e fabric8-admin@googlegroups.com'
     sh "mvn docker:push -P release"
   }
 }
 
 def stageSonartypeRepo () {
-  retry(3){
+  try {
     sh "mvn -V -B -U clean install org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:deploy -P release -DnexusUrl=https://oss.sonatype.org -DserverId=oss-sonatype-staging"
+  } catch (err) {
+    hubot room: 'release', message: "Release failed when building and deploying to Nexus ${err}"
+    currentBuild.result = 'FAILURE'
   }
   // the sonartype staging repo id gets written to a file in the workspace
   return getRepoIds()
@@ -117,21 +127,18 @@ def stageSonartypeRepo () {
 def releaseSonartypeRepo(String repoId){
   try {
     // release the sonartype staging repo
-    for(int i = 0; i < repoIds.size(); i++){
-      sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-release -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoIds[i]} -Ddescription=\"Next release is ready\" -DstagingProgressTimeoutMinutes=60"
-    }
+    sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-release -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoId} -Ddescription=\"Next release is ready\" -DstagingProgressTimeoutMinutes=60"
+
   } catch (err) {
-    for(int i = 0; i < repoIds.size(); i++){
-      sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-drop -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoIds[i]} -Ddescription=\"Error during release: ${err}\" -DstagingProgressTimeoutMinutes=60"
-      currentBuild.result = 'FAILURE'
-    }
+    sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-drop -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoId} -Ddescription=\"Error during release: ${err}\" -DstagingProgressTimeoutMinutes=60"
+    currentBuild.result = 'FAILURE'
     return
   }
 }
 
-def dropRelease(String id){
-  echo "Not a release so dropping staging repo ${id}"
-  sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-drop -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoIds[i]} -Ddescription=\"Dry run\" -DstagingProgressTimeoutMinutes=60"
+def dropStagingRepo(String repoId){
+  echo "Not a release so dropping staging repo ${repoId}"
+  sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-drop -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoId} -Ddescription=\"Dry run\" -DstagingProgressTimeoutMinutes=60"
 }
 
 def updateGithub(){
@@ -141,11 +148,13 @@ def updateGithub(){
   sh "git tag -a v${releaseVersion} -m 'Release version ${releaseVersion}'"
   sh "git push origin release-v${releaseVersion}"
 
+}
+
+def updateNextDevelopmentVersion(String releaseVersion){
   // update poms back to snapshot again
   sh 'mvn build-helper:parse-version versions:set -DnewVersion=\\\${parsedVersion.majorVersion}.\\\${parsedVersion.minorVersion}.\\\${parsedVersion.nextIncrementalVersion}-SNAPSHOT'
   def snapshotVersion = getProjectVersion()
   sh "git commit -a -m '[CD] prepare for next development iteration ${snapshotVersion}'"
-
   sh "git push origin release-v${releaseVersion}"
 }
 
@@ -168,7 +177,7 @@ def getOldVersion(){
 
 def updateDocsAndSite(String newVersion){
   // get previous version
-  def oldVersion = flow.getOldVersion()
+  def oldVersion = getOldVersion()
 
   if (oldVersion == null){
     echo "No previous version found"
@@ -188,11 +197,10 @@ def runSystemTests(){
 }
 
 def createPullRequest(String message){
-  sh 'hub pull-request -m \"${message}\" > pr.txt'
-  def pr = readFile(pr.txt)
-  sh 'rm pr.txt'
-  def split = pr.split('\\/')
-  return split[7]
+  sh "hub pull-request -m \"${message}\" > pr.txt"
+  pr = readFile('pr.txt')
+  split = pr.split('\\/')
+  return split[6]
 }
 
 def deleteRemoteBranch(String branchName){

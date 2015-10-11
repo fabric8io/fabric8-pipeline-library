@@ -6,7 +6,7 @@ def call(body) {
   body()
 
 
-  node (swarm){
+  node ('swarm'){
     ws (config.project){
       withEnv(["PATH+MAVEN=${tool 'maven-3.3.1'}/bin"]) {
 
@@ -19,14 +19,10 @@ def call(body) {
         }
 
         def repoId = flow.stageSonartypeRepo()
-
-        stagedProject.name = config.project
-        stagedProject.version = flow.getProjectVersion()
-        stagedProject.repoId = repoId
-
+        releaseVersion = flow.getProjectVersion()
         flow.updateGithub ()
 
-        return stagedProject
+        return [config.project, releaseVersion, repoId]
       }
     }
   }

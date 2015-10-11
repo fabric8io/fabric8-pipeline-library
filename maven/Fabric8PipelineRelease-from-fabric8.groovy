@@ -60,6 +60,8 @@ try {
     }
   })
 
+  // add human approval
+
   stage 'stage apps and quickstarts release'
   parallel(quickstarts: {
     stagedProjects << stageProject{

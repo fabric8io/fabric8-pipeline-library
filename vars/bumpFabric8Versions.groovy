@@ -6,7 +6,7 @@ def call(body) {
   body()
 
   def project = 'fabric8'
-  node (swarm){
+  node ('swarm'){
     ws (project){
       withEnv(["PATH+MAVEN=${tool 'maven-3.3.1'}/bin"]) {
 
@@ -34,10 +34,12 @@ def call(body) {
           echo "Already on the latest versions of kubernetes-client"
         }
         // only make a pull request if we've updated a version
-        if updated {
+        if (updated) {
           sh "git push origin versionUpdate${uid}"
           return flow.createPullRequest("[CD] Update release dependencies")
         } else {
+          message = "fabric8 already on the latest release versions"
+          hubot room: 'release', message: message
           return
         }
       }

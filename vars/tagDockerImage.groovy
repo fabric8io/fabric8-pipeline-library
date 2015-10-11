@@ -5,22 +5,25 @@ def call(body) {
     body.delegate = config
     body()
 
-    node (swarm){
+    node ('swarm'){
       ws ('tag'){
         def flow = new io.fabric8.Release()
         def tag = flow.getReleaseVersion('devops/distro/distro')
 
         for(int i = 0; i < config.images.size(); i++){
           image = config.images[i]
-          sh "docker pull docker.io/fabric8/${image}:release"
 
           // first try and find an image marked as release
           try {
-            sg "docker tag docker.io/fabric8/${image}:release docker.io/fabric8/${image}:${tag}"
-            sh "docker push docker.io/fabric8/${image}:${tag}"
+            sh "docker pull docker.io/fabric8/${image}:staged"
+            sh "docker tag -f docker.io/fabric8/${image}:staged docker.io/fabric8/${image}:${tag}"
           } catch (err) {
-            hubot room: 'release', message: "WARNING No release tag found for image ${image} so unable to tag new version"
+            hubot room: 'release', message: "WARNING No staged tag found for image ${image} so will apply release tag to :latest"
+            sh "docker pull docker.io/fabric8/${image}:latest"
+            sh "docker tag -f docker.io/fabric8/${image}:latest docker.io/fabric8/${image}:${tag}"
           }
+
+          sh "docker push -f docker.io/fabric8/${image}:${tag}"
         }
       }
     }
