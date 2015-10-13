@@ -1,23 +1,33 @@
-def updateFabric8ReleaseDeps = ""
+def stagedProjects = []
+
+hubot room: 'release', message: "starting Kubernetes Model release"
 try {
-  updateFabric8ReleaseDeps = UPDATE_FABRIC8_RELEASE_DEPENDENCIES
-} catch (Throwable e) {
-  updateFabric8ReleaseDeps = "${env.UPDATE_FABRIC8_RELEASE_DEPENDENCIES ?: 'false'}"
-}
+  stage 'update kubernetes-client release dependency versions'
+  String clientPullRequest = bumpKubernetesClientVersions{}
+  if (clientPullRequest != null){
+    waitUntilPullRequestMerged{
+      name = 'kubernetes-client'
+      prId = clientPullRequest
+    }
+  }
 
-def release = ""
-try {
-  release = IS_RELEASE
-} catch (Throwable e) {
-  release = "${env.IS_RELEASE ?: 'true'}"
-}
+  stage 'stage kubernetes-client'
+  stagedProjects << stageProject{
+    project = 'kubernetes-client'
+  }
 
-stage 'canary release kubernetes-model'
-releaseKubernetesModel{
-  isRelease = release
-}
+  stage 'release kubernetes-client'
+  clientReleasePR = releaseFabric8 {
+    projectStagingDetails = stagedProjects
+    project = 'kubernetes-client'
+  }
+  stagedProjects = []
+  waitUntilArtifactSyncedWithCentral {
+    artifact = 'kubernetes-client'
+  }
 
-stage 'wait for kubernetes-model to be synced with maven central'
-waitUntilArtifactSyncedWithCentral {
-  artifact = 'kubernetes-model'
+  hubot room: 'release', message: "Kubernetes Model release was successful"
+} catch (err){
+    hubot room: 'release', message: "Kubernetes Model release failed ${err}"
+    currentBuild.result = 'FAILURE'
 }
