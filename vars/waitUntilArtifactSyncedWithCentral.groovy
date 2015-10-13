@@ -5,12 +5,16 @@ def call(body) {
     body.delegate = config
     body()
 
-    node {
+    node ('swarm'){
       def flow = new io.fabric8.Release()
       def newVersion = flow.mavenSonartypeReleaseVersion config.artifact
 
       waitUntil {
         flow.mavenCentralVersion(config.artifact) == newVersion
       }
+
+      message =  "${config.artifact} released and available in maven central"
+      hubot room: 'release', message: message
+
     }
 }
