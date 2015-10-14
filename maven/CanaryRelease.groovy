@@ -16,6 +16,6 @@ node ('swarm'){
     def canaryVersion = "${versionPrefix}.${env.BUILD_NUMBER}"
     sh "git checkout -b ${env.JOB_NAME}-${canaryVersion}"
     sh "mvn org.codehaus.mojo:versions-maven-plugin:2.2:set -DnewVersion=${canaryVersion}"
-    sh 'mvn clean install org.apache.maven.plugins:maven-deploy-plugin:2.8.2:deploy org.jolokia:docker-maven-plugin:0.13.2:build -Dfabric8.dockerUser=fabric8'
+    sh 'mvn clean install org.apache.maven.plugins:maven-deploy-plugin:2.8.2:deploy org.jolokia:docker-maven-plugin:0.13.2:build -Dfabric8.dockerUser=fabric8 -Ddocker.registryPrefix=docker.io/'
    }
 }
