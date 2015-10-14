@@ -8,11 +8,11 @@ try {
   }
 
   stage 'release kubernetes-model'
-  modelReleasePR = release {
+  modelReleasePR = releaseFabric8 {
      projectStagingDetails = stagedProjects
      project = 'kubernetes-model'
   }
-  
+
   stage 'wait for sync with central'
   waitUntilArtifactSyncedWithCentral {
     artifact = 'kubernetes-model'
