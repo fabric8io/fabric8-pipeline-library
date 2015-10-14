@@ -7,8 +7,72 @@ try {
 
 def stagedProjects = []
 
-hubot room: 'release', message: "starting release"
+hubot room: 'release', message: "starting full release pipeline"
 try {
+
+  stage 'stage kubernetes-model'
+  stagedProjects << stageProject{
+    project = 'kubernetes-model'
+  }
+
+  stage 'release kubernetes-model'
+  modelReleasePR = release {
+     projectStagingDetails = stagedProjects
+     project = 'kubernetes-model'
+  }
+  waitUntilArtifactSyncedWithCentral {
+    artifact = 'kubernetes-model'
+  }
+  stagedProjects = []
+
+  stage 'update kubernetes-client release dependency versions'
+  String clientPullRequest = bumpKubernetesClientVersions{}
+  if (clientPullRequest != null){
+    waitUntilPullRequestMerged{
+      name = 'kubernetes-client'
+      prId = clientPullRequest
+    }
+  }
+
+  stage 'stage kubernetes-client'
+  stagedProjects << stageProject{
+    project = 'kubernetes-client'
+  }
+
+  stage 'release kubernetes-client'
+  clientReleasePR = releaseFabric8 {
+    projectStagingDetails = stagedProjects
+    project = 'kubernetes-client'
+  }
+  stagedProjects = []
+  waitUntilArtifactSyncedWithCentral {
+    artifact = 'kubernetes-client'
+  }
+
+  stage 'update fabric8 release dependency versions'
+  String fabric8PullRequest = bumpFabric8Versions{}
+  if (fabric8PullRequest != null){
+    waitUntilPullRequestMerged{
+      name = 'fabric8'
+      prId = fabric8PullRequest
+    }
+  }
+
+  stage 'stage fabric8'
+  stagedProjects << stageProject{
+    project = 'fabric8'
+  }
+
+  stage 'release fabric8'
+  fabric8ReleasePR = releaseFabric8 {
+    projectStagingDetails = stagedProjects
+    project = 'fabric8'
+  }
+  stagedProjects = []
+  waitUntilArtifactSyncedWithCentral {
+    artifact = 'fabric8-maven-plugin'
+  }
+
   stage 'bump apps and quickstarts release dependency versions'
   parallel(quickstarts: {
     String quickstartPr = bumpiPaaSQuickstartsVersions{}
@@ -71,8 +135,6 @@ try {
         }
       })
 
-
-
   stage 'wait for fabric8 projects to be synced with maven central and release Pull Requests merged'
    parallel(ipaasQuickstarts: {
       waitUntilArtifactSyncedWithCentral {
@@ -104,7 +166,7 @@ try {
       }
    })
 
-    stage 'tag fabric8 docker images'
+    stage 'tag fabric8-devops docker images'
     tagDockerImage{
       images = ['hubot-irc','eclipse-orion','nexus','gerrit','fabric8-kiwiirc','brackets','jenkins-swarm-client','taiga-front','taiga-back','hubot-slack','lets-chat','jenkernetes']
     }
@@ -116,7 +178,7 @@ try {
     }
   }
 
-  hubot room: 'release', message: "Release was successful"
+  hubot room: 'release', message: "Successfully finished full release pipeline"
 } catch (err){
     hubot room: 'release', message: "Release failed ${err}"
     currentBuild.result = 'FAILURE'
