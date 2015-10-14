@@ -2,7 +2,25 @@ def stagedProjects = []
 
 hubot room: 'release', message: "starting Kubernetes Model release"
 try {
-  stage 'update kubernetes-client release dependency versions'
+  stage 'stage kubernetes-model'
+  stagedProjects << stageProject{
+    project = 'kubernetes-model'
+  }
+
+  stage 'release kubernetes-model'
+  modelReleasePR = release {
+     projectStagingDetails = stagedProjects
+     project = 'kubernetes-model'
+  }
+  
+  stage 'wait for sync with central'
+  waitUntilArtifactSyncedWithCentral {
+    artifact = 'kubernetes-model'
+  }
+
+  hubot room: 'release', message: "Kubernetes Model release was successful"
+
+  stage 'update kubernetes-client'
   String clientPullRequest = bumpKubernetesClientVersions{}
   if (clientPullRequest != null){
     waitUntilPullRequestMerged{
@@ -11,22 +29,7 @@ try {
     }
   }
 
-  stage 'stage kubernetes-client'
-  stagedProjects << stageProject{
-    project = 'kubernetes-client'
-  }
-
-  stage 'release kubernetes-client'
-  clientReleasePR = releaseFabric8 {
-    projectStagingDetails = stagedProjects
-    project = 'kubernetes-client'
-  }
-  stagedProjects = []
-  waitUntilArtifactSyncedWithCentral {
-    artifact = 'kubernetes-client'
-  }
-
-  hubot room: 'release', message: "Kubernetes Model release was successful"
+  hubot room: 'release', message: "Kubernetes Model version updated in Kubernetes Client"
 } catch (err){
     hubot room: 'release', message: "Kubernetes Model release failed ${err}"
     currentBuild.result = 'FAILURE'
