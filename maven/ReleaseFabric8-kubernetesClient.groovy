@@ -2,22 +2,6 @@ def stagedProjects = []
 
 hubot room: 'release', message: "starting kubernetes client release"
 try {
-
-  stage 'stage kubernetes-model'
-  stagedProjects << stageProject{
-    project = 'kubernetes-model'
-  }
-
-  stage 'release kubernetes-model'
-  modelReleasePR = release {
-     projectStagingDetails = stagedProjects
-     project = 'kubernetes-model'
-  }
-  waitUntilArtifactSyncedWithCentral {
-    artifact = 'kubernetes-model'
-  }
-  stagedProjects = []
-
   stage 'update kubernetes-client release dependency versions'
   String clientPullRequest = bumpKubernetesClientVersions{}
   if (clientPullRequest != null){
@@ -38,6 +22,8 @@ try {
     project = 'kubernetes-client'
   }
   stagedProjects = []
+
+  stage 'waiting for kubernetes-client to be synced with central'
   waitUntilArtifactSyncedWithCentral {
     artifact = 'kubernetes-client'
   }
