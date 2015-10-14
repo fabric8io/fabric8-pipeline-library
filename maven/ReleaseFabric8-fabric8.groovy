@@ -2,45 +2,6 @@ def stagedProjects = []
 
 hubot room: 'release', message: "starting fabric8 project release"
 try {
-  stage 'stage kubernetes-model'
-  stagedProjects << stageProject{
-    project = 'kubernetes-model'
-  }
-
-  stage 'release kubernetes-model'
-  modelReleasePR = release {
-     projectStagingDetails = stagedProjects
-     project = 'kubernetes-model'
-  }
-  waitUntilArtifactSyncedWithCentral {
-    artifact = 'kubernetes-model'
-  }
-  stagedProjects = []
-
-  stage 'update kubernetes-client release dependency versions'
-  String clientPullRequest = bumpKubernetesClientVersions{}
-  if (clientPullRequest != null){
-    waitUntilPullRequestMerged{
-      name = 'kubernetes-client'
-      prId = clientPullRequest
-    }
-  }
-
-  stage 'stage kubernetes-client'
-  stagedProjects << stageProject{
-    project = 'kubernetes-client'
-  }
-
-  stage 'release kubernetes-client'
-  clientReleasePR = releaseFabric8 {
-    projectStagingDetails = stagedProjects
-    project = 'kubernetes-client'
-  }
-  stagedProjects = []
-  waitUntilArtifactSyncedWithCentral {
-    artifact = 'kubernetes-client'
-  }
-
   stage 'update fabric8 release dependency versions'
   String fabric8PullRequest = bumpFabric8Versions{}
   if (fabric8PullRequest != null){
