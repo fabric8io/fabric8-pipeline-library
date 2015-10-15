@@ -9,7 +9,6 @@ def stagedProjects = []
 
 hubot room: 'release', message: "starting release pipeline from kubernetes-client"
 try {
-  stage 'update kubernetes-client release dependency versions'
   String clientPullRequest = bumpKubernetesClientVersions{}
   if (clientPullRequest != null){
     waitUntilPullRequestMerged{
@@ -18,22 +17,20 @@ try {
     }
   }
 
-  stage 'stage kubernetes-client'
   stagedProjects << stageProject{
     project = 'kubernetes-client'
   }
 
-  stage 'release kubernetes-client'
   clientReleasePR = releaseFabric8 {
     projectStagingDetails = stagedProjects
     project = 'kubernetes-client'
   }
+
   stagedProjects = []
   waitUntilArtifactSyncedWithCentral {
     artifact = 'kubernetes-client'
   }
 
-  stage 'update fabric8 release dependency versions'
   String fabric8PullRequest = bumpFabric8Versions{}
   if (fabric8PullRequest != null){
     waitUntilPullRequestMerged{
@@ -47,7 +44,6 @@ try {
     project = 'fabric8'
   }
 
-  stage 'release fabric8'
   fabric8ReleasePR = releaseFabric8 {
     projectStagingDetails = stagedProjects
     project = 'fabric8'
@@ -57,7 +53,6 @@ try {
     artifact = 'fabric8-maven-plugin'
   }
 
-  stage 'bump apps and quickstarts release dependency versions'
   parallel(quickstarts: {
     String quickstartPr = bumpiPaaSQuickstartsVersions{}
     if (quickstartPr != null){
@@ -84,7 +79,6 @@ try {
     }
   })
 
-  stage 'stage apps and quickstarts release'
   parallel(quickstarts: {
     stagedProjects << stageProject{
       project = 'ipaas-quickstarts'
@@ -122,7 +116,6 @@ try {
         }
       })
 
-  stage 'wait for fabric8 projects to be synced with maven central and release Pull Requests merged'
    parallel(ipaasQuickstarts: {
       waitUntilArtifactSyncedWithCentral {
         artifact = 'archetypes/archetypes-catalog'
@@ -142,6 +135,10 @@ try {
         name = 'fabric8-devops'
         prId = devopsReleasePR
       }
+      tagDockerImage{
+        project = 'fabric8-devops'
+      }
+
     }, fabric8iPaaS: {
       waitUntilArtifactSyncedWithCentral {
         artifact = 'ipaas/distro/distro'
@@ -153,13 +150,7 @@ try {
       }
    })
 
-    stage 'tag fabric8-devops docker images'
-    tagDockerImage{
-      images = ['hubot-irc','eclipse-orion','nexus','gerrit','fabric8-kiwiirc','brackets','jenkins-swarm-client','taiga-front','taiga-back','hubot-slack','lets-chat','jenkernetes']
-    }
-
   } else {
-    stage 'drop dryrun release'
     dropRelease{
       projects = stagedProjects
     }

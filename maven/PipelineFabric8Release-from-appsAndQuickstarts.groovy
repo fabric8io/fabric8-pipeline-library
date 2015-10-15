@@ -9,7 +9,6 @@ def stagedProjects = []
 
 hubot room: 'release', message: "starting release pipeline for ipaas-quickstarts, fabric8-devops and fabric8-ipaas"
 try {
-  stage 'bump apps and quickstarts release dependency versions'
   parallel(quickstarts: {
     String quickstartPr = bumpiPaaSQuickstartsVersions{}
     if (quickstartPr != null){
@@ -36,7 +35,6 @@ try {
     }
   })
 
-  stage 'stage apps and quickstarts release'
   parallel(quickstarts: {
     stagedProjects << stageProject{
       project = 'ipaas-quickstarts'
@@ -55,8 +53,7 @@ try {
      def quickstartsReleasePR = ""
      def devopsReleasePR = ""
      def ipaasReleasePR = ""
-    // trigger pull requests
-    stage 'release'
+
      parallel(ipaasQuickstarts: {
         quickstartsReleasePR = releaseFabric8 {
           projectStagingDetails = stagedProjects
@@ -74,9 +71,6 @@ try {
         }
       })
 
-
-
-  stage 'wait for fabric8 projects to be synced with maven central and release Pull Requests merged'
    parallel(ipaasQuickstarts: {
       waitUntilArtifactSyncedWithCentral {
         artifact = 'archetypes/archetypes-catalog'
@@ -96,6 +90,10 @@ try {
         name = 'fabric8-devops'
         prId = devopsReleasePR
       }
+      tagDockerImage{
+        project = 'fabric8-devops'
+      }
+
     }, fabric8iPaaS: {
       waitUntilArtifactSyncedWithCentral {
         artifact = 'ipaas/distro/distro'
@@ -107,13 +105,7 @@ try {
       }
    })
 
-    stage 'tag fabric8 docker images'
-    tagDockerImage{
-      images = ['hubot-irc','eclipse-orion','nexus','gerrit','fabric8-kiwiirc','brackets','jenkins-swarm-client','taiga-front','taiga-back','hubot-slack','lets-chat','jenkernetes']
-    }
-
   } else {
-    stage 'drop dryrun release'
     dropRelease{
       projects = stagedProjects
     }

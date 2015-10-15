@@ -5,6 +5,7 @@ def call(body) {
     body.delegate = config
     body()
 
+    stage "release ${config.project}"
     node ('swarm'){
       ws (config.project){
         withEnv(["PATH+MAVEN=${tool 'maven-3.3.1'}/bin"]) {

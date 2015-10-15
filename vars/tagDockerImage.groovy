@@ -5,13 +5,21 @@ def call(body) {
     body.delegate = config
     body()
 
+    stage "tag ${config.project} docker images"
     node ('swarm'){
       ws ('tag'){
         def flow = new io.fabric8.Release()
-        def tag = flow.getReleaseVersion('devops/distro/distro')
 
-        for(int i = 0; i < config.images.size(); i++){
-          image = config.images[i]
+        def tag
+        def images = []
+
+        if (config.project == 'fabric8-devops'){
+          tag = flow.getReleaseVersion('devops/distro/distro')
+          images = ['fabric8-console','hubot-irc','eclipse-orion','nexus','gerrit','fabric8-kiwiirc','brackets','jenkins-swarm-client','taiga-front','taiga-back','hubot-slack','lets-chat','jenkernetes']
+        }
+
+        for(int i = 0; i < images.size(); i++){
+          image = images[i]
 
           // first try and find an image marked as release
           try {

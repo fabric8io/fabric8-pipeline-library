@@ -7,6 +7,7 @@ def call(body) {
     body.delegate = config
     body()
 
+    stage "waiting for ${config.name} ${config.prId} PR to merge"
     node ('swarm'){
       ws (config.name){
         authString = "${env.GITHUB_TOKEN}"
