@@ -60,7 +60,7 @@ try {
     }
   })
 
-  stage 'stage apps and quickstarts release'
+  stage 'stage apps and quickstarts'
   parallel(quickstarts: {
     stagedProjects << stageProject{
       project = 'ipaas-quickstarts'
@@ -74,57 +74,61 @@ try {
       project = 'fabric8-ipaas'
     }
   })
-
+  
    if (release == 'true'){
+
+    def quickstartsReleasePR = ""
+    def devopsReleasePR = ""
+    def ipaasReleasePR = ""
+
     // trigger pull requests
     stage 'release'
      parallel(ipaasQuickstarts: {
-        String quickstartsReleasePR = releaseFabric8 {
+        quickstartsReleasePR = releaseFabric8 {
           projectStagingDetails = stagedProjects
           project = 'ipaas-quickstarts'
         }
      }, fabric8DevOps: {
-        String devopsReleasePR = releaseFabric8 {
+        devopsReleasePR = releaseFabric8 {
           projectStagingDetails = stagedProjects
           project = 'fabric8-devops'
         }
       }, fabric8iPaaS: {
-        String ipaasReleasePR = releaseFabric8 {
+        ipaasReleasePR = releaseFabric8 {
           projectStagingDetails = stagedProjects
           project = 'fabric8-ipaas'
         }
       })
 
-  stage 'wait for fabric8 projects to be synced with maven central and release Pull Requests merged'
-   parallel(ipaasQuickstarts: {
-      waitUntilArtifactSyncedWithCentral {
-        artifact = 'archetypes/archetypes-catalog'
-      }
-      echo "quickstartsReleasePR is ${quickstartsReleasePR}"
-      waitUntilPullRequestMerged{
-        name = 'ipaas-quickstarts'
-        prId = quickstartsReleasePR
-      }
-
-    }, fabric8DevOps: {
-      waitUntilArtifactSyncedWithCentral {
-        artifact = 'devops/distro/distro'
-      }
-      echo "devopsReleasePR is ${devopsReleasePR}"
-      waitUntilPullRequestMerged{
-        name = 'fabric8-devops'
-        prId = devopsReleasePR
-      }
-    }, fabric8iPaaS: {
-      waitUntilArtifactSyncedWithCentral {
-        artifact = 'ipaas/distro/distro'
-      }
-      echo "ipaasReleasePR is ${ipaasReleasePR}"
-      waitUntilPullRequestMerged{
-        name = 'fabric8-ipaas'
-        prId = ipaasReleasePR
-      }
-   })
+      stage 'wait for fabric8 projects to be synced with maven central and release Pull Requests merged'
+      parallel(ipaasQuickstarts: {
+        waitUntilArtifactSyncedWithCentral {
+          artifact = 'archetypes/archetypes-catalog'
+        }
+        echo "quickstartsReleasePR is ${quickstartsReleasePR}"
+        waitUntilPullRequestMerged{
+          name = 'ipaas-quickstarts'
+          prId = quickstartsReleasePR
+        }
+      }, fabric8DevOps: {
+        waitUntilArtifactSyncedWithCentral {
+          artifact = 'devops/distro/distro'
+        }
+        echo "devopsReleasePR is ${devopsReleasePR}"
+        waitUntilPullRequestMerged{
+          name = 'fabric8-devops'
+          prId = devopsReleasePR
+        }
+      }, fabric8iPaaS: {
+        waitUntilArtifactSyncedWithCentral {
+          artifact = 'ipaas/distro/distro'
+        }
+        echo "ipaasReleasePR is ${ipaasReleasePR}"
+        waitUntilPullRequestMerged{
+          name = 'fabric8-ipaas'
+          prId = ipaasReleasePR
+        }
+     })
 
     stage 'tag fabric8 docker images'
     tagDockerImage{

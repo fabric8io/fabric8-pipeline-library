@@ -100,20 +100,23 @@ try {
   })
 
    if (release == 'true'){
+     def quickstartsReleasePR = ""
+     def devopsReleasePR = ""
+     def ipaasReleasePR = ""
     // trigger pull requests
     stage 'release'
      parallel(ipaasQuickstarts: {
-        String quickstartsReleasePR = releaseFabric8 {
+        quickstartsReleasePR = releaseFabric8 {
           projectStagingDetails = stagedProjects
           project = 'ipaas-quickstarts'
         }
      }, fabric8DevOps: {
-        String devopsReleasePR = releaseFabric8 {
+        devopsReleasePR = releaseFabric8 {
           projectStagingDetails = stagedProjects
           project = 'fabric8-devops'
         }
       }, fabric8iPaaS: {
-        String ipaasReleasePR = releaseFabric8 {
+        ipaasReleasePR = releaseFabric8 {
           projectStagingDetails = stagedProjects
           project = 'fabric8-ipaas'
         }
