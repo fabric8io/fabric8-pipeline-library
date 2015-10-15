@@ -39,7 +39,6 @@ try {
     }
   }
 
-  stage 'stage fabric8'
   stagedProjects << stageProject{
     project = 'fabric8'
   }
@@ -97,8 +96,7 @@ try {
      def quickstartsReleasePR = ""
      def devopsReleasePR = ""
      def ipaasReleasePR = ""
-    // trigger pull requests
-    stage 'release'
+     
      parallel(ipaasQuickstarts: {
         quickstartsReleasePR = releaseFabric8 {
           projectStagingDetails = stagedProjects
