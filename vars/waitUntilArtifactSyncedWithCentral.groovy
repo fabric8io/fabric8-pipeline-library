@@ -5,6 +5,7 @@ def call(body) {
     body.delegate = config
     body()
 
+    stage "waiting for ${config.artifact} artifacts to sync with central"
     node ('swarm'){
       def flow = new io.fabric8.Release()
       def newVersion = flow.mavenSonartypeReleaseVersion config.artifact

@@ -2,7 +2,6 @@ def stagedProjects = []
 
 hubot room: 'release', message: "starting fabric8 project release"
 try {
-  stage 'update fabric8 release dependency versions'
   String fabric8PullRequest = bumpFabric8Versions{}
   if (fabric8PullRequest != null){
     waitUntilPullRequestMerged{
@@ -11,12 +10,10 @@ try {
     }
   }
 
-  stage 'stage fabric8'
   stagedProjects << stageProject{
     project = 'fabric8'
   }
 
-  stage 'release fabric8'
   fabric8ReleasePR = releaseFabric8 {
     projectStagingDetails = stagedProjects
     project = 'fabric8'
@@ -29,7 +26,6 @@ try {
   hubot room: 'release', message: "fabric8 release was successful"
   hubot room: 'release', message: "fabric8 updating fabric8-devops, fabric8-ipaas and ipaas-quickstarts with new fabric8.version"
 
-  stage 'bump apps and quickstarts release dependency versions'
   parallel(quickstarts: {
     String quickstartPr = bumpiPaaSQuickstartsVersions{}
     if (quickstartPr != null){

@@ -9,7 +9,6 @@ def stagedProjects = []
 
 hubot room: 'release', message: "starting fabric8 release pipeline"
 try {
-  stage 'update fabric8 release dependency versions'
   String fabric8PullRequest = bumpFabric8Versions{}
   if (fabric8PullRequest != null){
     waitUntilPullRequestMerged{
@@ -33,7 +32,6 @@ try {
     artifact = 'fabric8-maven-plugin'
   }
 
-  stage 'bump apps and quickstarts release dependency versions'
   parallel(quickstarts: {
     String quickstartPr = bumpiPaaSQuickstartsVersions{}
     if (quickstartPr != null){
@@ -60,7 +58,6 @@ try {
     }
   })
 
-  stage 'stage apps and quickstarts'
   parallel(quickstarts: {
     stagedProjects << stageProject{
       project = 'ipaas-quickstarts'
@@ -74,15 +71,13 @@ try {
       project = 'fabric8-ipaas'
     }
   })
-  
+
    if (release == 'true'){
 
     def quickstartsReleasePR = ""
     def devopsReleasePR = ""
     def ipaasReleasePR = ""
 
-    // trigger pull requests
-    stage 'release'
      parallel(ipaasQuickstarts: {
         quickstartsReleasePR = releaseFabric8 {
           projectStagingDetails = stagedProjects
@@ -100,7 +95,6 @@ try {
         }
       })
 
-      stage 'wait for fabric8 projects to be synced with maven central and release Pull Requests merged'
       parallel(ipaasQuickstarts: {
         waitUntilArtifactSyncedWithCentral {
           artifact = 'archetypes/archetypes-catalog'
@@ -119,6 +113,10 @@ try {
           name = 'fabric8-devops'
           prId = devopsReleasePR
         }
+        tagDockerImage{
+          project = 'fabric8-devops'
+        }
+
       }, fabric8iPaaS: {
         waitUntilArtifactSyncedWithCentral {
           artifact = 'ipaas/distro/distro'
@@ -130,13 +128,7 @@ try {
         }
      })
 
-    stage 'tag fabric8 docker images'
-    tagDockerImage{
-      images = ['hubot-irc','eclipse-orion','nexus','gerrit','fabric8-kiwiirc','brackets','jenkins-swarm-client','taiga-front','taiga-back','hubot-slack','lets-chat','jenkernetes']
-    }
-
   } else {
-    stage 'drop dryrun release'
     dropRelease{
       projects = stagedProjects
     }

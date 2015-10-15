@@ -9,13 +9,10 @@ def stagedProjects = []
 
 hubot room: 'release', message: "starting full release pipeline"
 try {
-
-  stage 'stage kubernetes-model'
   stagedProjects << stageProject{
     project = 'kubernetes-model'
   }
 
-  stage 'release kubernetes-model'
   modelReleasePR = release {
      projectStagingDetails = stagedProjects
      project = 'kubernetes-model'
@@ -25,7 +22,6 @@ try {
   }
   stagedProjects = []
 
-  stage 'update kubernetes-client release dependency versions'
   String clientPullRequest = bumpKubernetesClientVersions{}
   if (clientPullRequest != null){
     waitUntilPullRequestMerged{
@@ -34,12 +30,10 @@ try {
     }
   }
 
-  stage 'stage kubernetes-client'
   stagedProjects << stageProject{
     project = 'kubernetes-client'
   }
 
-  stage 'release kubernetes-client'
   clientReleasePR = releaseFabric8 {
     projectStagingDetails = stagedProjects
     project = 'kubernetes-client'
@@ -49,7 +43,6 @@ try {
     artifact = 'kubernetes-client'
   }
 
-  stage 'update fabric8 release dependency versions'
   String fabric8PullRequest = bumpFabric8Versions{}
   if (fabric8PullRequest != null){
     waitUntilPullRequestMerged{
@@ -58,22 +51,20 @@ try {
     }
   }
 
-  stage 'stage fabric8'
   stagedProjects << stageProject{
     project = 'fabric8'
   }
 
-  stage 'release fabric8'
   fabric8ReleasePR = releaseFabric8 {
     projectStagingDetails = stagedProjects
     project = 'fabric8'
   }
+
   stagedProjects = []
   waitUntilArtifactSyncedWithCentral {
     artifact = 'fabric8-maven-plugin'
   }
 
-  stage 'bump apps and quickstarts release dependency versions'
   parallel(quickstarts: {
     String quickstartPr = bumpiPaaSQuickstartsVersions{}
     if (quickstartPr != null){
@@ -100,7 +91,6 @@ try {
     }
   })
 
-  stage 'stage apps and quickstarts release'
   parallel(quickstarts: {
     stagedProjects << stageProject{
       project = 'ipaas-quickstarts'
@@ -120,8 +110,6 @@ try {
      def devopsReleasePR = ""
      def ipaasReleasePR = ""
 
-    // trigger pull requests
-    stage 'release'
      parallel(ipaasQuickstarts: {
         quickstartsReleasePR = releaseFabric8 {
           projectStagingDetails = stagedProjects
@@ -139,44 +127,41 @@ try {
         }
       })
 
-  stage 'wait for fabric8 projects to be synced with maven central and release Pull Requests merged'
-   parallel(ipaasQuickstarts: {
-      waitUntilArtifactSyncedWithCentral {
-        artifact = 'archetypes/archetypes-catalog'
-      }
-      echo "quickstartsReleasePR is ${quickstartsReleasePR}"
-      waitUntilPullRequestMerged{
-        name = 'ipaas-quickstarts'
-        prId = quickstartsReleasePR
-      }
+     parallel(ipaasQuickstarts: {
+        waitUntilArtifactSyncedWithCentral {
+          artifact = 'archetypes/archetypes-catalog'
+        }
+        echo "quickstartsReleasePR is ${quickstartsReleasePR}"
+        waitUntilPullRequestMerged{
+          name = 'ipaas-quickstarts'
+          prId = quickstartsReleasePR
+        }
 
-    }, fabric8DevOps: {
-      waitUntilArtifactSyncedWithCentral {
-        artifact = 'devops/distro/distro'
-      }
-      echo "devopsReleasePR is ${devopsReleasePR}"
-      waitUntilPullRequestMerged{
-        name = 'fabric8-devops'
-        prId = devopsReleasePR
-      }
-    }, fabric8iPaaS: {
-      waitUntilArtifactSyncedWithCentral {
-        artifact = 'ipaas/distro/distro'
-      }
-      echo "ipaasReleasePR is ${ipaasReleasePR}"
-      waitUntilPullRequestMerged{
-        name = 'fabric8-ipaas'
-        prId = ipaasReleasePR
-      }
-   })
+      }, fabric8DevOps: {
+        waitUntilArtifactSyncedWithCentral {
+          artifact = 'devops/distro/distro'
+        }
+        echo "devopsReleasePR is ${devopsReleasePR}"
+        waitUntilPullRequestMerged{
+          name = 'fabric8-devops'
+          prId = devopsReleasePR
+        }
+        tagDockerImage{
+          project = 'fabric8-devops'
+        }
 
-    stage 'tag fabric8-devops docker images'
-    tagDockerImage{
-      images = ['hubot-irc','eclipse-orion','nexus','gerrit','fabric8-kiwiirc','brackets','jenkins-swarm-client','taiga-front','taiga-back','hubot-slack','lets-chat','jenkernetes']
-    }
+      }, fabric8iPaaS: {
+        waitUntilArtifactSyncedWithCentral {
+          artifact = 'ipaas/distro/distro'
+        }
+        echo "ipaasReleasePR is ${ipaasReleasePR}"
+        waitUntilPullRequestMerged{
+          name = 'fabric8-ipaas'
+          prId = ipaasReleasePR
+        }
+     })
 
   } else {
-    stage 'drop dryrun release'
     dropRelease{
       projects = stagedProjects
     }
