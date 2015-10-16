@@ -15,14 +15,6 @@ node ('swarm'){
       versionPrefix = "1.0"
     }
 
-    // lets allow the STAGE_NAMESPACE to be specified as a parameter to the build
-    def stageNamespace = ""
-    try {
-      stageNamespace = STAGE_NAMESPACE
-    } catch (Throwable e) {
-      stageNamespace = "${env.JOB_NAME}-staging"
-    }
-
     // lets allow the STAGE_DOMAIN to be specified as a parameter to the build
     def stageDomain = ""
     try {
@@ -62,19 +54,19 @@ node ('swarm'){
       failIfNoTests = "false"
     }
 
-    sh "mvn org.apache.maven.plugins:maven-failsafe-plugin:2.18.1:integration-test -Dit.test=${itestPattern} -DfailIfNoTests=${failIfNoTests} org.apache.maven.plugins:maven-failsafe-plugin:2.18.1:verify -Ddocker.registryPrefix=docker.io/"
+    sh "mvn org.apache.maven.plugins:maven-failsafe-plugin:2.18.1:integration-test -Dfabric8.environment=Testing -Dit.test=${itestPattern} -DfailIfNoTests=${failIfNoTests} org.apache.maven.plugins:maven-failsafe-plugin:2.18.1:verify -Ddocker.registryPrefix=docker.io/"
 
 
     stage 'stage'
 
-    echo "Now staging to kubernetes environment ${stageNamespace} in domain ${stageDomain}"
-    sh "mvn io.fabric8:fabric8-maven-plugin:${fabricMavenPluginVersion}:json io.fabric8:fabric8-maven-plugin:${fabricMavenPluginVersion}:apply -Dfabric8.namespace=${stageNamespace} -Dfabric8.domain=${stageDomain} -Dfabric8.dockerUser=fabric8/ -Ddocker.registryPrefix=docker.io/"
+    echo "Staging to kubernetes environment: Staging in domain ${stageDomain}"
+    sh "mvn io.fabric8:fabric8-maven-plugin:${fabricMavenPluginVersion}:json io.fabric8:fabric8-maven-plugin:${fabricMavenPluginVersion}:rolling -Dfabric8.environment=Staging -Dfabric8.domain=${stageDomain} -Dfabric8.dockerUser=fabric8/ -Ddocker.registryPrefix=docker.io/"
 
     echo """
 
-Version ${canaryVersion} has now been staged to the ${stageNamespace} namespace
+Version ${canaryVersion} has now been staged to the Staging environment at:
 View the Staging environment at:
-${fabric8Console}/kubernetes/pods?namespace=${stageNamespace}
+${fabric8Console}/kubernetes/pods?environment=Staging
 
 """
   }
