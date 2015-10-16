@@ -15,28 +15,12 @@ node ('swarm'){
       versionPrefix = "1.0"
     }
 
-    // lets allow the STAGE_NAMESPACE to be specified as a parameter to the build
-    def stageNamespace = ""
-    try {
-      stageNamespace = STAGE_NAMESPACE
-    } catch (Throwable e) {
-      stageNamespace = "${env.JOB_NAME}-staging"
-    }
-
     // lets allow the STAGE_DOMAIN to be specified as a parameter to the build
     def stageDomain = ""
     try {
       stageDomain = STAGE_DOMAIN
     } catch (Throwable e) {
       stageDomain = "${env.JOB_NAME}.${env.KUBERNETES_DOMAIN ?: 'stage.vagrant.f8'}"
-    }
-
-    // lets allow the PROMOTE_NAMESPACE to be specified as a parameter to the build
-    def promoteNamespace = ""
-    try {
-      promoteNamespace = PROMOTE_NAMESPACE
-    } catch (Throwable e) {
-      promoteNamespace = "${env.JOB_NAME}-prod"
     }
 
     // lets allow the PROMOTE_DOMAIN to be specified as a parameter to the build
@@ -76,14 +60,14 @@ node ('swarm'){
       failIfNoTests = "false"
     }
 
-    sh "mvn org.apache.maven.plugins:maven-failsafe-plugin:2.18.1:integration-test -Dit.test=${itestPattern} -DfailIfNoTests=${failIfNoTests} org.apache.maven.plugins:maven-failsafe-plugin:2.18.1:verify -Ddocker.registryPrefix=docker.io/"
+    sh "mvn org.apache.maven.plugins:maven-failsafe-plugin:2.18.1:integration-test -Dfabric8.environment=Testing -Dit.test=${itestPattern} -DfailIfNoTests=${failIfNoTests} org.apache.maven.plugins:maven-failsafe-plugin:2.18.1:verify -Ddocker.registryPrefix=docker.io/"
 
 
     stage 'stage'
 
     // now lets stage it
     echo "Staging to kubernetes environment ${stageNamespace} in domain ${stageDomain}"
-    sh "mvn io.fabric8:fabric8-maven-plugin:${fabricMavenPluginVersion}:json io.fabric8:fabric8-maven-plugin:${fabricMavenPluginVersion}:apply -Dfabric8.namespace=${stageNamespace} -Dfabric8.domain=${stageDomain} -Dfabric8.dockerUser=fabric8/ -Ddocker.registryPrefix=docker.io/"
+    sh "mvn io.fabric8:fabric8-maven-plugin:${fabricMavenPluginVersion}:json io.fabric8:fabric8-maven-plugin:${fabricMavenPluginVersion}:rolling -Dfabric8.environment=Staging -Dfabric8.domain=${stageDomain} -Dfabric8.dockerUser=fabric8/ -Ddocker.registryPrefix=docker.io/"
 
     stage 'approve'
 
@@ -99,7 +83,7 @@ Would you like to promote version ${canaryVersion} to the ${promoteNamespace} na
     stage 'promote'
 
     echo "Promoting to kubernetes environment ${promoteNamespace} in domain ${promoteDomain}"
-    sh "mvn io.fabric8:fabric8-maven-plugin:${fabricMavenPluginVersion}:apply -Dfabric8.namespace=${promoteNamespace} -Dfabric8.domain=${promoteDomain} -Dfabric8.dockerUser=fabric8/ -Ddocker.registryPrefix=docker.io/"
+    sh "mvn io.fabric8:fabric8-maven-plugin:${fabricMavenPluginVersion}:rolling -Dfabric8.environment=Production -Dfabric8.domain=${promoteDomain} -Dfabric8.dockerUser=fabric8/ -Ddocker.registryPrefix=docker.io/"
 
     echo """
 
