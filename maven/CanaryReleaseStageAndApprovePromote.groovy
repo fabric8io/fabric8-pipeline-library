@@ -66,30 +66,30 @@ node ('swarm'){
     stage 'stage'
 
     // now lets stage it
-    echo "Staging to kubernetes environment ${stageNamespace} in domain ${stageDomain}"
+    echo "Staging to kubernetes environment: Staging in domain ${stageDomain}"
     sh "mvn io.fabric8:fabric8-maven-plugin:${fabricMavenPluginVersion}:json io.fabric8:fabric8-maven-plugin:${fabricMavenPluginVersion}:rolling -Dfabric8.environment=Staging -Dfabric8.domain=${stageDomain} -Dfabric8.dockerUser=fabric8/ -Ddocker.registryPrefix=docker.io/"
 
     stage 'approve'
 
 
-    def proceedMessage = """Version ${canaryVersion} has now been staged to the ${stageNamespace} namespace at:
-${fabric8Console}/kubernetes/pods?namespace=${stageNamespace}
+    def proceedMessage = """Version ${canaryVersion} has now been staged to the Staging environment at:
+${fabric8Console}/kubernetes/pods?environment=Staging
 
-Would you like to promote version ${canaryVersion} to the ${promoteNamespace} namespace?
+Would you like to promote version ${canaryVersion} to the Production namespace?
 """
     hubotApprove proceedMessage
     input id: 'Proceed', message: "\n${proceedMessage}"
 
     stage 'promote'
 
-    echo "Promoting to kubernetes environment ${promoteNamespace} in domain ${promoteDomain}"
+    echo "Promoting to kubernetes environment Production environment in domain ${promoteDomain}"
     sh "mvn io.fabric8:fabric8-maven-plugin:${fabricMavenPluginVersion}:rolling -Dfabric8.environment=Production -Dfabric8.domain=${promoteDomain} -Dfabric8.dockerUser=fabric8/ -Ddocker.registryPrefix=docker.io/"
 
     echo """
 
-Version ${canaryVersion} has now been promoted to the ${promoteNamespace} namespace
+Version ${canaryVersion} has now been promoted to the Production environment
 View the Promoted environment at:
-${fabric8Console}/kubernetes/pods?namespace=${promoteNamespace}
+${fabric8Console}/kubernetes/pods?environment=Production
 
 """
   }
