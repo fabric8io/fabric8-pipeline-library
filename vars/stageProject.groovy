@@ -18,6 +18,24 @@ def call(body) {
           flow.updateDocsAndSite(flow.getProjectVersion())
         }
 
+        if (config.project == 'fabric8-devops'){
+          try {
+            def archetypeVersion = flow.mavenCentralVersion('archetypes/archetypes-catalog')
+            flow.searchAndReplaceMavenVersionProperty("<fabric8.archetypes.release.version>", archetypeVersion)
+            updated = true
+          } catch (err) {
+            echo "Already set archetypes release version dependencies"
+          }
+
+          try {
+            def projectVersion = flow.getProjectVersion()
+            flow.searchAndReplaceMavenVersionProperty("<fabric8.devops.release.version>", projectVersion)
+            updated = true
+          } catch (err) {
+            echo "Already set devops release version dependencies"
+          }
+        }
+
         def repoId = flow.stageSonartypeRepo()
         releaseVersion = flow.getProjectVersion()
         flow.updateGithub ()
