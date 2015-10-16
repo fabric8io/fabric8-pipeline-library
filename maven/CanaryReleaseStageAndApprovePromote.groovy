@@ -31,7 +31,10 @@ node ('swarm'){
       promoteDomain = "${env.JOB_NAME}.${env.KUBERNETES_DOMAIN ?: 'prod.vagrant.f8'}"
     }
 
-    def flow = new io.fabric8.Release()
+    def flow = new io.fabric8.Fabric8Commands()
+    // commented until next release 2.2.53
+    // def fabricMavenPluginVersion = flow.getMavenCentralVersion "io/fabric8/fabric8-maven-plugin"
+    // def dockerMavenPluginVersion = flow.getReleaseVersion "org/jolokia/docker-maven-plugin"
     def fabricMavenPluginVersion = flow.getReleaseVersion "fabric8-maven-plugin"
     def dockerMavenPluginVersion = '0.13.6'
 

@@ -3,7 +3,7 @@ try {
 
   releaseProject{
     project = 'fabric8-devops'
-    projectArtifact = 'devops/distro/distro'
+    projectArtifact = 'io/fabric8/devops/distro/distro'
   }
 
   hubot room: 'release', message: "release success"

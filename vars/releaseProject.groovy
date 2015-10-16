@@ -5,7 +5,7 @@ def call(body) {
     body.delegate = config
     body()
 
-    def versionBumpPullRequest = ""
+    String versionBumpPullRequest = ""
 
     if (config.project == 'ipaas-quickstarts'){
       versionBumpPullRequest = bumpiPaaSQuickstartsVersions{}
@@ -26,21 +26,24 @@ def call(body) {
       }
     }
 
-    def stagedProjects = stageProject{
+    def stagedProject = stageProject{
       project = config.project
     }
 
-    def pullRequestId = release {
-      projectStagingDetails = stagedProjects
+    String pullRequestId = release {
+      projectStagingDetails = stagedProject
       project = config.project
     }
 
     waitUntilArtifactSyncedWithCentral {
       artifact = config.projectArtifact
+      version = stagedProject[1]
     }
 
-    waitUntilPullRequestMerged{
-      name = config.project
-      prId = quickstartsReleasePR
+    if (pullRequestId != null){
+      waitUntilPullRequestMerged{
+        name = config.project
+        prId = pullRequestId
+      }
     }
 }

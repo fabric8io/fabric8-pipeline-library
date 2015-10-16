@@ -18,6 +18,12 @@ def getReleaseVersion(String project) {
   return version
 }
 
+def getMavenCentralVersion(String artifact) {
+  def modelMetaData = new XmlSlurper().parse("http://central.maven.org/maven2/io/fabric8/${artifact}/maven-metadata.xml")
+  def version = modelMetaData.versioning.release.text()
+  return version
+}
+
 def getPullRequestState(String project, String id){
   def gitRepo = getGitRepo()
   def pr = new JsonSlurper().parse("https://api.github.com/repos/${gitRepo}/${project}/pulls/${id}")
@@ -46,18 +52,6 @@ def getDockerHubImageTags(String image) {
   } catch (err) {
     return "NO_IMAGE_FOUND"
   }
-}
-
-def mavenCentralVersion(String artifact) {
-  def modelMetaData = new XmlSlurper().parse("http://central.maven.org/maven2/io/fabric8/${artifact}/maven-metadata.xml")
-  def version = modelMetaData.versioning.release.text()
-  return version
-}
-
-def mavenSonartypeReleaseVersion(String artifact) {
-  def modelMetaData = new XmlSlurper().parse("https://oss.sonatype.org/content/repositories/releases/io/fabric8/${artifact}/maven-metadata.xml")
-  def version = modelMetaData.versioning.release.text()
-  return version
 }
 
 def searchAndReplaceMavenVersionProperty(String property, String newVersion){

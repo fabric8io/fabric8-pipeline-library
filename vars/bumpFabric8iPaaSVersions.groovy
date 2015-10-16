@@ -17,7 +17,7 @@ def call(body) {
         def uid = UUID.randomUUID().toString()
 
         sh "git checkout -b versionUpdate${uid}"
-        def fabric8Version = flow.getReleaseVersion "fabric8-maven-plugin"
+        def fabric8Version = flow.getReleaseVersion "io/fabric8/fabric8-maven-plugin"
         def updated = false
         try {
           flow.searchAndReplaceMavenVersionProperty("<fabric8.version>", fabric8Version)
