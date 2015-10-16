@@ -8,7 +8,7 @@ def call(body) {
     stage "tag ${config.project} docker images"
     node ('swarm'){
       ws ('tag'){
-        def flow = new io.fabric8.Release()
+        def flow = new io.fabric8.Fabric8Commands()
 
         def tag
         def images = []

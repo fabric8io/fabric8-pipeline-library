@@ -1,29 +1,13 @@
-def stagedProjects = []
-
-hubot room: 'release', message: "starting kubernetes client release"
+hubot room: 'release', message: "release started"
 try {
-  String clientPullRequest = bumpKubernetesClientVersions{}
-  if (clientPullRequest != null){
-    waitUntilPullRequestMerged{
-      name = 'kubernetes-client'
-      prId = clientPullRequest
-    }
-  }
 
-  stagedProjects << stageProject{
+  releaseProject{
     project = 'kubernetes-client'
+    projectArtifact = 'kubernetes-client'
   }
 
-  clientReleasePR = releaseFabric8 {
-    projectStagingDetails = stagedProjects
-    project = 'kubernetes-client'
-  }
-  
-  waitUntilArtifactSyncedWithCentral {
-    artifact = 'kubernetes-client'
-  }
+  hubot room: 'release', message: "release success"
 
-  hubot room: 'release', message: "Kubernetes Client release was successful"
 } catch (err){
     hubot room: 'release', message: "Kubernetes Client release failed ${err}"
     currentBuild.result = 'FAILURE'

@@ -10,7 +10,7 @@ def call(body) {
     ws (config.project){
       withEnv(["PATH+MAVEN=${tool 'maven-3.3.1'}/bin"]) {
 
-        def flow = new io.fabric8.Release()
+        def flow = new io.fabric8.Fabric8Commands()
 
         flow.setupWorkspaceForRelease(config.project)
 

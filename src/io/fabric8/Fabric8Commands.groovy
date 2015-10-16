@@ -108,7 +108,6 @@ def setupWorkspaceForRelease(String project){
 def dockerPush () {
   // intermittent errors can occur when pushing to dockerhub
   retry(3){
-    //sh 'docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD -e fabric8-admin@googlegroups.com'
     sh "mvn docker:push -P release"
   }
 }

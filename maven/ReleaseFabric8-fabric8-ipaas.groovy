@@ -1,34 +1,13 @@
-def stagedProjects = []
-
-hubot room: 'release', message: "starting fabric8-ipaas release"
+hubot room: 'release', message: "release started"
 try {
-  String ipaasPr = bumpFabric8iPaaSVersions{}
-  if (ipaasPr != null){
-    waitUntilPullRequestMerged{
-      name = 'fabric8-ipaas'
-      prId = ipaasPr
-    }
-  }
 
-  stagedProjects << stageProject{
+  releaseProject{
     project = 'fabric8-ipaas'
+    projectArtifact = 'ipaas/distro/distro'
   }
 
-  String fabric8ipaasPR = releaseFabric8 {
-    projectStagingDetails = stagedProjects
-    project = 'fabric8-ipaas'
-  }
+  hubot room: 'release', message: "release success"
 
-  waitUntilArtifactSyncedWithCentral {
-    artifact = 'ipaas/distro/distro'
-  }
-
-  waitUntilPullRequestMerged{
-    name = 'fabric8-ipaas'
-    prId = fabric8ipaasPR
-  }
-
-  hubot room: 'release', message: "fabric8-ipaas released"
 } catch (err){
     hubot room: 'release', message: "fabric8-ipaas release failed ${err}"
     currentBuild.result = 'FAILURE'

@@ -5,15 +5,19 @@ def call(body) {
     body.delegate = config
     body()
 
-    def pullRequestId = ""
     def versionBumpPullRequest = ""
 
-
     if (config.project == 'ipaas-quickstarts'){
-
+      versionBumpPullRequest = bumpiPaaSQuickstartsVersions{}
+    } else if (config.project == 'fabric8-ipaas'){
+      versionBumpPullRequest = bumpFabric8iPaaSVersions{}
+    } else if (config.project == 'fabric8-devops'){
+      versionBumpPullRequest = bumpFabric8DevOpsVersions{}
+    } else if (config.project == 'kubernetes-client'){
+      versionBumpPullRequest = bumpKubernetesClientVersions{}
+    } else if (config.project == 'fabric8'){
+      versionBumpPullRequest = bumpFabric8Versions{}
     }
-    versionBumpPullRequest = bumpiPaaSQuickstartsVersions{}
-
 
     if (versionBumpPullRequest != null){
       waitUntilPullRequestMerged{
@@ -22,11 +26,11 @@ def call(body) {
       }
     }
 
-    stagedProjects << stageProject{
+    def stagedProjects = stageProject{
       project = config.project
     }
 
-    pullRequestId = releaseFabric8 {
+    def pullRequestId = release {
       projectStagingDetails = stagedProjects
       project = config.project
     }
@@ -39,5 +43,4 @@ def call(body) {
       name = config.project
       prId = quickstartsReleasePR
     }
-
 }

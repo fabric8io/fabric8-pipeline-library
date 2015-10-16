@@ -5,7 +5,7 @@ def call(body) {
     body.resolveStrategy = Closure.DELEGATE_FIRST
     body.delegate = config
     body()
-    def flow = new io.fabric8.Release()
+    def flow = new io.fabric8.Fabric8Commands()
 
     // loop over each staged project and delete release branch and nexus staged repo
     for(int i = 0; i < config.projects.size(); i++){
