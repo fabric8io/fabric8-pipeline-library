@@ -35,81 +35,24 @@ try {
     }
   })
 
-  def quickstartsReleasePR = ""
-  
-  stagedProjects << stageProject{
+
+  releaseProject{
     project = 'ipaas-quickstarts'
+    projectArtifact = 'archetypes/archetypes-catalog'
   }
-
-  quickstartsReleasePR = releaseFabric8 {
-    projectStagingDetails = stagedProjects
-    project = 'ipaas-quickstarts'
-  }
-
-  waitUntilArtifactSyncedWithCentral {
-    artifact = 'archetypes/archetypes-catalog'
-  }
-
-  waitUntilPullRequestMerged{
-    name = 'ipaas-quickstarts'
-    prId = quickstartsReleasePR
-  }
-
 
   parallel(devops: {
-    stagedProjects << stageProject{
+    releaseProject{
       project = 'fabric8-devops'
+      projectArtifact = 'devops/distro/distro'
     }
   }, ipaas: {
-    stagedProjects << stageProject{
+    releaseProject{
       project = 'fabric8-ipaas'
+      projectArtifact = 'ipaas/distro/distro'
     }
   })
 
-   if (release == 'true'){
-
-     def devopsReleasePR = ""
-     def ipaasReleasePR = ""
-
-     parallel(fabric8DevOps: {
-        devopsReleasePR = releaseFabric8 {
-          projectStagingDetails = stagedProjects
-          project = 'fabric8-devops'
-        }
-      }, fabric8iPaaS: {
-        ipaasReleasePR = releaseFabric8 {
-          projectStagingDetails = stagedProjects
-          project = 'fabric8-ipaas'
-        }
-      })
-
-   parallel(fabric8DevOps: {
-      waitUntilArtifactSyncedWithCentral {
-        artifact = 'devops/distro/distro'
-      }
-      waitUntilPullRequestMerged{
-        name = 'fabric8-devops'
-        prId = devopsReleasePR
-      }
-      tagDockerImage{
-        project = 'fabric8-devops'
-      }
-
-    }, fabric8iPaaS: {
-      waitUntilArtifactSyncedWithCentral {
-        artifact = 'ipaas/distro/distro'
-      }
-      waitUntilPullRequestMerged{
-        name = 'fabric8-ipaas'
-        prId = ipaasReleasePR
-      }
-   })
-
-  } else {
-    dropRelease{
-      projects = stagedProjects
-    }
-  }
 
   hubot room: 'release', message: "Release was successful"
 } catch (err){
