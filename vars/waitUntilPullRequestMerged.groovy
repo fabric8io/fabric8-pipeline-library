@@ -11,7 +11,7 @@ def call(body) {
     node ('swarm'){
       ws (config.name){
         authString = "${env.GITHUB_TOKEN}"
-        def flow = new io.fabric8.Release()
+        def flow = new io.fabric8.Fabric8Commands()
         flow.setupWorkspace (config.name)
         echo "working for pull request id ${config.prId}"
         gitRepo = flow.getGitRepo()

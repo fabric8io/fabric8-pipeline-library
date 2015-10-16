@@ -13,15 +13,10 @@ def call(body) {
           def name = config.projectStagingDetails[i][0]
           def version = config.projectStagingDetails[i][1]
           def repoIds = config.projectStagingDetails[i][2]
-          echo "${name}"
-          echo "${version}"
-          echo "${repoIds}"
           // get the staging details for the project we are working on
-          echo "checking ${name} with ${config.project}"
           if (name == config.project){
-            echo "matched ${name} with ${config.project}"
 
-            def flow = new io.fabric8.Release()
+            def flow = new io.fabric8.Fabric8Commands()
             flow.setupWorkspace(name)
             sh "git fetch"
             sh "git checkout release-v${version}"

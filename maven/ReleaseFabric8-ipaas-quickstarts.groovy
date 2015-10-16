@@ -1,35 +1,13 @@
-def stagedProjects = []
-
-hubot room: 'release', message: "starting ipaas-quickstarts release"
+hubot room: 'release', message: "release started"
 try {
 
-  String quickstartPr = bumpiPaaSQuickstartsVersions{}
-  if (quickstartPr != null){
-    waitUntilPullRequestMerged{
-      name = 'ipaas-quickstarts'
-      prId = quickstartPr
-    }
-  }
-
-  stagedProjects << stageProject{
+  releaseProject{
     project = 'ipaas-quickstarts'
+    projectArtifact = 'archetypes/archetypes-catalog'
   }
 
-  String quickstartsReleasePR = releaseFabric8 {
-    projectStagingDetails = stagedProjects
-    project = 'ipaas-quickstarts'
-  }
+  hubot room: 'release', message: "release success"
 
-  waitUntilArtifactSyncedWithCentral {
-    artifact = 'archetypes/archetypes-catalog'
-  }
-
-  waitUntilPullRequestMerged{
-    name = 'ipaas-quickstarts'
-    prId = quickstartsReleasePR
-  }
-
-  hubot room: 'release', message: "ipaas-quickstarts released"
 } catch (err){
     hubot room: 'release', message: "fabric8 release failed ${err}"
     currentBuild.result = 'FAILURE'

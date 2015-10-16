@@ -1,172 +1,40 @@
-def release = ""
+hubot room: 'release', message: "release started"
 try {
-  release = IS_RELEASE
-} catch (Throwable e) {
-  release = "${env.IS_RELEASE ?: 'false'}"
-}
 
-def stagedProjects = []
-
-hubot room: 'release', message: "starting full release pipeline"
-try {
-  stagedProjects << stageProject{
+  releaseProject{
     project = 'kubernetes-model'
+    projectArtifact = 'kubernetes-model'
   }
 
-  modelReleasePR = release {
-     projectStagingDetails = stagedProjects
-     project = 'kubernetes-model'
-  }
-  waitUntilArtifactSyncedWithCentral {
-    artifact = 'kubernetes-model'
-  }
-  stagedProjects = []
-
-  String clientPullRequest = bumpKubernetesClientVersions{}
-  if (clientPullRequest != null){
-    waitUntilPullRequestMerged{
-      name = 'kubernetes-client'
-      prId = clientPullRequest
-    }
-  }
-
-  stagedProjects << stageProject{
+  releaseProject{
     project = 'kubernetes-client'
+    projectArtifact = 'kubernetes-client'
   }
 
-  clientReleasePR = releaseFabric8 {
-    projectStagingDetails = stagedProjects
-    project = 'kubernetes-client'
-  }
-  stagedProjects = []
-  waitUntilArtifactSyncedWithCentral {
-    artifact = 'kubernetes-client'
-  }
-
-  String fabric8PullRequest = bumpFabric8Versions{}
-  if (fabric8PullRequest != null){
-    waitUntilPullRequestMerged{
-      name = 'fabric8'
-      prId = fabric8PullRequest
-    }
-  }
-
-  stagedProjects << stageProject{
+  releaseProject{
     project = 'fabric8'
+    projectArtifact = 'fabric8-maven-plugin'
   }
 
-  fabric8ReleasePR = releaseFabric8 {
-    projectStagingDetails = stagedProjects
-    project = 'fabric8'
-  }
-
-  stagedProjects = []
-  waitUntilArtifactSyncedWithCentral {
-    artifact = 'fabric8-maven-plugin'
-  }
-
-  parallel(quickstarts: {
-    String quickstartPr = bumpiPaaSQuickstartsVersions{}
-    if (quickstartPr != null){
-      waitUntilPullRequestMerged{
-        name = 'ipaas-quickstarts'
-        prId = quickstartPr
-      }
-    }
-  }, devops: {
-    String devopsPr = bumpFabric8DevOpsVersions{}
-    if (devopsPr != null){
-      waitUntilPullRequestMerged{
-        name = 'fabric8-devops'
-        prId = devopsPr
-      }
-    }
-  }, ipaas: {
-    String ipaasPr = bumpFabric8iPaaSVersions{}
-    if (ipaasPr != null){
-      waitUntilPullRequestMerged{
-        name = 'fabric8-ipaas'
-        prId = ipaasPr
-      }
-    }
-  })
-
-  def quickstartsReleasePR = ""
-  stagedProjects << stageProject{
+  releaseProject{
     project = 'ipaas-quickstarts'
+    projectArtifact = 'archetypes/archetypes-catalog'
   }
-
-  quickstartsReleasePR = releaseFabric8 {
-    projectStagingDetails = stagedProjects
-    project = 'ipaas-quickstarts'
-  }
-
-  waitUntilArtifactSyncedWithCentral {
-    artifact = 'archetypes/archetypes-catalog'
-  }
-
-  waitUntilPullRequestMerged{
-    name = 'ipaas-quickstarts'
-    prId = quickstartsReleasePR
-  }
-
 
   parallel(devops: {
-    stagedProjects << stageProject{
+    releaseProject{
       project = 'fabric8-devops'
+      projectArtifact = 'devops/distro/distro'
     }
   }, ipaas: {
-    stagedProjects << stageProject{
+    releaseProject{
       project = 'fabric8-ipaas'
+      projectArtifact = 'ipaas/distro/distro'
     }
   })
 
-   if (release == 'true'){
+  hubot room: 'release', message: "release success"
 
-     def devopsReleasePR = ""
-     def ipaasReleasePR = ""
-
-     parallel(fabric8DevOps: {
-        devopsReleasePR = releaseFabric8 {
-          projectStagingDetails = stagedProjects
-          project = 'fabric8-devops'
-        }
-      }, fabric8iPaaS: {
-        ipaasReleasePR = releaseFabric8 {
-          projectStagingDetails = stagedProjects
-          project = 'fabric8-ipaas'
-        }
-      })
-
-   parallel(fabric8DevOps: {
-      waitUntilArtifactSyncedWithCentral {
-        artifact = 'devops/distro/distro'
-      }
-      waitUntilPullRequestMerged{
-        name = 'fabric8-devops'
-        prId = devopsReleasePR
-      }
-      tagDockerImage{
-        project = 'fabric8-devops'
-      }
-
-    }, fabric8iPaaS: {
-      waitUntilArtifactSyncedWithCentral {
-        artifact = 'ipaas/distro/distro'
-      }
-      waitUntilPullRequestMerged{
-        name = 'fabric8-ipaas'
-        prId = ipaasReleasePR
-      }
-   })
-
-  } else {
-    dropRelease{
-      projects = stagedProjects
-    }
-  }
-
-  hubot room: 'release', message: "Successfully finished full release pipeline"
 } catch (err){
     hubot room: 'release', message: "Release failed ${err}"
     currentBuild.result = 'FAILURE'
