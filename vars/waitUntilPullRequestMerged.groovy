@@ -36,10 +36,8 @@ def call(body) {
           def pr = new JsonSlurper().parse(new InputStreamReader(connection.getInputStream(),"UTF-8"))
           connection.disconnect()
 
-
           branchName = pr.head.ref
-          echo "${branchName}"
-          echo "${pr.mergeable_state}"
+          echo "${config.name} Pull request ${id} mergable state ${pr.mergeable_state}"
 
           if (pr.mergeable_state == 'unstable' && !notified){
             def message ="""

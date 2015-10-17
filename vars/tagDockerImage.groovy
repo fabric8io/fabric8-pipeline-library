@@ -14,7 +14,7 @@ def call(body) {
         def images = []
 
         if (config.project == 'fabric8-devops'){
-          tag = flow.getReleaseVersion('devops/distro/distro')
+          tag = flow.getReleaseVersion('io/fabric8/devops/distro/distro')
           images = ['fabric8-console','hubot-irc','eclipse-orion','nexus','gerrit','fabric8-kiwiirc','brackets','jenkins-swarm-client','taiga-front','taiga-back','hubot-slack','lets-chat','jenkernetes']
         }
 

@@ -8,10 +8,10 @@ def call(body) {
     stage "waiting for ${config.artifact} artifacts to sync with central"
     node ('swarm'){
       def flow = new io.fabric8.Fabric8Commands()
-      def newVersion = flow.mavenSonartypeReleaseVersion config.artifact
+      def newVersion = config.version
 
       waitUntil {
-        flow.mavenCentralVersion(config.artifact) == newVersion
+        flow.getMavenCentralVersion(config.artifact) == newVersion
       }
 
       message =  "${config.artifact} released and available in maven central"

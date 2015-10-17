@@ -3,7 +3,7 @@ try {
 
   releaseProject{
     project = 'kubernetes-client'
-    projectArtifact = 'kubernetes-client'
+    projectArtifact = 'io/fabric8/kubernetes-client'
   }
 
   hubot room: 'release', message: "release success"

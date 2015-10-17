@@ -3,23 +3,23 @@ try {
 
   releaseProject{
     project = 'fabric8'
-    projectArtifact = 'fabric8-maven-plugin'
+    projectArtifact = 'io/fabric8/fabric8-maven-plugin'
   }
 
   releaseProject{
     project = 'ipaas-quickstarts'
-    projectArtifact = 'archetypes/archetypes-catalog'
+    projectArtifact = 'io/fabric8/archetypes/archetypes-catalog'
   }
 
   parallel(devops: {
     releaseProject{
       project = 'fabric8-devops'
-      projectArtifact = 'devops/distro/distro'
+      projectArtifact = 'io/fabric8/devops/distro/distro'
     }
   }, ipaas: {
     releaseProject{
       project = 'fabric8-ipaas'
-      projectArtifact = 'ipaas/distro/distro'
+      projectArtifact = 'io/fabric8/ipaas/distro/distro'
     }
   })
 

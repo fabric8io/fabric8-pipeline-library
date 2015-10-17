@@ -20,7 +20,7 @@ def call(body) {
         def updated = false
         try {
           // bump fabric8 release dependency versions
-          def kubernetesModelVersion = flow.getReleaseVersion 'kubernetes-model'
+          def kubernetesModelVersion = flow.getReleaseVersion 'io/fabric8/kubernetes-model'
           flow.searchAndReplaceMavenVersionProperty('<kubernetes-model.version>', kubernetesModelVersion)
           updated = true
         } catch (err) {
@@ -28,7 +28,7 @@ def call(body) {
         }
 
         try {
-          def kubernetesClientVersion = flow.getReleaseVersion 'kubernetes-client'
+          def kubernetesClientVersion = flow.getReleaseVersion 'io/fabric8/kubernetes-client'
           flow.searchAndReplaceMavenVersionProperty('<kubernetes-client.version>', kubernetesClientVersion)
           updated = true
         } catch (err) {

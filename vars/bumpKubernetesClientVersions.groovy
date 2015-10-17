@@ -19,7 +19,7 @@ def call(body) {
 
         try{
           // bump dependency versions from the previous stage
-          def kubernetesModelVersion = flow.getReleaseVersion "kubernetes-model"
+          def kubernetesModelVersion = flow.getReleaseVersion "io/fabric8/kubernetes-model"
           flow.searchAndReplaceMavenVersionProperty("<kubernetes.model.version>", kubernetesModelVersion)
 
         } catch (err) {

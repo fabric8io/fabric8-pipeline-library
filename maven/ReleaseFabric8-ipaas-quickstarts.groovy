@@ -3,7 +3,7 @@ try {
 
   releaseProject{
     project = 'ipaas-quickstarts'
-    projectArtifact = 'archetypes/archetypes-catalog'
+    projectArtifact = 'io/fabric8/archetypes/archetypes-catalog'
   }
 
   hubot room: 'release', message: "release success"
