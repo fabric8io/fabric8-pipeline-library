@@ -12,14 +12,14 @@ def getProjectVersion(){
   return project.version.text()
 }
 
-def getReleaseVersion(String project) {
-  def modelMetaData = new XmlSlurper().parse("https://oss.sonatype.org/content/repositories/releases/io/fabric8/$project/maven-metadata.xml")
+def getReleaseVersion(String artifact) {
+  def modelMetaData = new XmlSlurper().parse("https://oss.sonatype.org/content/repositories/releases/${artifact}/maven-metadata.xml")
   def version = modelMetaData.versioning.release.text()
   return version
 }
 
 def getMavenCentralVersion(String artifact) {
-  def modelMetaData = new XmlSlurper().parse("http://central.maven.org/maven2/io/fabric8/${artifact}/maven-metadata.xml")
+  def modelMetaData = new XmlSlurper().parse("http://central.maven.org/maven2/${artifact}/maven-metadata.xml")
   def version = modelMetaData.versioning.release.text()
   return version
 }
