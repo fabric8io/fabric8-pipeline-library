@@ -6,6 +6,7 @@ def call(body) {
     body()
 
     String versionBumpPullRequest = ""
+    def tagDockerImages = []
 
     if (config.project == 'ipaas-quickstarts'){
       versionBumpPullRequest = bumpiPaaSQuickstartsVersions{}
@@ -13,6 +14,7 @@ def call(body) {
       versionBumpPullRequest = bumpFabric8iPaaSVersions{}
     } else if (config.project == 'fabric8-devops'){
       versionBumpPullRequest = bumpFabric8DevOpsVersions{}
+      tagDockerImages = ['fabric8-console','hubot-irc','eclipse-orion','nexus','gerrit','fabric8-kiwiirc','brackets','jenkins-swarm-client','taiga-front','taiga-back','hubot-slack','lets-chat','jenkernetes']
     } else if (config.project == 'kubernetes-client'){
       versionBumpPullRequest = bumpKubernetesClientVersions{}
     } else if (config.project == 'fabric8'){
@@ -35,10 +37,20 @@ def call(body) {
       project = config.project
     }
 
-    waitUntilArtifactSyncedWithCentral {
-      artifact = config.projectArtifact
-      version = stagedProject[1]
-    }
+    parallel(central: {
+      waitUntilArtifactSyncedWithCentral {
+        artifact = config.projectArtifact
+        version = stagedProject[1]
+      }
+    } tag: {
+      if (config.images.size() > 0){
+        tagDockerImage{
+          project = config.project
+          images = tagDockerImages
+          tag = stagedProject[1]
+        }
+      }
+    })
 
     if (pullRequestId != null){
       waitUntilPullRequestMerged{
