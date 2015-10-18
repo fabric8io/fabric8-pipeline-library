@@ -6,11 +6,9 @@ def call(body) {
     body()
 
     stage "tag ${config.project} docker images"
-    node ('swarm'){
-      ws ('tag'){
-        def flow = new io.fabric8.Fabric8Commands()
-
-        for(int i = 0; i < config.images.size(); i++){
+    for(int i = 0; i < config.images.size(); i++){
+      node ('swarm'){
+        ws ('tag'){
           image = config.images[i]
 
           // first try and find an image marked as release
@@ -24,6 +22,7 @@ def call(body) {
           }
 
           sh "docker push -f docker.io/fabric8/${image}:${config.tag}"
+
         }
       }
     }
