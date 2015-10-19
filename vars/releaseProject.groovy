@@ -21,7 +21,7 @@ def call(body) {
       versionBumpPullRequest = bumpFabric8Versions{}
     }
 
-    if (versionBumpPullRequest != null){
+    if (versionBumpPullRequest != ""){
       waitUntilPullRequestMerged{
         name = config.project
         prId = versionBumpPullRequest
@@ -42,7 +42,7 @@ def call(body) {
         artifact = config.projectArtifact
         version = stagedProject[1]
       }
-    } tag: {
+    }, tag: {
       if (config.images.size() > 0){
         tagDockerImage{
           project = config.project
