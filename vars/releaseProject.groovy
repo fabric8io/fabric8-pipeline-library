@@ -21,7 +21,7 @@ def call(body) {
       versionBumpPullRequest = bumpFabric8Versions{}
     }
 
-    if (versionBumpPullRequest != ""){
+    if (versionBumpPullRequest != null && versionBumpPullRequest != ""){
       waitUntilPullRequestMerged{
         name = config.project
         prId = versionBumpPullRequest
