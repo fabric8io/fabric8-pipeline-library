@@ -6,6 +6,10 @@ try {
     projectArtifact = 'io/fabric8/fabric8-maven-plugin'
   }
 
+  def proceedMessage = "fabric8 released - would you like to continue?"
+  hubotApprove proceedMessage
+  input id: 'Proceed', message: "\n${proceedMessage}"
+
   releaseProject{
     project = 'ipaas-quickstarts'
     projectArtifact = 'io/fabric8/archetypes/archetypes-catalog'
