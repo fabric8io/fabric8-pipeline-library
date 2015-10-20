@@ -43,7 +43,7 @@ def call(body) {
         version = stagedProject[1]
       }
     }, tag: {
-      if (config.images.size() > 0){
+      if (tagDockerImages.size() > 0){
         tagDockerImage{
           project = config.project
           images = tagDockerImages
