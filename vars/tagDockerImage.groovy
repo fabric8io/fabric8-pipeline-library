@@ -21,8 +21,9 @@ def call(body) {
             sh "docker tag -f docker.io/fabric8/${image}:latest docker.io/fabric8/${image}:${config.tag}"
           }
 
-          sh "docker push -f docker.io/fabric8/${image}:${config.tag}"
-
+          retry (3){
+            sh "docker push -f docker.io/fabric8/${image}:${config.tag}"
+          }
         }
       }
     }
