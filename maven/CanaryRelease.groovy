@@ -14,7 +14,9 @@ node ('swarm'){
     }
 
     def flow = new io.fabric8.Fabric8Commands()
-    def dockerMavenPluginVersion = flow.getReleaseVersion "org/jolokia/docker-maven-plugin"
+    // commented until next release 2.2.53
+    // def dockerMavenPluginVersion = flow.getReleaseVersion "org/jolokia/docker-maven-plugin"
+    def dockerMavenPluginVersion = '0.13.6'
 
     def canaryVersion = "${versionPrefix}.${env.BUILD_NUMBER}"
     sh "git checkout -b ${env.JOB_NAME}-${canaryVersion}"
