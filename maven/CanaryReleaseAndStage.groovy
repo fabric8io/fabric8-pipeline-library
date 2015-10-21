@@ -20,16 +20,9 @@ node ('swarm'){
     try {
       stageDomain = STAGE_DOMAIN
     } catch (Throwable e) {
-      stageDomain = "${env.JOB_NAME}.${env.DOMAIN ?: 'vagrant.f8'}"
+      stageDomain = "${env.JOB_NAME}.${env.KUBERNETES_DOMAIN ?: 'vagrant.f8'}"
     }
 
-    def registry = ""
-    try {
-      registry = DOCKER_REGISTRY
-    } catch (Throwable e) {
-      registry = "fabric8-docker-registry.${env.DOMAIN}:80/"
-    }
-    
     def fabric8Console = "${env.FABRIC8_CONSOLE ?: ''}"
 
     def canaryVersion = "${versionPrefix}.${env.BUILD_NUMBER}"
@@ -40,7 +33,7 @@ node ('swarm'){
 
     sh "git checkout -b ${env.JOB_NAME}-${canaryVersion}"
     sh "mvn org.codehaus.mojo:versions-maven-plugin:2.2:set -DnewVersion=${canaryVersion}"
-    sh "mvn clean install -U org.apache.maven.plugins:maven-deploy-plugin:2.8.2:deploy org.jolokia:docker-maven-plugin:${dockerMavenPluginVersion}:build org.jolokia:docker-maven-plugin:${dockerMavenPluginVersion}:push -Dfabric8.dockerUser=fabric8/ -Ddocker.registryPrefix=${registry}"
+    sh "mvn clean install -U org.apache.maven.plugins:maven-deploy-plugin:2.8.2:deploy org.jolokia:docker-maven-plugin:${dockerMavenPluginVersion}:build -Dfabric8.dockerUser=fabric8/ -Ddocker.registryPrefix=docker.io/"
 
     stage 'integration test'
 
@@ -58,12 +51,13 @@ node ('swarm'){
       failIfNoTests = "false"
     }
 
-    sh "mvn org.apache.maven.plugins:maven-failsafe-plugin:2.18.1:integration-test -Dfabric8.environment=Testing -Dit.test=${itestPattern} -DfailIfNoTests=${failIfNoTests} org.apache.maven.plugins:maven-failsafe-plugin:2.18.1:verify -Ddocker.registryPrefix=${registry}"
+    sh "mvn org.apache.maven.plugins:maven-failsafe-plugin:2.18.1:integration-test -Dfabric8.environment=Testing -Dit.test=${itestPattern} -DfailIfNoTests=${failIfNoTests} org.apache.maven.plugins:maven-failsafe-plugin:2.18.1:verify -Ddocker.registryPrefix=docker.io/"
+
 
     stage 'stage'
 
     echo "Staging to kubernetes environment: Staging in domain ${stageDomain}"
-    sh "mvn io.fabric8:fabric8-maven-plugin:${fabricMavenPluginVersion}:json io.fabric8:fabric8-maven-plugin:${fabricMavenPluginVersion}:rolling -Dfabric8.environment=Staging -Dfabric8.domain=${stageDomain} -Dfabric8.dockerUser=fabric8/ -Ddocker.registryPrefix=${registry}"
+    sh "mvn io.fabric8:fabric8-maven-plugin:${fabricMavenPluginVersion}:json io.fabric8:fabric8-maven-plugin:${fabricMavenPluginVersion}:rolling -Dfabric8.environment=Staging -Dfabric8.domain=${stageDomain} -Dfabric8.dockerUser=fabric8/ -Ddocker.registryPrefix=docker.io/"
 
     echo """
 
