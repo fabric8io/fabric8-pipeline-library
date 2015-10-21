@@ -28,16 +28,13 @@ node ('swarm'){
     def canaryVersion = "${versionPrefix}.${env.BUILD_NUMBER}"
 
     def flow = new io.fabric8.Fabric8Commands()
-    // commented until next release 2.2.53
-    // def fabricMavenPluginVersion = flow.getMavenCentralVersion "io/fabric8/fabric8-maven-plugin"
-    // def dockerMavenPluginVersion = flow.getReleaseVersion "org/jolokia/docker-maven-plugin"
-    def fabricMavenPluginVersion = '2.2.54'
-    def dockerMavenPluginVersion = '0.13.6'
+    def fabricMavenPluginVersion = flow.getMavenCentralVersion "io/fabric8/fabric8-maven-plugin"
+    def dockerMavenPluginVersion = flow.getReleaseVersion "org/jolokia/docker-maven-plugin"
 
 
     sh "git checkout -b ${env.JOB_NAME}-${canaryVersion}"
     sh "mvn org.codehaus.mojo:versions-maven-plugin:2.2:set -DnewVersion=${canaryVersion}"
-    sh "mvn clean install -U org.apache.maven.plugins:maven-deploy-plugin:2.8.2:deploy org.jolokia:docker-maven-plugin:${dockerMavenPluginVersion}:build -Dfabric8.dockerUser=fabric8/ -Ddocker.registryPrefix=docker.io/""
+    sh "mvn clean install -U org.apache.maven.plugins:maven-deploy-plugin:2.8.2:deploy org.jolokia:docker-maven-plugin:${dockerMavenPluginVersion}:build -Dfabric8.dockerUser=fabric8/ -Ddocker.registryPrefix=docker.io/"
 
     // TODO docker push?
 
