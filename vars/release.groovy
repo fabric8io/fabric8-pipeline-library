@@ -18,11 +18,6 @@ def call(body) {
           sh "git fetch"
           sh "git checkout release-v${version}"
 
-            // push any docker images before we release sonartype repos
-          if (name == 'fabric8-devops' || name == 'fabric8-ipaas'){
-            flow.dockerPush()
-          }
-
           echo "About to release ${name} repo ids ${repoIds}"
           for(int j = 0; j < repoIds.size(); j++){
             flow.releaseSonartypeRepo(repoIds[j])
