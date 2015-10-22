@@ -29,13 +29,14 @@ node ('swarm'){
     } catch (Throwable e) {
       registry = "fabric8-docker-registry.${env.DOMAIN}:80/"
     }
-    
+
     def fabric8Console = "${env.FABRIC8_CONSOLE ?: ''}"
 
     def canaryVersion = "${versionPrefix}.${env.BUILD_NUMBER}"
 
     def flow = new io.fabric8.Fabric8Commands()
-    def fabricMavenPluginVersion = flow.getMavenCentralVersion "io/fabric8/fabric8-maven-plugin"
+    //def fabricMavenPluginVersion = flow.getMavenCentralVersion "io/fabric8/fabric8-maven-plugin"
+    def fabricMavenPluginVersion = '2.2.54'
     def dockerMavenPluginVersion = flow.getReleaseVersion "org/jolokia/docker-maven-plugin"
 
     sh "git checkout -b ${env.JOB_NAME}-${canaryVersion}"
