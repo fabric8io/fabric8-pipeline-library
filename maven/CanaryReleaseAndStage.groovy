@@ -23,12 +23,7 @@ node ('swarm'){
       stageDomain = "${env.JOB_NAME}.${env.DOMAIN ?: 'vagrant.f8'}"
     }
 
-    def registry = ""
-    try {
-      registry = DOCKER_REGISTRY
-    } catch (Throwable e) {
-      registry = "fabric8-docker-registry.${env.DOMAIN}:80/"
-    }
+    def registry = "fabric8-docker-registry.${env.DOMAIN}:80/"
 
     def fabric8Console = "${env.FABRIC8_CONSOLE ?: ''}"
 
