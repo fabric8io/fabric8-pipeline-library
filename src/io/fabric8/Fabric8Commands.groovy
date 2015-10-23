@@ -1,12 +1,5 @@
 package io.fabric8;
 
-def registry = ""
-try {
-  registry = DOCKER_REGISTRY
-} catch (Throwable e) {
-  registry = "fabric8-docker-registry.${env.DOMAIN}:80/"
-}
-
 import groovy.json.JsonSlurper
 
 def getGitRepo(){
@@ -115,7 +108,7 @@ def dockerPush () {
 
 def stageSonartypeRepo () {
   try {
-    sh "mvn -V -B -U clean install org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:deploy -P release -DnexusUrl=https://oss.sonatype.org -DserverId=oss-sonatype-staging -Ddocker.registryPrefix=${registry}"
+    sh "mvn -V -B -U clean install org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:deploy -P release -DnexusUrl=https://oss.sonatype.org -DserverId=oss-sonatype-staging -Ddocker.registry=${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}"
   } catch (err) {
     hubot room: 'release', message: "Release failed when building and deploying to Nexus ${err}"
     currentBuild.result = 'FAILURE'

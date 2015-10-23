@@ -13,7 +13,7 @@ node ('swarm'){
       versionPrefix = "1.0"
     }
 
-    def registry = "fabric8-docker-registry.${env.DOMAIN}:80/"
+    def registry = "${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}/"
 
     def flow = new io.fabric8.Fabric8Commands()
     def dockerMavenPluginVersion = flow.getReleaseVersion "org/jolokia/docker-maven-plugin"

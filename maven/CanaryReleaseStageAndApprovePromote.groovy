@@ -31,7 +31,7 @@ node ('swarm'){
       promoteDomain = "${env.JOB_NAME}.${env.DOMAIN ?: 'prod.vagrant.f8'}"
     }
 
-    def registry = "fabric8-docker-registry.${env.DOMAIN}:80/"
+    def registry = "${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}/"
 
     def flow = new io.fabric8.Fabric8Commands()
     //def fabricMavenPluginVersion = flow.getMavenCentralVersion "io/fabric8/fabric8-maven-plugin"

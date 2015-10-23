@@ -23,7 +23,7 @@ node ('swarm'){
       stageDomain = "${env.JOB_NAME}.${env.DOMAIN ?: 'vagrant.f8'}"
     }
 
-    def registry = "fabric8-docker-registry.${env.DOMAIN}:80/"
+    def registry = "${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}/"
 
     def fabric8Console = "${env.FABRIC8_CONSOLE ?: ''}"
 

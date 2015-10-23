@@ -46,7 +46,7 @@ def call(body) {
     }
 
     if (promoteDockerImages.size() > 0){
-      promoteDockerImages{
+      promoteImages{
         project = config.project
         images = promoteDockerImages
         tag = stagedProject[1]
@@ -60,7 +60,7 @@ def call(body) {
       }
     }, tag: {
       if (tagDockerImages.size() > 0){
-        tagDockerImages{
+        tagImages{
           project = config.project
           images = tagDockerImages
           tag = stagedProject[1]
