@@ -40,11 +40,6 @@ def call(body) {
       project = config.project
     }
 
-    String pullRequestId = release {
-      projectStagingDetails = stagedProject
-      project = config.project
-    }
-
     if (promoteDockerImages.size() > 0){
       promoteImages{
         project = config.project
@@ -67,6 +62,11 @@ def call(body) {
         }
       }
     })
+
+    String pullRequestId = release {
+      projectStagingDetails = stagedProject
+      project = config.project
+    }
 
     if (pullRequestId != null){
       waitUntilPullRequestMerged{
