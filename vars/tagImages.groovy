@@ -10,18 +10,17 @@ def call(body) {
       node ('swarm'){
         ws ('tag'){
           image = config.images[i]
-
-          // first try and find an image marked as release
-          try {
-            sh "docker pull docker.io/fabric8/${image}:staged"
-            sh "docker tag -f docker.io/fabric8/${image}:staged docker.io/fabric8/${image}:${config.tag}"
-          } catch (err) {
-            hubot room: 'release', message: "WARNING No staged tag found for image ${image} so will apply release tag to :latest"
-            sh "docker pull docker.io/fabric8/${image}:latest"
-            sh "docker tag -f docker.io/fabric8/${image}:latest docker.io/fabric8/${image}:${config.tag}"
-          }
-
           retry (3){
+            // first try and find an image marked as release
+            try {
+              sh "docker pull docker.io/fabric8/${image}:staged"
+              sh "docker tag -f docker.io/fabric8/${image}:staged docker.io/fabric8/${image}:${config.tag}"
+            } catch (err) {
+              hubot room: 'release', message: "WARNING No staged tag found for image ${image} so will apply release tag to :latest"
+              sh "docker pull docker.io/fabric8/${image}:latest"
+              sh "docker tag -f docker.io/fabric8/${image}:latest docker.io/fabric8/${image}:${config.tag}"
+            }
+
             sh "docker push -f docker.io/fabric8/${image}:${config.tag}"
           }
         }
