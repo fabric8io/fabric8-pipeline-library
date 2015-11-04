@@ -5,7 +5,7 @@ def call(body) {
     body.delegate = config
     body()
 
-    stage "waiting for ${config.artifact} artifacts to sync with central"
+    stage "waiting for ${config.artifact} ${config.version} artifacts to sync with central"
     node ('swarm'){
       def flow = new io.fabric8.Fabric8Commands()
       def newVersion = config.version
@@ -14,7 +14,7 @@ def call(body) {
         flow.getMavenCentralVersion(config.artifact) == newVersion
       }
 
-      message =  "${config.artifact} released and available in maven central"
+      message =  "${config.artifact} ${config.version} released and available in maven central"
       hubot room: 'release', message: message
 
     }
