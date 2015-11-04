@@ -80,7 +80,7 @@ ${fabric8Console}/kubernetes/pods?environment=Staging
 
 Would you like to promote version ${canaryVersion} to the Production namespace?
 """
-    hubotApprove proceedMessage
+    hubotApprove message: proceedMessage, room: null
     input id: 'Proceed', message: "\n${proceedMessage}"
 
     stage 'promote'
