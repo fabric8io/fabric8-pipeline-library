@@ -48,6 +48,11 @@ def call(body) {
       }
     }
 
+    String pullRequestId = release {
+      projectStagingDetails = stagedProject
+      project = config.project
+    }
+
     parallel(central: {
       waitUntilArtifactSyncedWithCentral {
         artifact = config.projectArtifact
@@ -62,11 +67,6 @@ def call(body) {
         }
       }
     })
-
-    String pullRequestId = release {
-      projectStagingDetails = stagedProject
-      project = config.project
-    }
 
     if (pullRequestId != null){
       waitUntilPullRequestMerged{
