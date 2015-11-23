@@ -9,7 +9,7 @@ This git repository contains a library of reusable [Jenkins Workflows](https://g
 </p>
 
 The idea is to try promote sharing of workflows across projects where it makes sense.
- 
+
 You can then either
 
 * reuse any of the flows as is
@@ -25,3 +25,19 @@ These flows make use of the [Fabric8 DevOps Workflow Steps](https://github.com/f
 The flows are grouped by the kinds of build technologies used:
 
 * [maven](maven)
+
+### [Atom](https://atom.io/) users
+
+So that the Atom groovy plugin works with Jenkinsfile make sure the file type appears in the plugin config..
+
+`atom ~/.atom/packages/language-groovy/grammars/groovy.cson`
+
+```
+'fileTypes': [
+  'groovy'
+  'gvy'
+  'gradle'
+  'Jenkinsfile'
+]
+...
+```
