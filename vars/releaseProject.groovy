@@ -40,6 +40,10 @@ def call(body) {
       project = config.project
     }
 
+    // def proceedMessage = "fabric8 released - would you like to continue?"
+    // hubotApprove message: proceedMessage, room: "release"
+    // input id: 'Proceed', message: "\n${proceedMessage}"
+
     if (promoteDockerImages.size() > 0){
       promoteImages{
         project = config.project
