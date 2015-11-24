@@ -6,6 +6,10 @@ def getGitRepo(){
   'fabric8io'
 }
 
+def getLatestFabric8MavenPluginVersion(){
+  '2.2.65'
+}
+
 def getProjectVersion(){
   def file = readFile('pom.xml')
   def project = new XmlSlurper().parseText(file)
