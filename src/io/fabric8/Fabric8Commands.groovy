@@ -6,6 +6,10 @@ def getGitRepo(){
   'fabric8io'
 }
 
+def getLatestFabric8MavenPluginVersion(){
+  '2.2.65'
+}
+
 def getProjectVersion(){
   def file = readFile('pom.xml')
   def project = new XmlSlurper().parseText(file)
@@ -132,6 +136,15 @@ def releaseSonartypeRepo(String repoId){
 def dropStagingRepo(String repoId){
   echo "Not a release so dropping staging repo ${repoId}"
   sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-drop -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoId} -Ddescription=\"Dry run\" -DstagingProgressTimeoutMinutes=60"
+}
+
+def helmPush(){
+  try {
+    sh "mvn io.fabric8:fabric8-maven-plugin:2.2.65:helm-push"
+  } catch (err) {
+    echo "ERROR with helm push ${err}"
+    return
+  }
 }
 
 def updateGithub(){
