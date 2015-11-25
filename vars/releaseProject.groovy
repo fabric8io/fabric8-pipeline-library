@@ -8,6 +8,7 @@ def call(body) {
     String versionBumpPullRequest = ""
     def tagDockerImages = []
     def promoteDockerImages = []
+    def helm = false
 
     if (config.project == 'ipaas-quickstarts'){
       versionBumpPullRequest = bumpiPaaSQuickstartsVersions{}
@@ -15,11 +16,13 @@ def call(body) {
     } else if (config.project == 'fabric8-ipaas'){
       versionBumpPullRequest = bumpFabric8iPaaSVersions{}
       promoteDockerImages = ['amqbroker','api-registry','apiman-gateway','apiman','fabric8mq','fabric8mq-consumer','fabric8mq-producer']
+      helm = true
 
     } else if (config.project == 'fabric8-devops'){
       versionBumpPullRequest = bumpFabric8DevOpsVersions{}
       tagDockerImages = ['fabric8-console','hubot-irc','eclipse-orion','nexus','gerrit','fabric8-kiwiirc','brackets','jenkins-swarm-client','taiga-front','taiga-back','hubot-slack','lets-chat','jenkernetes']
       promoteDockerImages = ['chaos-monkey','elasticsearch-logstash-template','fabric8-forge','hubot-notifier','image-linker','kibana-config','prometheus-kubernetes','templates']
+      helm = true
 
     } else if (config.project == 'kubernetes-client'){
       versionBumpPullRequest = bumpKubernetesClientVersions{}
@@ -52,9 +55,18 @@ def call(body) {
       }
     }
 
+    if (tagDockerImages.size() > 0){
+      tagImages{
+        project = config.project
+        images = tagDockerImages
+        tag = stagedProject[1]
+      }
+    }
+
     String pullRequestId = release {
       projectStagingDetails = stagedProject
       project = config.project
+      helmPush = helm
     }
 
     parallel(central: {
@@ -62,20 +74,12 @@ def call(body) {
         artifact = config.projectArtifact
         version = stagedProject[1]
       }
-    }, tag: {
-      if (tagDockerImages.size() > 0){
-        tagImages{
-          project = config.project
-          images = tagDockerImages
-          tag = stagedProject[1]
+    }, prmerged: {
+      if (pullRequestId != null){
+        waitUntilPullRequestMerged{
+          name = config.project
+          prId = pullRequestId
         }
       }
     })
-
-    if (pullRequestId != null){
-      waitUntilPullRequestMerged{
-        name = config.project
-        prId = pullRequestId
-      }
-    }
 }

@@ -138,6 +138,15 @@ def dropStagingRepo(String repoId){
   sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-drop -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoId} -Ddescription=\"Dry run\" -DstagingProgressTimeoutMinutes=60"
 }
 
+def helmPush(){
+  try {
+    sh "mvn io.fabric8:fabric8-maven-plugin:2.2.65:helm-push"
+  } catch (err) {
+    echo "ERROR with helm push ${err}"
+    return
+  }
+}
+
 def updateGithub(){
   // push release versions and tag it
   def releaseVersion = getProjectVersion()

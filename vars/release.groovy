@@ -27,6 +27,11 @@ def call(body) {
 
           String pullRequestId = flow.createPullRequest("[CD] Release ${version}")
           echo "pull request id ${pullRequestId}"
+
+          if (config.helmPush) {
+            flow.helmPush()
+          }
+          
           return pullRequestId
 
         }
