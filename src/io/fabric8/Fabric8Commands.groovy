@@ -141,7 +141,7 @@ def dropStagingRepo(String repoId){
 def helm(){
   def pluginVersion = getReleaseVersion("io/fabric8/fabric8-maven-plugin")
   try {
-    sh "mvn io.fabric8:fabric8-maven-plugin:${pluginVersion}:json"
+    sh "mvn clean compile"
     sh "mvn io.fabric8:fabric8-maven-plugin:${pluginVersion}:attach"
     sh "mvn io.fabric8:fabric8-maven-plugin:${pluginVersion}:helm"
     sh "mvn io.fabric8:fabric8-maven-plugin:${pluginVersion}:helm-push"
