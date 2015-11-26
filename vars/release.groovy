@@ -29,9 +29,9 @@ def call(body) {
           echo "pull request id ${pullRequestId}"
 
           if (config.helmPush) {
-            flow.helmPush()
+            flow.helm()
           }
-          
+
           return pullRequestId
 
         }
