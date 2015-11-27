@@ -157,7 +157,8 @@ def updateGithub(){
 
   sh "git tag -a v${releaseVersion} -m 'Release version ${releaseVersion}'"
   sh "git push origin release-v${releaseVersion}"
-
+  // also push the tag
+  sh "git push origin v${releaseVersion}"
 }
 
 def updateNextDevelopmentVersion(String releaseVersion){
