@@ -14,9 +14,7 @@ def call(body) {
           def repoIds = config.projectStagingDetails[2]
 
           def flow = new io.fabric8.Fabric8Commands()
-          flow.setupWorkspace(name)
-          sh "git fetch"
-          sh "git checkout release-v${version}"
+          unstash name:'staged'
 
           echo "About to release ${name} repo ids ${repoIds}"
           for(int j = 0; j < repoIds.size(); j++){

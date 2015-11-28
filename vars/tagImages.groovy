@@ -16,7 +16,12 @@ def call(body) {
               sh "docker pull docker.io/fabric8/${image}:staged"
               sh "docker tag -f docker.io/fabric8/${image}:staged docker.io/fabric8/${image}:${config.tag}"
             } catch (err) {
-              hubot room: 'release', message: "WARNING No staged tag found for image ${image} so will apply release tag to :latest"
+              try {
+                //hubot room: 'release', message: "WARNING No staged tag found for image ${image} so will apply release tag to :latest"
+                echo "WARNING No staged tag found for image ${image} so will apply release tag to :latest"
+              } catch (err1) {
+                echo 'unable to send hubot message'
+              }
               sh "docker pull docker.io/fabric8/${image}:latest"
               sh "docker tag -f docker.io/fabric8/${image}:latest docker.io/fabric8/${image}:${config.tag}"
             }
