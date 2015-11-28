@@ -6,10 +6,6 @@ def getGitRepo(){
   'fabric8io'
 }
 
-def getLatestFabric8MavenPluginVersion(){
-  '2.2.65'
-}
-
 def getProjectVersion(){
   def file = readFile('pom.xml')
   def project = new XmlSlurper().parseText(file)
@@ -141,8 +137,6 @@ def dropStagingRepo(String repoId){
 def helm(){
   def pluginVersion = getReleaseVersion("io/fabric8/fabric8-maven-plugin")
   try {
-    sh "mvn clean compile"
-    sh "mvn io.fabric8:fabric8-maven-plugin:${pluginVersion}:attach"
     sh "mvn io.fabric8:fabric8-maven-plugin:${pluginVersion}:helm"
     sh "mvn io.fabric8:fabric8-maven-plugin:${pluginVersion}:helm-push"
   } catch (err) {
@@ -155,10 +149,10 @@ def updateGithub(){
   // push release versions and tag it
   def releaseVersion = getProjectVersion()
 
-  sh "git tag -a v${releaseVersion} -m 'Release version ${releaseVersion}'"
+  sh "git tag -fa v${releaseVersion} -m 'Release version ${releaseVersion}'"
   sh "git push origin release-v${releaseVersion}"
-  // also push the tag
-  sh "git push origin v${releaseVersion}"
+  // also force push the tag incase release fails further along the pipeline
+  sh "git push --force origin v${releaseVersion}"
 }
 
 def updateNextDevelopmentVersion(String releaseVersion){
