@@ -7,7 +7,7 @@ try {
   versionPrefix = "1.0"
 }
 
-node ('swarm'){
+node ('kubernetes'){
   git GIT_URL
 
   // lets install maven onto the path

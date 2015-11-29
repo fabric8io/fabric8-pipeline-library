@@ -6,7 +6,7 @@ def call(body) {
     body()
 
     stage "waiting for ${config.artifact} ${config.version} artifacts to sync with central"
-    node ('swarm'){
+    node ('kubernetes'){
       def flow = new io.fabric8.Fabric8Commands()
       def newVersion = config.version
 

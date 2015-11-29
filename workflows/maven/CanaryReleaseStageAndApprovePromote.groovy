@@ -23,7 +23,7 @@ def canaryVersion = "${versionPrefix}.${env.BUILD_NUMBER}"
 
 def fabric8Console = "${env.FABRIC8_CONSOLE ?: ''}"
 
-node ('swarm'){
+node ('kubernetes'){
   git GIT_URL
 
   // lets install maven onto the path
