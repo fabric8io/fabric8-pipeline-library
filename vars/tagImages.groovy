@@ -7,7 +7,7 @@ def call(body) {
 
     stage "tag ${config.project} docker images"
     for(int i = 0; i < config.images.size(); i++){
-      node ('swarm'){
+      node ('kubernetes'){
         ws ('tag'){
           image = config.images[i]
           retry (3){

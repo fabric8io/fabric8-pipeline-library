@@ -14,7 +14,7 @@ def call(body) {
       version = config.projects[i][1]
       repoIds = config.projects[i][2]
 
-      node ('swarm'){
+      node ('kubernetes'){
         ws (name){
           withEnv(["PATH+MAVEN=${tool 'maven-3.3.1'}/bin"]) {
             for(int j = 0; j < repoIds.size(); j++){

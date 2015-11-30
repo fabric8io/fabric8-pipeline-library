@@ -1,7 +1,7 @@
 import groovy.json.JsonSlurper
 
 stage 'wait-for-dockerhub'
-node (swarm){
+node ('kubernetes'){
   waitUntil {
     dockerDockerImageTags("fabric8/jenkernetes").contains('v1')
   }
