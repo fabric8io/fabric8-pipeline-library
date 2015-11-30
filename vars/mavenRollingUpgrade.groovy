@@ -6,7 +6,7 @@ def call(body) {
     body()
 
     def flow = new io.fabric8.Fabric8Commands()
-    def fabric8MavenPluginVersion = flow.getLatestFabric8MavenPluginVersion()
+    def fabric8MavenPluginVersion = flow.getReleaseVersion "io/fabric8/fabric8-maven-plugin"
 
     stage "Rolling upgrade ${config.environment}"
 
