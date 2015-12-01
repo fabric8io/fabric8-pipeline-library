@@ -14,7 +14,7 @@ def call(body) {
           def repoIds = config.projectStagingDetails[2]
 
           def flow = new io.fabric8.Fabric8Commands()
-          unstash name:'staged'
+          unstash name:"staged-${config.project}-${version}"
 
           echo "About to release ${name} repo ids ${repoIds}"
           for(int j = 0; j < repoIds.size(); j++){
