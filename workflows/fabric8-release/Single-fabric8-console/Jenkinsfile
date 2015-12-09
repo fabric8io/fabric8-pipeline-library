@@ -9,6 +9,6 @@ try {
   hubot room: 'release', message: "release success"
 
 } catch (err){
-    hubot room: 'release', message: "fabric8-ipaas release failed ${err}"
+    hubot room: 'release', message: "fabric8-console release failed ${err}"
     currentBuild.result = 'FAILURE'
 }
