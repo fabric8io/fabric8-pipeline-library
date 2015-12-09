@@ -31,6 +31,11 @@ try {
       project = 'fabric8-ipaas'
       projectArtifact = 'io/fabric8/ipaas/distro/distro'
     }
+  }, console: {
+    releaseProject{
+      project = 'fabric8-console'
+      projectArtifact = 'io/fabric8/apps/fabric8-console'
+    }
   })
 
   hubot room: 'release', message: "release success"
