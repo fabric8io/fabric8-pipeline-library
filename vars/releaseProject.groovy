@@ -25,7 +25,7 @@ def call(body) {
       helm = true
 
     } else if (config.project == 'fabric8-console'){
-      versionBumpPullRequest = bumpFabric8DevOpsVersions{}
+      versionBumpPullRequest = bumpConsoleVersions{}
       tagDockerImages = ['fabric8-console']
       helm = true
 
