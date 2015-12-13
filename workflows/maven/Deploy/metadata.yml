@@ -1,0 +1,3 @@
+environments:
+stages:
+  - 'deploy'

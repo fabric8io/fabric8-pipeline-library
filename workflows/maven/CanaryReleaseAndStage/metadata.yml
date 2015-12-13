@@ -1,0 +1,7 @@
+environments:
+  - Testing
+  - Staging
+stages:
+  - 'canary release'
+  - 'integration test'
+  - 'Rolling upgrade Staging'
