@@ -30,7 +30,7 @@ def call(body) {
         }
 
         sh "git push origin versionUpdate${uid}"
-        return flow.createPullRequest("[CD] Update release dependencies")
+        return flow.createPullRequest("[CD] Update release dependencies","${project}")
       }
     }
   }
