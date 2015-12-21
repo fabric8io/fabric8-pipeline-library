@@ -37,7 +37,7 @@ def call(body) {
         // only make a pull request if we've updated a version
         if (updated) {
           sh "git push origin versionUpdate${uid}"
-          return flow.createPullRequest("[CD] Update release dependencies")
+          return flow.createPullRequest("[CD] Update release dependencies","${project}")
         } else {
           message = "fabric8-ipaas already on the latest release versions"
           hubot room: 'release', message: message

@@ -1,3 +1,4 @@
+#!groovy
 package io.fabric8;
 
 import groovy.json.JsonSlurper
@@ -201,11 +202,39 @@ def runSystemTests(){
   sh 'cd systests && mvn clean integration-test verify'
 }
 
-def createPullRequest(String message){
+def createPullRequest(String message, String project){
   sh "hub pull-request -m \"${message}\" > pr.txt"
   pr = readFile('pr.txt')
   split = pr.split('\\/')
-  return split[6]
+  def pr = split[6]
+  addMergeCommentToPullRequest(pr, project)
+  return pr
+}
+
+def addMergeCommentToPullRequest(String pr, String project){
+  def gitRepo = getGitRepo()
+  def apiUrl = new URL("https://api.github.com/repos/${gitRepo}/${project}/issues/${pr}/comments")
+  def HttpURLConnection connection = apiUrl.openConnection()
+  if(authString.length() > 0)
+  {
+    def conn = apiUrl.openConnection()
+    connection.setRequestProperty("Authorization", "Bearer ${env.GITHUB_TOKEN}")
+  }
+  connection.setRequestMethod("POST")
+  connection.setDoInput(true)
+  connection.connect()
+
+  def body  = '{"body":"[merge]"}'
+
+  OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream())
+  writer.write(body);
+  writer.flush();
+
+  // execute the POST request
+  new InputStreamReader(connection.getInputStream())
+
+  connection.disconnect()
+
 }
 
 def deleteRemoteBranch(String branchName){
