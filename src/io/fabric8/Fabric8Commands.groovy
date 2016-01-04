@@ -213,15 +213,17 @@ def createPullRequest(String message, String project){
 
 def addMergeCommentToPullRequest(String pr, String project){
   def gitRepo = getGitRepo()
+  def authString = "${env.GITHUB_TOKEN}"
   def apiUrl = new URL("https://api.github.com/repos/${gitRepo}/${project}/issues/${pr}/comments")
+
+
   def HttpURLConnection connection = apiUrl.openConnection()
   if(authString.length() > 0)
   {
-    def conn = apiUrl.openConnection()
     connection.setRequestProperty("Authorization", "Bearer ${env.GITHUB_TOKEN}")
   }
   connection.setRequestMethod("POST")
-  connection.setDoInput(true)
+  connection.setDoOutput(true)
   connection.connect()
 
   def body  = '{"body":"[merge]"}'

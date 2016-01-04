@@ -28,8 +28,8 @@ def call(body) {
           }
 
           try {
-            def projectVersion = flow.getProjectVersion()
-            flow.searchAndReplaceMavenVersionProperty("<fabric8.devops.version>", projectVersion)
+            def devopsVersion = flow.getMavenCentralVersion('io/fabric8/devops/distro/distro')
+            flow.searchAndReplaceMavenVersionProperty("<fabric8.devops.version>", devopsVersion)
             updated = true
           } catch (err) {
             echo "Already set devops release version dependencies"
