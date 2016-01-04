@@ -80,17 +80,16 @@ def call(body) {
       helmPush = helm
     }
 
-    parallel(central: {
-      waitUntilArtifactSyncedWithCentral {
-        artifact = config.projectArtifact
-        version = stagedProject[1]
+    if (pullRequestId != null){
+      waitUntilPullRequestMerged{
+        name = config.project
+        prId = pullRequestId
       }
-    }, prmerged: {
-      if (pullRequestId != null){
-        waitUntilPullRequestMerged{
-          name = config.project
-          prId = pullRequestId
-        }
-      }
-    })
+    }
+
+    waitUntilArtifactSyncedWithCentral {
+      artifact = config.projectArtifact
+      version = stagedProject[1]
+    }
+
 }

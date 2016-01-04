@@ -206,7 +206,7 @@ def createPullRequest(String message, String project){
   sh "hub pull-request -m \"${message}\" > pr.txt"
   pr = readFile('pr.txt')
   split = pr.split('\\/')
-  def pr = split[6]
+  def pr = split[6].trim()
   addMergeCommentToPullRequest(pr, project)
   return pr
 }
@@ -215,27 +215,32 @@ def addMergeCommentToPullRequest(String pr, String project){
   def gitRepo = getGitRepo()
   def authString = "${env.GITHUB_TOKEN}"
   def apiUrl = new URL("https://api.github.com/repos/${gitRepo}/${project}/issues/${pr}/comments")
+  echo "merge PR using comment sent to ${apiUrl}"
+  try {
+    def HttpURLConnection connection = apiUrl.openConnection()
+    if(authString.length() > 0)
+    {
+      connection.setRequestProperty("Authorization", "Bearer ${env.GITHUB_TOKEN}")
+    }
+    connection.setRequestMethod("POST")
+    connection.setDoOutput(true)
+    connection.connect()
 
+    def body  = '{"body":"[merge]"}'
 
-  def HttpURLConnection connection = apiUrl.openConnection()
-  if(authString.length() > 0)
-  {
-    connection.setRequestProperty("Authorization", "Bearer ${env.GITHUB_TOKEN}")
+    OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream())
+    writer.write(body);
+    writer.flush();
+
+    // execute the POST request
+    new InputStreamReader(connection.getInputStream())
+
+    connection.disconnect()
+  } catch (err) {
+     echo "ERROR  ${err}"
+     return
   }
-  connection.setRequestMethod("POST")
-  connection.setDoOutput(true)
-  connection.connect()
 
-  def body  = '{"body":"[merge]"}'
-
-  OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream())
-  writer.write(body);
-  writer.flush();
-
-  // execute the POST request
-  new InputStreamReader(connection.getInputStream())
-
-  connection.disconnect()
 
 }
 
