@@ -28,7 +28,7 @@ def call(body) {
           }
 
           try {
-            def devopsVersion = flow.getMavenCentralVersion('io/fabric8/devops/distro/distro')
+            def devopsVersion = flow.getMavenCentralVersion('io/fabric8/devops/apps/jenkin')
             flow.searchAndReplaceMavenVersionProperty("<fabric8.devops.version>", devopsVersion)
             updated = true
           } catch (err) {
