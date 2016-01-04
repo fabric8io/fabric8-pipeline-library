@@ -40,7 +40,7 @@ try {
 
   releaseProject{
     project = 'fabric8-forge'
-    projectArtifact = 'io/fabric8/forge/distro/distro'
+    projectArtifact = 'io/fabric8/devops/apps/jenkins'
   }
 
   hubot room: 'release', message: "release success"
