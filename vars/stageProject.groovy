@@ -18,7 +18,7 @@ def call(body) {
         }
 
         // update project specific properties
-        if (config.project == 'fabric8-devops'){
+        if (config.project == 'fabric8-forge'){
           try {
             def archetypeVersion = flow.getMavenCentralVersion('io/fabric8/archetypes/archetypes-catalog')
             flow.searchAndReplaceMavenVersionProperty("<fabric8.archetypes.release.version>", archetypeVersion)
@@ -29,7 +29,7 @@ def call(body) {
 
           try {
             def projectVersion = flow.getProjectVersion()
-            flow.searchAndReplaceMavenVersionProperty("<fabric8.devops.release.version>", projectVersion)
+            flow.searchAndReplaceMavenVersionProperty("<fabric8.devops.version>", projectVersion)
             updated = true
           } catch (err) {
             echo "Already set devops release version dependencies"

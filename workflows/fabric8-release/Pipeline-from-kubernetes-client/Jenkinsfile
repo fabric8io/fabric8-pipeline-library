@@ -33,6 +33,11 @@ try {
     }
   })
 
+  releaseProject{
+    project = 'fabric8-forge'
+    projectArtifact = 'io/fabric8/apps/fabric8-forge'
+  }
+  
   hubot room: 'release', message: "release success"
 
 } catch (err){

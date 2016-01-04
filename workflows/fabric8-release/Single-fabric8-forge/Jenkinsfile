@@ -1,0 +1,14 @@
+hubot room: 'release', message: "release started"
+try {
+
+  releaseProject{
+    project = 'fabric8-forge'
+    projectArtifact = 'io/fabric8/apps/fabric8-forge'
+  }
+
+  hubot room: 'release', message: "release success"
+
+} catch (err){
+    hubot room: 'release', message: "fabric8-forge release failed ${err}"
+    currentBuild.result = 'FAILURE'
+}
