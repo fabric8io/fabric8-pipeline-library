@@ -10,54 +10,58 @@ def call(body) {
     stage "waiting for ${config.name} ${config.prId} PR to merge"
     node ('kubernetes'){
       ws (config.name){
-        authString = "${env.GITHUB_TOKEN}"
+        def githubToken = "${env.GITHUB_TOKEN}"
+
         def flow = new io.fabric8.Fabric8Commands()
         flow.setupWorkspace (config.name)
         echo "pull request id ${config.prId}"
         gitRepo = flow.getGitRepo()
         String id = config.prId
-        def apiUrl = new URL("https://api.github.com/repos/${gitRepo}/${config.name}/pulls/${id}")
+
 
         def branchName
         def notified = false
 
         // wait until the PR is merged, if there's a merge conflict the notify and wait until PR is finally merged
         waitUntil {
-          def HttpURLConnection connection = apiUrl.openConnection()
-          if(authString.length() > 0)
-          {
-            def conn = apiUrl.openConnection()
-            connection.setRequestProperty("Authorization", "Bearer ${authString}")
+          def apiUrl = new URL("https://api.github.com/repos/${gitRepo}/${config.name}/pulls/${id}")
+          JsonSlurper rs = restGetURL{
+            authString = githubToken
+            url = apiUrl
           }
-          connection.setRequestMethod("GET")
-          connection.setDoInput(true)
-          connection.connect()
-          def pr = new JsonSlurper().parse(new InputStreamReader(connection.getInputStream(),"UTF-8"))
-          connection.disconnect()
 
-          branchName = pr.head.ref
-          echo "${config.name} Pull request ${id} mergable state ${pr.mergeable_state}"
+          branchName = rs.head.ref
+          def sha = rs.head.sha
+          echo "checking status of commit ${sha}"
 
-          if (pr.mergeable_state == 'unstable' && !notified){
+          apiUrl = new URL("https://api.github.com/repos/${gitRepo}/${config.name}/commits/${sha}/status")
+          rs = restGetURL{
+            authString = githubToken
+            url = apiUrl
+          }
+
+          echo "${config.name} Pull request ${id} state ${rs.state}"
+
+          if (rs.state == 'failure' && !notified){
             def message ="""
 Pull request was not automatically merged.  Please fix and update Pull Request to continue with release...
 ```
-git clone git@github.com:${gitRepo}/${config.name}.git
-cd ${config.name}
-git fetch origin pull/${id}/head:fixPR${id}
-git checkout fixPR${id}
+  git clone git@github.com:${gitRepo}/${config.name}.git
+  cd ${config.name}
+  git fetch origin pull/${id}/head:fixPR${id}
+  git checkout fixPR${id}
 
-[resolve issue]
+  [resolve issue]
 
-git commit -a -m 'resolved merge issues caused by release dependency updates'
-git push origin fixPR${id}:${branchName}
+  git commit -a -m 'resolved merge issues caused by release dependency updates'
+  git push origin fixPR${id}:${branchName}
 ```
 """
 
             hubot room: 'release', message: message
             notified = true
           }
-          pr.merged == true
+          rs.state == 'success'
         }
         try {
           // clean up
