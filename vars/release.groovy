@@ -9,6 +9,7 @@ def call(body) {
     node ('kubernetes'){
       ws (config.project){
         withEnv(["PATH+MAVEN=${tool 'maven-3.3.1'}/bin"]) {
+
           def name = config.projectStagingDetails[0]
           def version = config.projectStagingDetails[1]
           def repoIds = config.projectStagingDetails[2]
