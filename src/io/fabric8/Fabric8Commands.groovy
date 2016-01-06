@@ -7,6 +7,11 @@ def getGitRepo(){
   'fabric8io'
 }
 
+def getGithubAPIToken(){
+  def file = readFile('pom.xml')
+  
+}
+
 def getProjectVersion(){
   def file = readFile('pom.xml')
   def project = new XmlSlurper().parseText(file)
