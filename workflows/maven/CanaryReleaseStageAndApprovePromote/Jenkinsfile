@@ -24,43 +24,44 @@ def canaryVersion = "${versionPrefix}.${env.BUILD_NUMBER}"
 def fabric8Console = "${env.FABRIC8_CONSOLE ?: ''}"
 
 node ('kubernetes'){
-  kubernetes.pod('buildpod')
-  .withImage('fabric8/builder-openshift-client')
-  .withSecret('jenkins-maven-settings','/home/jenkins/.m2')
-  .inside {
-    git GIT_URL
+  git GIT_URL
 
-    // lets install maven onto the path
-    withEnv(["PATH+MAVEN=${tool 'maven-3.3.1'}/bin"]) {
+  kubernetes.pod('buildpod').withImage('fabric8/builder-maven')
+      .withPrivileged(true)
+      .withHostPathMount('/var/run/docker.sock','/var/run/docker.sock')
+      .withEnvVar('DOCKER_CONFIG','/home/jenkins/.docker/')
+      .withSecret('jenkins-docker-cfg','/home/jenkins/.docker')
+      .withSecret('jenkins-maven-settings','/root/.m2')
+      .withServiceAccount('jenkins')
+      .inside {
 
-      mavenCanaryRelease{
-        version = canaryVersion
-      }
+    mavenCanaryRelease{
+      version = canaryVersion
+    }
 
-      // TODO docker push?
+    // TODO docker push?
 
-      mavenIntegrationTest{
-        environment = 'Testing'
-        failIfNoTests = localFailIfNoTests
-        itestPattern = localItestPattern
-      }
+    mavenIntegrationTest{
+      environment = 'Testing'
+      failIfNoTests = localFailIfNoTests
+      itestPattern = localItestPattern
+    }
 
-      mavenRollingUpgrade{
-        environment = 'Staging'
-        stageDomain = STAGE_DOMAIN
-      }
+    mavenRollingUpgrade{
+      environment = 'Staging'
+      stageDomain = STAGE_DOMAIN
+    }
 
-      approve{
-        room = null
-        version = canaryVersion
-        console = fabric8Console
-        environment = 'Staging'
-      }
+    approve{
+      room = null
+      version = canaryVersion
+      console = fabric8Console
+      environment = 'Staging'
+    }
 
-      mavenRollingUpgrade{
-        environment = 'Production'
-        stageDomain = PROMOTE_DOMAIN
-      }
+    mavenRollingUpgrade{
+      environment = 'Production'
+      stageDomain = PROMOTE_DOMAIN
     }
   }
 }

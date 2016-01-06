@@ -24,7 +24,14 @@ def canaryVersion = "${versionPrefix}.${env.BUILD_NUMBER}"
 node ('kubernetes'){
   git GIT_URL
 
-  withEnv(["PATH+MAVEN=${tool 'maven-3.3.1'}/bin"]) {
+  kubernetes.pod('buildpod').withImage('fabric8/builder-maven')
+      .withPrivileged(true)
+      .withHostPathMount('/var/run/docker.sock','/var/run/docker.sock')
+      .withEnvVar('DOCKER_CONFIG','/home/jenkins/.docker/')
+      .withSecret('jenkins-docker-cfg','/home/jenkins/.docker')
+      .withSecret('jenkins-maven-settings','/root/.m2')
+      .withServiceAccount('jenkins')
+      .inside {
 
     mavenCanaryRelease{
       version = canaryVersion
