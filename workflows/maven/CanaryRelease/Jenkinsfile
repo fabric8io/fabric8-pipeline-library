@@ -7,6 +7,8 @@ try {
   versionPrefix = "1.0"
 }
 
+def canaryVersion = "${versionPrefix}.${env.BUILD_NUMBER}"
+
 node ('kubernetes'){
   git GIT_URL
 
