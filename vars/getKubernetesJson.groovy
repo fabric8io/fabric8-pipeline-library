@@ -1,0 +1,145 @@
+def call(body) {
+    // evaluate the body block, and collect configuration into the object
+    def config = [:]
+    body.resolveStrategy = Closure.DELEGATE_FIRST
+    body.delegate = config
+    body()
+
+    return """
+    {
+      "apiVersion" : "v1",
+      "kind" : "Template",
+      "labels" : { },
+      "metadata" : {
+        "annotations" : {
+          "description" : "${config.label} example",
+          "fabric8.${env.JOB_NAME}/iconUrl" : "${config.icon}",
+          "fabric8.${env.JOB_NAME}/summary" : "A nodeJS example"
+        },
+        "labels" : { },
+        "name" : "${env.JOB_NAME}"
+      },
+      "objects" : [{
+        "kind": "Service",
+        "apiVersion": "v1",
+        "metadata": {
+            "name": "${env.JOB_NAME}",
+            "creationTimestamp": null,
+            "labels": {
+                "component": "${env.JOB_NAME}",
+                "container": "${config.label}",
+                "group": "quickstarts",
+                "project": "${env.JOB_NAME}",
+                "provider": "fabric8"
+            },
+            "annotations": {
+                "prometheus.io/port": "${config.port}",
+                "prometheus.io/scheme": "http",
+                "prometheus.io/scrape": "true"
+            }
+        },
+        "spec": {
+            "ports": [
+                {
+                    "protocol": "TCP",
+                    "port": 80,
+                    "targetPort": ${config.port}
+                }
+            ],
+            "selector": {
+                "component": "${env.JOB_NAME}",
+                "container": "${config.label}",
+                "group": "quickstarts",
+                "project": "${env.JOB_NAME}",
+                "provider": "fabric8",
+                "version": "${config.version}"
+            },
+            "type": "ClusterIP",
+            "sessionAffinity": "None"
+        },
+        "status": {
+            "loadBalancer": {}
+        }
+    },
+    {
+        "kind": "ReplicationController",
+        "apiVersion": "v1",
+        "metadata": {
+            "name": "${env.JOB_NAME}",
+            "generation": 1,
+            "creationTimestamp": null,
+            "labels": {
+                "component": "${env.JOB_NAME}",
+                "container": "${config.label}",
+                "group": "quickstarts",
+                "project": "${env.JOB_NAME}",
+                "provider": "fabric8",
+                "version": "${config.version}"
+            }
+        },
+        "spec": {
+            "replicas": 1,
+            "selector": {
+                "component": "${env.JOB_NAME}",
+                "container": "${config.label}",
+                "group": "quickstarts",
+                "project": "${env.JOB_NAME}",
+                "provider": "fabric8",
+                "version": "${config.version}"
+            },
+            "template": {
+                "metadata": {
+                    "creationTimestamp": null,
+                    "labels": {
+                        "component": "${env.JOB_NAME}",
+                        "container": "${config.label}",
+                        "group": "quickstarts",
+                        "project": "${env.JOB_NAME}",
+                        "provider": "fabric8",
+                        "version": "${config.version}"
+                    }
+                },
+                "spec": {
+                    "containers": [
+                        {
+                            "name": "${env.JOB_NAME}",
+                            "image": "${config.imageName}",
+                            "ports": [
+                                {
+                                    "name": "web",
+                                    "containerPort": ${config.port},
+                                    "protocol": "TCP"
+                                }
+                            ],
+                            "env": [
+                                {
+                                    "name": "KUBERNETES_NAMESPACE",
+                                    "valueFrom": {
+                                        "fieldRef": {
+                                            "apiVersion": "v1",
+                                            "fieldPath": "metadata.namespace"
+                                        }
+                                    }
+                                }
+                            ],
+                            "resources": {},
+                            "terminationMessagePath": "/dev/termination-log",
+                            "imagePullPolicy": "IfNotPresent",
+                            "securityContext": {}
+                        }
+                    ],
+                    "restartPolicy": "Always",
+                    "terminationGracePeriodSeconds": 30,
+                    "dnsPolicy": "ClusterFirst",
+                    "securityContext": {}
+                }
+            }
+        },
+        "status": {
+            "replicas": 0
+        }
+    }]}
+    """
+
+
+  }
