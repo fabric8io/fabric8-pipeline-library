@@ -1,0 +1,14 @@
+hubot room: 'release', message: "release started"
+try {
+
+  releaseProject{
+    project = 'docker-client'
+    projectArtifact = 'io/fabric8/docker-client-project'
+  }
+
+  hubot room: 'release', message: "release success"
+
+} catch (err){
+    hubot room: 'release', message: "docker-client release failed ${err}"
+    currentBuild.result = 'FAILURE'
+}
