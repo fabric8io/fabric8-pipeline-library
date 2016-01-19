@@ -15,7 +15,7 @@ def organisation = ""
 try {
   organisation = ORGANISATION
 } catch (Throwable e) {
-  organisation = "rawlingsj"
+  organisation = "fabric8io"
 }
 
 def envStage = "${env.JOB_NAME}-staging"
@@ -64,9 +64,9 @@ node ('kubernetes'){
           environment = envStage
         }
 
-        stage 'promote'
-          sh "docker tag -f ${clusterImageName} ${dockerhubImageName}"
-          sh "docker push -f ${dockerhubImageName}"
+        // stage 'promote'
+        //   sh "docker tag -f ${clusterImageName} ${dockerhubImageName}"
+        //   sh "docker push -f ${dockerhubImageName}"
 
         stage 'Rolling upgrade Production'
           kubernetesApply(file: rc, environment: envProd)
