@@ -1,0 +1,8 @@
+environments:
+  - Staging
+  - Production
+stages:
+  - 'canary release'
+  - 'Rolling upgrade Staging'
+  - 'approve'
+  - 'Rolling upgrade Production'
