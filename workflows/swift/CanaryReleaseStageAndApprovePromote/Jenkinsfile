@@ -39,7 +39,7 @@ node ('kubernetes'){
         stage 'canary release'
 
           if (!fileExists ('Dockerfile')) {
-            writeFile file: 'Dockerfile', text: 'FROM fabric8/swift:1.0-onbuild'
+            writeFile file: 'Dockerfile', text: 'FROM fabric8/swift:2.2-SNAPSHOT-onbuild'
           }
           sh "docker build --rm -t ${clusterImageName} ."
           sh "docker push ${clusterImageName}"
