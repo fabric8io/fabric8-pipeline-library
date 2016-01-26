@@ -1,16 +1,5 @@
 #!/usr/bin/groovy
 
-// lets allow the VERSION_PREFIX to be specified as a parameter to the build
-// but if not lets just default to 1.0
-def versionPrefix = ""
-try {
-  versionPrefix = VERSION_PREFIX
-} catch (Throwable e) {
-  versionPrefix = "1.0"
-}
-
-def canaryVersion = "${versionPrefix}.${env.BUILD_NUMBER}"
-
 def organisation = ""
 try {
   organisation = ORGANISATION
@@ -25,51 +14,44 @@ node ('kubernetes'){
 
   git GIT_URL
 
-  kubernetes.pod('buildpod').withImage('fabric8/builder-openshift-client')
-      .withPrivileged(true)
-      .withHostPathMount('/var/run/docker.sock','/var/run/docker.sock')
-      .withEnvVar('DOCKER_CONFIG','/home/jenkins/.docker/')
-      .withSecret('jenkins-docker-cfg','/home/jenkins/.docker')
-      .withServiceAccount('jenkins')
-      .inside {
+  def newVersion = getNewVersion{}
+  def clusterImageName = "${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}/${organisation}/${env.JOB_NAME}:${newVersion}"
+  def dockerhubImageName = "docker.io/${organisation}/${env.JOB_NAME}:${newVersion}"
 
-        def clusterImageName = "${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}/${organisation}/${env.JOB_NAME}:${versionPrefix}"
-        def dockerhubImageName = "docker.io/${organisation}/${env.JOB_NAME}:${versionPrefix}"
+  stage 'canary release'
 
-        stage 'canary release'
+    if (!fileExists ('Dockerfile')) {
+      writeFile file: 'Dockerfile', text: 'FROM golang:onbuild'
+    }
 
-          if (!fileExists ('Dockerfile')) {
-            writeFile file: 'Dockerfile', text: 'FROM golang:onbuild'
-          }
-          sh "docker build --rm -t ${clusterImageName} ."
-          sh "docker push ${clusterImageName}"
+    kubernetes.image().withName(clusterImageName).build().fromPath(".")
+    //kubernetes.image().withName(clusterImageName).push().toRegistry()
 
-          def rc = getKubernetesJson {
-            port = 8080
-            label = 'golang'
-            icon = 'https://cdn.rawgit.com/fabric8io/fabric8/dc05040/website/src/images/logos/gopher.png'
-            version = versionPrefix
-            imageName = clusterImageName
-          }
+    gitTag{
+      releaseVersion = newVersion
+    }
 
-          sh 'echo "commit:" `git rev-parse HEAD` >> git.yml && echo "branch:" `git rev-parse --abbrev-ref HEAD` >> git.yml'
+    def rc = getKubernetesJson {
+      port = 8080
+      label = 'golang'
+      icon = 'https://cdn.rawgit.com/fabric8io/fabric8/dc05040/website/src/images/logos/gopher.png'
+      version = versionPrefix
+      imageName = clusterImageName
+    }
 
-        stage 'Rolling upgrade Staging'
-          kubernetesApply(file: rc, environment: envStage)
+    sh 'echo "commit:" `git rev-parse HEAD` >> git.yml && echo "branch:" `git rev-parse --abbrev-ref HEAD` >> git.yml'
 
-        approve{
-          room = null
-          version = canaryVersion
-          console = fabric8Console
-          environment = envStage
-        }
+  stage 'Rolling upgrade Staging'
+    kubernetesApply(file: rc, environment: envStage)
 
-        // stage 'promote'
-        //   sh "docker tag -f ${clusterImageName} ${dockerhubImageName}"
-        //   sh "docker push -f ${dockerhubImageName}"
-
-        stage 'Rolling upgrade Production'
-          kubernetesApply(file: rc, environment: envProd)
-
+  approve{
+    room = null
+    version = canaryVersion
+    console = fabric8Console
+    environment = envStage
   }
+
+  stage 'Rolling upgrade Production'
+    kubernetesApply(file: rc, environment: envProd)
+
 }
