@@ -1,3 +1,4 @@
+#!/usr/bin/groovy
 hubot room: 'release', message: "release started"
 try {
 

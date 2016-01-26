@@ -1,3 +1,4 @@
+#!/usr/bin/groovy
 def localItestPattern = ""
 try {
   localItestPattern = ITEST_PATTERN

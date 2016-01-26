@@ -1,3 +1,4 @@
+#!/usr/bin/groovy
 def call(body) {
     // evaluate the body block, and collect configuration into the object
     def config = [:]
@@ -20,7 +21,7 @@ def call(body) {
       } catch (err) {
         // otherwise lets use the traditional version style
         def microVersion = previousVersion.substring(previousVersion.lastIndexOf('.')+1) as int
-        def version = previousVersion.substring(0, previousVersion.lastIndexOf('.')+1) + (microVersion+1)
+        version = previousVersion.substring(0, previousVersion.lastIndexOf('.')+1) + (microVersion+1)
       }
       echo 'using new version ' +  version
     } catch (err) {

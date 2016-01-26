@@ -1,4 +1,4 @@
-#!groovy
+#!/usr/bin/groovy
 package io.fabric8;
 
 import groovy.json.JsonSlurper
