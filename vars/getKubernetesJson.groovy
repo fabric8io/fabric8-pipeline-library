@@ -6,7 +6,7 @@ def call(body) {
     body.delegate = config
     body()
 
-    return """
+    def rc = """
     {
       "apiVersion" : "v1",
       "kind" : "Template",
@@ -31,7 +31,8 @@ def call(body) {
                 "container": "${config.label}",
                 "group": "quickstarts",
                 "project": "${env.JOB_NAME}",
-                "provider": "fabric8"
+                "provider": "fabric8",
+                "version": "${config.version}"
             },
             "annotations": {
                 "prometheus.io/port": "${config.port}",
@@ -142,5 +143,7 @@ def call(body) {
     }]}
     """
 
+    echo 'using Kubernetes resources:\n' + rc
+    return rc
 
   }

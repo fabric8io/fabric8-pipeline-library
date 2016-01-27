@@ -6,7 +6,9 @@ def call(body) {
     body.delegate = config
     body()
 
+    sh "git config user.email fabric8@googlegroups.com"
+    sh "git config user.name fabric8"
+
     sh "git tag -fa v${config.releaseVersion} -m 'Release version ${config.releaseVersion}'"
-    // also force push the tag incase release fails further along the pipeline
-    sh "git push --force origin v${config.releaseVersion}"
+    sh "git push origin v${config.releaseVersion}"
 }

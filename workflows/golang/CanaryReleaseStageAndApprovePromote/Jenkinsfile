@@ -27,9 +27,9 @@ node ('kubernetes'){
     kubernetes.image().withName(clusterImageName).build().fromPath(".")
     //kubernetes.image().withName(clusterImageName).push().toRegistry()
 
-    gitTag{
-      releaseVersion = newVersion
-    }
+    // gitTag{
+    //   releaseVersion = newVersion
+    // }
 
     def rc = getKubernetesJson {
       port = 8080
