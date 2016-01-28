@@ -4,7 +4,7 @@ def organisation = ""
 try {
   organisation = ORGANISATION
 } catch (Throwable e) {
-  organisation = "fabric8io"
+  organisation = "default"
 }
 
 def envStage = "${env.JOB_NAME}-staging"
@@ -22,7 +22,7 @@ node ('kubernetes'){
   stage 'canary release'
 
     if (!fileExists ('Dockerfile')) {
-      writeFile file: 'Dockerfile', text: 'FROM node:5.3-onbuild'
+      writeFile file: 'Dockerfile', text: 'FROM rails:onbuild'
     }
 
     kubernetes.image().withName(clusterImageName).build().fromPath(".")
@@ -33,9 +33,9 @@ node ('kubernetes'){
     // }
 
     def rc = getKubernetesJson {
-      port = 8080
-      label = 'node'
-      icon = 'https://cdn.rawgit.com/fabric8io/fabric8/dc05040/website/src/images/logos/nodejs.svg'
+      port = 3000
+      label = 'rails'
+      icon = 'https://cdn.rawgit.com/fabric8io/fabric8-console/38f589a/img/icons/ruby.png'
       version = newVersion
       imageName = clusterImageName
     }

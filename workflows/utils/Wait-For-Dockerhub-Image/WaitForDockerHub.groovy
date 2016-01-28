@@ -1,3 +1,4 @@
+#!/usr/bin/groovy
 import groovy.json.JsonSlurper
 
 stage 'wait-for-dockerhub'

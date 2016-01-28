@@ -1,3 +1,4 @@
+#!/usr/bin/groovy
 import groovy.json.JsonSlurper;
 
 def call(body) {
