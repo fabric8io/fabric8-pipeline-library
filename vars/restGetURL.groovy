@@ -8,17 +8,20 @@ def call(body) {
   body.delegate = config
   body()
 
-  def HttpURLConnection connection = config.url.openConnection()
-  if(config.authString.length() > 0)
-  {
-    def conn = config.url.openConnection()
-    connection.setRequestProperty("Authorization", "Bearer ${config.authString}")
-  }
-  connection.setRequestMethod("GET")
-  connection.setDoInput(true)
-  connection.connect()
-  def pr = new JsonSlurper().parse(new InputStreamReader(connection.getInputStream(),"UTF-8"))
-  connection.disconnect()
+  retry(3){
+    def HttpURLConnection connection = config.url.openConnection()
+    if(config.authString.length() > 0)
+    {
+      def conn = config.url.openConnection()
+      connection.setRequestProperty("Authorization", "Bearer ${config.authString}")
+    }
+    connection.setRequestMethod("GET")
+    connection.setDoInput(true)
+    connection.connect()
+    def pr = new JsonSlurper().parse(new InputStreamReader(connection.getInputStream(),"UTF-8"))
+    connection.disconnect()
 
-  return pr
+    return pr
+  }
+
 }

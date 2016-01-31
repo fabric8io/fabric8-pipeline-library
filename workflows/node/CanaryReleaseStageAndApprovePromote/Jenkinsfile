@@ -1,12 +1,4 @@
 #!/usr/bin/groovy
-
-def organisation = ""
-try {
-  organisation = ORGANISATION
-} catch (Throwable e) {
-  organisation = "fabric8io"
-}
-
 def envStage = "${env.JOB_NAME}-staging"
 def envProd = "${env.JOB_NAME}-production"
 
@@ -15,9 +7,7 @@ node ('kubernetes'){
   git GIT_URL
 
   def newVersion = getNewVersion{}
-  def clusterImageName = "${env.DOCKER_REGISTRY_SERVICE_HOST}:${env.DOCKER_REGISTRY_SERVICE_PORT}/${organisation}/${env.JOB_NAME}:${newVersion}"
-  def clusterImageNameWithoutTag = "${env.DOCKER_REGISTRY_SERVICE_HOST}:${env.DOCKER_REGISTRY_SERVICE_PORT}/${organisation}/${env.JOB_NAME}"
-  def dockerhubImageName = "docker.io/${organisation}/${env.JOB_NAME}:${newVersion}"
+  def clusterImageName = "${env.DOCKER_REGISTRY_SERVICE_HOST}:${env.DOCKER_REGISTRY_SERVICE_PORT}/${env.KUBERNETES_NAMESPACE}/${env.JOB_NAME}:${newVersion}"
 
   stage 'canary release'
 
@@ -25,9 +15,9 @@ node ('kubernetes'){
       writeFile file: 'Dockerfile', text: 'FROM node:5.3-onbuild'
     }
 
-    kubernetes.image().withName(clusterImageName).build().fromPath(".")
-    kubernetes.image().withName(clusterImageNameWithoutTag).push().withTag(newVersion).toRegistry()
-
+    kubernetes.image().withName("${env.JOB_NAME}").build().fromPath(".")
+    kubernetes.image().withName("${env.JOB_NAME}").tag().inRepository("${env.DOCKER_REGISTRY_SERVICE_HOST}:${env.DOCKER_REGISTRY_SERVICE_PORT}/${env.KUBERNETES_NAMESPACE}/${env.JOB_NAME}").withTag(newVersion)
+    kubernetes.image().withName("${env.DOCKER_REGISTRY_SERVICE_HOST}:${env.DOCKER_REGISTRY_SERVICE_PORT}/${env.KUBERNETES_NAMESPACE}/${env.JOB_NAME}").push().withTag(newVersion).toRegistry()
     // gitTag{
     //   releaseVersion = newVersion
     // }
