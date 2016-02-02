@@ -11,6 +11,6 @@ def call(body) {
 
     stage "Rolling upgrade ${config.environment}"
 
-    sh "mvn io.fabric8:fabric8-maven-plugin:${fabric8MavenPluginVersion}:json io.fabric8:fabric8-maven-plugin:${fabric8MavenPluginVersion}:rolling -Dfabric8.environment=${config.environment} -Dfabric8.dockerUser=fabric8/ -Ddocker.registry=${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}"
+    sh "mvn io.fabric8:fabric8-maven-plugin:${fabric8MavenPluginVersion}:json io.fabric8:fabric8-maven-plugin:${fabric8MavenPluginVersion}:rolling -Dfabric8.environment=${config.environment} -Dfabric8.dockerUser=fabric8/"
 
   }
