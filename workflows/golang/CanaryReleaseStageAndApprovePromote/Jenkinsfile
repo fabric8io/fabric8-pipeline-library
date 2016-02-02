@@ -27,7 +27,7 @@ node ('kubernetes'){
       port = 8080
       label = 'golang'
       icon = 'https://cdn.rawgit.com/fabric8io/fabric8/dc05040/website/src/images/logos/gopher.png'
-      version = versionPrefix
+      version = newVersion
       imageName = clusterImageName
     }
 
