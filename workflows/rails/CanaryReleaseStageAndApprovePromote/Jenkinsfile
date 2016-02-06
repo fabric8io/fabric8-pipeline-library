@@ -6,22 +6,12 @@ node ('kubernetes'){
 
   git GIT_URL
 
-  def newVersion = getNewVersion{}
-  def clusterImageName = "${env.DOCKER_REGISTRY_SERVICE_HOST}:${env.DOCKER_REGISTRY_SERVICE_PORT}/${env.KUBERNETES_NAMESPACE}/${env.JOB_NAME}:${newVersion}"
-
   stage 'canary release'
-
     if (!fileExists ('Dockerfile')) {
       writeFile file: 'Dockerfile', text: 'FROM rails:onbuild'
     }
 
-    kubernetes.image().withName("${env.JOB_NAME}").build().fromPath(".")
-    kubernetes.image().withName("${env.JOB_NAME}").tag().inRepository("${env.DOCKER_REGISTRY_SERVICE_HOST}:${env.DOCKER_REGISTRY_SERVICE_PORT}/${env.KUBERNETES_NAMESPACE}/${env.JOB_NAME}").withTag(newVersion)
-    kubernetes.image().withName("${env.DOCKER_REGISTRY_SERVICE_HOST}:${env.DOCKER_REGISTRY_SERVICE_PORT}/${env.KUBERNETES_NAMESPACE}/${env.JOB_NAME}").push().withTag(newVersion).toRegistry()
-
-    // gitTag{
-    //   releaseVersion = newVersion
-    // }
+    def newVersion = performCanaryRelease {}
 
     def rc = getKubernetesJson {
       port = 3000
@@ -30,8 +20,6 @@ node ('kubernetes'){
       version = newVersion
       imageName = clusterImageName
     }
-
-    sh 'echo "commit:" `git rev-parse HEAD` >> git.yml && echo "branch:" `git rev-parse --abbrev-ref HEAD` >> git.yml'
 
   stage 'Rolling upgrade Staging'
     kubernetesApply(file: rc, environment: envStage)

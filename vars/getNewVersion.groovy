@@ -11,6 +11,8 @@ def call(body) {
 
     sh 'git rev-parse --short HEAD > short-git-sha.tmp'
     def sha = readFile 'short-git-sha.tmp'
+
+
     return sha.trim()
 
     // def version = '1.0.0'
