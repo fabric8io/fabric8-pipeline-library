@@ -105,7 +105,7 @@ def call(body) {
                     "containers": [
                         {
                             "name": "${env.JOB_NAME}",
-                            "image": "${env.DOCKER_REGISTRY_SERVICE_HOST}:${env.DOCKER_REGISTRY_SERVICE_PORT}/${env.KUBERNETES_NAMESPACE}/${env.JOB_NAME}:${config.version}",
+                            "image": "${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}/${env.KUBERNETES_NAMESPACE}/${env.JOB_NAME}:${config.version}",
                             "ports": [
                                 {
                                     "name": "web",
