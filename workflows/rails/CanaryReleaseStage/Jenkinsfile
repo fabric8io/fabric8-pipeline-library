@@ -1,0 +1,27 @@
+#!/usr/bin/groovy
+def envStage = "${env.JOB_NAME}-staging"
+
+node ('kubernetes'){
+
+  git GIT_URL
+
+  stage 'canary release'
+    if (!fileExists ('Dockerfile')) {
+      writeFile file: 'Dockerfile', text: 'FROM rails:onbuild'
+    }
+
+    def newVersion = performCanaryRelease {}
+
+    def rc = getKubernetesJson {
+      port = 3000
+      label = 'rails'
+      icon = 'https://cdn.rawgit.com/fabric8io/fabric8-console/38f589a/img/icons/ruby.png'
+      version = newVersion
+      imageName = clusterImageName
+    }
+
+  stage 'Rolling upgrade Staging'
+    kubernetesApply(file: rc, environment: envStage)
+
+
+}
