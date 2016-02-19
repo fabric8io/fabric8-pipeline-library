@@ -4,7 +4,7 @@ try {
 
   releaseProject{
     project = 'fabric8'
-    projectArtifact = 'io/fabric8/fabric8-maven-plugin'
+    projectArtifact = 'io/fabric8/kubernetes-api'
   }
 
   hubot room: 'release', message: "release success"
