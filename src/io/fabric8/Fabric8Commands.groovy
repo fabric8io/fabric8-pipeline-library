@@ -67,20 +67,9 @@ def searchAndReplaceMavenSnapshotProfileVersionProperty(String property, String 
   sh "git commit -a -m 'Bump ${property} development profile SNAPSHOT version'"
 }
 
-def setupWorkspace(String project){
-  def gitRepo = getGitRepo()
-  sh "rm -rf *.* .git"
-  git "https://github.com/${gitRepo}/${project}"
-  sh "git remote set-url origin git@github.com:${gitRepo}/${project}.git"
-
+def setupWorkspaceForRelease(String project){
   sh "git config user.email fabric8-admin@googlegroups.com"
   sh "git config user.name fusesource-ci"
-
-  sh "git checkout master"
-}
-
-def setupWorkspaceForRelease(String project){
-  setupWorkspace (project)
 
   sh "git tag -d \$(git tag)"
   sh "git fetch --tags"
@@ -89,9 +78,14 @@ def setupWorkspaceForRelease(String project){
   sh 'mvn build-helper:parse-version versions:set -DnewVersion=\\\${parsedVersion.majorVersion}.\\\${parsedVersion.minorVersion}.\\\${parsedVersion.incrementalVersion}'
   def releaseVersion = getProjectVersion()
 
-  sh "git checkout -b release-v${releaseVersion}"
-
   // delete any previous branches of this release
+  try {
+    sh "git checkout -b release-v${releaseVersion}"
+  } catch (err){
+    sh "git branch -D release-v${releaseVersion}"
+    sh "git checkout -b release-v${releaseVersion}"
+  }
+
   try {
     deleteRemoteBranch("release-v${releaseVersion}")
   } catch (err){
@@ -203,7 +197,8 @@ def runSystemTests(){
 }
 
 def createPullRequest(String message, String project){
-  sh "hub pull-request -m \"${message}\" > pr.txt"
+  def githubToken = getGitHubToken()
+  sh "export GITHUB_TOKEN=${githubToken} && hub pull-request -m \"${message}\" > pr.txt"
   pr = readFile('pr.txt')
   split = pr.split('\\/')
   def pr = split[6].trim()
@@ -213,14 +208,14 @@ def createPullRequest(String message, String project){
 
 def addMergeCommentToPullRequest(String pr, String project){
   def gitRepo = getGitRepo()
-  def authString = "${env.GITHUB_TOKEN}"
+  def githubToken = getGitHubToken()
   def apiUrl = new URL("https://api.github.com/repos/${gitRepo}/${project}/issues/${pr}/comments")
   echo "merge PR using comment sent to ${apiUrl}"
   try {
     def HttpURLConnection connection = apiUrl.openConnection()
-    if(authString.length() > 0)
+    if(githubToken.length() > 0)
     {
-      connection.setRequestProperty("Authorization", "Bearer ${env.GITHUB_TOKEN}")
+      connection.setRequestProperty("Authorization", "Bearer ${githubToken}")
     }
     connection.setRequestMethod("POST")
     connection.setDoOutput(true)
@@ -240,12 +235,19 @@ def addMergeCommentToPullRequest(String pr, String project){
      echo "ERROR  ${err}"
      return
   }
-
-
 }
 
 def deleteRemoteBranch(String branchName){
   sh "git push origin --delete ${branchName}"
+}
+
+def getGitHubToken(){
+  def tokenPath = '/home/jenkins/.apitoken/hub'
+  def githubToken = readFile tokenPath
+  if (!githubToken?.trim()) {
+    error "No GitHub token found in ${tokenPath}"
+  }
+  return githubToken.trim()
 }
 
 return this;
