@@ -25,7 +25,7 @@ def canaryVersion = "${versionPrefix}.${env.BUILD_NUMBER}"
 node ('kubernetes'){
   git GIT_URL
 
-  kubernetes.pod('buildpod').withImage('fabric8/builder-maven')
+  kubernetes.pod('buildpod').withImage('fabric8/maven-builder')
       .withPrivileged(true)
       .withHostPathMount('/var/run/docker.sock','/var/run/docker.sock')
       .withEnvVar('DOCKER_CONFIG','/home/jenkins/.docker/')
