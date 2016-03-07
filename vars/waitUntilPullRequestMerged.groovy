@@ -9,41 +9,40 @@ def call(body) {
     body()
 
     stage "waiting for ${config.name} ${config.prId} PR to merge"
-    node ('kubernetes'){
-      def flow = new io.fabric8.Fabric8Commands()
-      def githubToken = flow.getGitHubToken()
+
+    def flow = new io.fabric8.Fabric8Commands()
+    def githubToken = flow.getGitHubToken()
 
         //flow.setupWorkspace (config.name)
-      echo "pull request id ${config.prId}"
-      gitRepo = flow.getGitRepo()
-      String id = config.prId
+    echo "pull request id ${config.prId}"
+    gitRepo = flow.getGitRepo()
+    String id = config.prId
 
+    def branchName
+    def notified = false
 
-      def branchName
-      def notified = false
+    // wait until the PR is merged, if there's a merge conflict the notify and wait until PR is finally merged
+    waitUntil {
+      def apiUrl = new URL("https://api.github.com/repos/${gitRepo}/${config.name}/pulls/${id}")
+      JsonSlurper rs = restGetURL{
+        authString = githubToken
+        url = apiUrl
+      }
 
-        // wait until the PR is merged, if there's a merge conflict the notify and wait until PR is finally merged
-      waitUntil {
-        def apiUrl = new URL("https://api.github.com/repos/${gitRepo}/${config.name}/pulls/${id}")
-        JsonSlurper rs = restGetURL{
-          authString = githubToken
-          url = apiUrl
-        }
+      branchName = rs.head.ref
+      def sha = rs.head.sha
+      echo "checking status of commit ${sha}"
 
-        branchName = rs.head.ref
-        def sha = rs.head.sha
-        echo "checking status of commit ${sha}"
+      apiUrl = new URL("https://api.github.com/repos/${gitRepo}/${config.name}/commits/${sha}/status")
+      rs = restGetURL{
+        authString = githubToken
+        url = apiUrl
+      }
 
-        apiUrl = new URL("https://api.github.com/repos/${gitRepo}/${config.name}/commits/${sha}/status")
-        rs = restGetURL{
-          authString = githubToken
-          url = apiUrl
-        }
+      echo "${config.name} Pull request ${id} state ${rs.state}"
 
-        echo "${config.name} Pull request ${id} state ${rs.state}"
-
-        if (rs.state == 'failure' && !notified){
-          def message ="""
+      if (rs.state == 'failure' && !notified){
+        def message ="""
 Pull request was not automatically merged.  Please fix and update Pull Request to continue with release...
 ```
   git clone git@github.com:${gitRepo}/${config.name}.git
@@ -58,17 +57,15 @@ Pull request was not automatically merged.  Please fix and update Pull Request t
 ```
 """
 
-        hubot room: 'release', message: message
-        notified = true
-      }
-      rs.state == 'success'
+      hubot room: 'release', message: message
+      notified = true
     }
-    try {
-      // clean up
-      sh "git push origin --delete ${branchName}"
-    } catch (err) {
-      echo "not able to delete repo: ${err}"
-    }
+    rs.state == 'success'
   }
-
+  try {
+    // clean up
+    sh "git push origin --delete ${branchName}"
+  } catch (err) {
+    echo "not able to delete repo: ${err}"
+  }
 }
