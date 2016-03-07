@@ -17,11 +17,14 @@ def call(body) {
     }
     connection.setRequestMethod("GET")
     connection.setDoInput(true)
-    connection.connect()
-    def pr = new JsonSlurper().parse(new InputStreamReader(connection.getInputStream(),"UTF-8"))
-    connection.disconnect()
 
+    def pr = null
+    try {
+      connection.connect()
+      pr = new JsonSlurper().parse(new InputStreamReader(connection.getInputStream(),"UTF-8"))
+    } finally {
+      connection.disconnect()
+    }
     return pr
   }
-
 }

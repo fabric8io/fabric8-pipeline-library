@@ -15,7 +15,6 @@ def call(body) {
 
         //flow.setupWorkspace (config.name)
     echo "pull request id ${config.prId}"
-    gitRepo = flow.getGitRepo()
     String id = config.prId
 
     def branchName
@@ -23,7 +22,9 @@ def call(body) {
 
     // wait until the PR is merged, if there's a merge conflict the notify and wait until PR is finally merged
     waitUntil {
-      def apiUrl = new URL("https://api.github.com/repos/${gitRepo}/${config.name}/pulls/${id}")
+      echo "https://api.github.com/repos/${config.name}/pulls/${id}"
+      
+      def apiUrl = new URL("https://api.github.com/repos/${config.name}/pulls/${id}")
       JsonSlurper rs = restGetURL{
         authString = githubToken
         url = apiUrl
@@ -33,7 +34,7 @@ def call(body) {
       def sha = rs.head.sha
       echo "checking status of commit ${sha}"
 
-      apiUrl = new URL("https://api.github.com/repos/${gitRepo}/${config.name}/commits/${sha}/status")
+      apiUrl = new URL("https://api.github.com/repos/${config.name}/commits/${sha}/status")
       rs = restGetURL{
         authString = githubToken
         url = apiUrl
@@ -45,7 +46,7 @@ def call(body) {
         def message ="""
 Pull request was not automatically merged.  Please fix and update Pull Request to continue with release...
 ```
-  git clone git@github.com:${gitRepo}/${config.name}.git
+  git clone git@github.com:${config.name}.git
   cd ${config.name}
   git fetch origin pull/${id}/head:fixPR${id}
   git checkout fixPR${id}

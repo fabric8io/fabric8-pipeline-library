@@ -1,12 +1,6 @@
 #!/usr/bin/groovy
 package io.fabric8;
 
-import groovy.json.JsonSlurper
-
-def getGitRepo(){
-  'fabric8io'
-}
-
 def getProjectVersion(){
   def file = readFile('pom.xml')
   def project = new XmlSlurper().parseText(file)
@@ -25,12 +19,36 @@ def getMavenCentralVersion(String artifact) {
   return version
 }
 
-def getPullRequestState(String project, String id){
-  def gitRepo = getGitRepo()
-  def pr = new JsonSlurper().parse("https://api.github.com/repos/${gitRepo}/${project}/pulls/${id}")
-  return pr.state
+def isArtifactAvailableInRepo(String repo, String groupId, String artifactId, String version, String ext) {
+
+  repo = removeTrailingSlash(repo)
+  groupId = removeTrailingSlash(groupId)
+  artifactId = removeTrailingSlash(artifactId)
+
+  def url = new URL("${repo}/${groupId}/${artifactId}/${version}/${artifactId}-${version}.${ext}")
+  def HttpURLConnection connection = url.openConnection()
+
+  connection.setRequestMethod("GET")
+  connection.setDoInput(true)
+
+  try {
+    connection.connect()
+    new InputStreamReader(connection.getInputStream(),"UTF-8")
+    return true
+  } catch( FileNotFoundException e1 ) {
+    echo "File not yet available: ${url.toString()}"
+    return false
+  } finally {
+    connection.disconnect()
+  }
 }
 
+def removeTrailingSlash (String myString){
+  if (myString.endsWith("/")) {
+    return myString.substring(0, myString.length() - 1);
+  }
+  return myString
+}
 def getRepoIds() {
   // we could have multiple staging repos created, we need to write the names of all the generated files to a well known
   // filename so we can use the workflow readFile (wildcards wont works and new File wont with slaves as groovy is executed on the master jenkins
@@ -207,9 +225,8 @@ def createPullRequest(String message, String project){
 }
 
 def addMergeCommentToPullRequest(String pr, String project){
-  def gitRepo = getGitRepo()
   def githubToken = getGitHubToken()
-  def apiUrl = new URL("https://api.github.com/repos/${gitRepo}/${project}/issues/${pr}/comments")
+  def apiUrl = new URL("https://api.github.com/repos/${project}/issues/${pr}/comments")
   echo "merge PR using comment sent to ${apiUrl}"
   try {
     def HttpURLConnection connection = apiUrl.openConnection()

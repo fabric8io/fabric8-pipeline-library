@@ -37,7 +37,7 @@ def call(body) {
   def repoId = flow.stageSonartypeRepo()
   releaseVersion = flow.getProjectVersion()
 
-  stash excludes: '*/src/', includes: '**', name: "staged-${config.project}-${releaseVersion}"
+  stash excludes: '*/src/', includes: '**', name: "staged-${config.project}-${releaseVersion}".hashCode().toString()
 
   flow.updateGithub ()
 

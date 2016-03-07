@@ -13,7 +13,8 @@ def call(body) {
     def repoIds = config.projectStagingDetails[2]
 
     def flow = new io.fabric8.Fabric8Commands()
-    unstash name:"staged-${config.project}-${version}"
+    // use hash to avoid incompatible chars
+    unstash name:"staged-${config.project}-${version}".hashCode().toString()
 
     echo "About to release ${name} repo ids ${repoIds}"
     for(int j = 0; j < repoIds.size(); j++){
