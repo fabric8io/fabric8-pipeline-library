@@ -6,12 +6,12 @@ def call(body) {
     body.delegate = config
     body()
 
-    stage "waiting for ${config.artifact} ${config.version} artifacts to sync with central"
+    stage "waiting for ${config.artifactId} ${config.version} artifacts to sync with central"
 
     def flow = new io.fabric8.Fabric8Commands()
 
     waitUntil {
-      flow.isArtifactAvailableInRepo(config.repo, config.groupId, config.artifactId, config.version, config.ext)
+      flow.isArtifactAvailableInRepo(config.repo, config.groupId.replaceAll('\\.','/'), config.artifactId, config.version, config.ext)
     }
 
     message =  "${config.artifact} ${config.version} released and available in maven central"

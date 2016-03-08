@@ -87,7 +87,7 @@ def searchAndReplaceMavenSnapshotProfileVersionProperty(String property, String 
 
 def setupWorkspaceForRelease(String project){
   sh "git config user.email fabric8-admin@googlegroups.com"
-  sh "git config user.name fusesource-ci"
+  sh "git config user.name fabric8-release"
 
   sh "git tag -d \$(git tag)"
   sh "git fetch --tags"
@@ -110,13 +110,6 @@ def setupWorkspaceForRelease(String project){
   }
 
   sh "git commit -a -m '[CD] released v${releaseVersion}'"
-}
-
-def dockerPush () {
-  // intermittent errors can occur when pushing to dockerhub
-  retry(3){
-    sh "mvn docker:push -P release"
-  }
 }
 
 def stageSonartypeRepo () {
