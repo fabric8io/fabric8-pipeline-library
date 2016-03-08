@@ -21,15 +21,12 @@ def call(body) {
       flow.releaseSonartypeRepo(repoIds[j])
     }
 
-    flow.updateNextDevelopmentVersion(version)
-
-    String pullRequestId = flow.createPullRequest("[CD] Release ${version}","${config.project}")
-    echo "pull request id ${pullRequestId}"
-
     if (config.helmPush) {
       flow.helm()
     }
 
-    return pullRequestId
-
+    if (!config.useGitTagForNextVersion){
+      flow.updateNextDevelopmentVersion(version)
+      return flow.createPullRequest("[CD] Release ${version}","${config.project}")
+    }
   }

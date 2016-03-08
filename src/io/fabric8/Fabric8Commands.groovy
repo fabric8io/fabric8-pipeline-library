@@ -85,7 +85,7 @@ def searchAndReplaceMavenSnapshotProfileVersionProperty(String property, String 
   sh "git commit -a -m 'Bump ${property} development profile SNAPSHOT version'"
 }
 
-def setupWorkspaceForRelease(String project){
+def setupWorkspaceForRelease(String project, Boolean useGitTagForNextVersion){
   sh "git config user.email fabric8-admin@googlegroups.com"
   sh "git config user.name fabric8-release"
 
@@ -93,7 +93,15 @@ def setupWorkspaceForRelease(String project){
   sh "git fetch --tags"
   sh "git reset --hard origin/master"
 
-  sh 'mvn build-helper:parse-version versions:set -DnewVersion=\\\${parsedVersion.majorVersion}.\\\${parsedVersion.minorVersion}.\\\${parsedVersion.incrementalVersion}'
+  if (useGitTagForNextVersion){
+    def newVersion = getNewVersionFromTag()
+    echo "New release version ${newVersion}"
+    pushTag(newVersion)
+    sh "mvn build-helper:parse-version versions:set -DnewVersion=${newVersion}"
+  } else {
+    sh 'mvn build-helper:parse-version versions:set -DnewVersion=\\\${parsedVersion.majorVersion}.\\\${parsedVersion.minorVersion}.\\\${parsedVersion.incrementalVersion}'
+  }
+
   def releaseVersion = getProjectVersion()
 
   // delete any previous branches of this release
@@ -110,6 +118,40 @@ def setupWorkspaceForRelease(String project){
   }
 
   sh "git commit -a -m '[CD] released v${releaseVersion}'"
+}
+
+// if no previous tag found default 1.0.0 is used, else assume version is in the form major.minor or major.minor.micro version
+def getNewVersionFromTag(){
+  def version = '1.0.0'
+
+  // if the repo has no tags this command will fail
+  sh "git tag --sort version:refname | tail -1 > version.tmp"
+
+  def tag = readFile 'version.tmp'
+
+  if (tag == null || tag.size() == 0){
+    echo "no existing tag found using version ${version}"
+    return version
+  }
+
+  tag = tag.trim()
+
+  // strip the v prefix from the tag so we can use in a maven version number
+  def previousReleaseVersion = tag.substring(tag.lastIndexOf('v')+1)
+  echo "Previous version found ${previousReleaseVersion}"
+
+  // if there's an int as the version then turn it into a major.minor.micro version
+  if (previousReleaseVersion.isNumber()){
+    return previousReleaseVersion + '.0.1'
+  } else {
+    // if previous tag is not a number and doesnt have a '.' version seperator then error until we have one
+    if (previousReleaseVersion.lastIndexOf('.') == 0){
+      error "found invalid latest tag [${previousReleaseVersion}] set to major.minor.micro to calculate next release version"
+    }
+    // incrememnt the release number after the last seperator '.'
+    def microVersion = previousReleaseVersion.substring(previousReleaseVersion.lastIndexOf('.')+1) as int
+    return previousReleaseVersion.substring(0, previousReleaseVersion.lastIndexOf('.')+1) + (microVersion+1)
+  }
 }
 
 def stageSonartypeRepo () {
@@ -151,14 +193,15 @@ def helm(){
   }
 }
 
-def updateGithub(){
-  // push release versions and tag it
-  def releaseVersion = getProjectVersion()
-
+def pushTag(String releaseVersion){
   sh "git tag -fa v${releaseVersion} -m 'Release version ${releaseVersion}'"
+  sh "git push origin v${releaseVersion}"
+}
+
+
+def updateGithub(){
+  def releaseVersion = getProjectVersion()
   sh "git push origin release-v${releaseVersion}"
-  // also force push the tag incase release fails further along the pipeline
-  sh "git push --force origin v${releaseVersion}"
 }
 
 def updateNextDevelopmentVersion(String releaseVersion){

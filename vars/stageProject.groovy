@@ -9,7 +9,7 @@ def call(body) {
   stage "stage ${config.project}"
 
   def flow = new io.fabric8.Fabric8Commands()
-  flow.setupWorkspaceForRelease(config.project)
+  flow.setupWorkspaceForRelease(config.project, config.useGitTagForNextVersion)
 
   if (config.project == 'fabric8'){
     flow.updateDocsAndSite(flow.getProjectVersion())
@@ -39,7 +39,9 @@ def call(body) {
 
   stash excludes: '*/src/', includes: '**', name: "staged-${config.project}-${releaseVersion}".hashCode().toString()
 
-  flow.updateGithub ()
+  if (!config.useGitTagForNextVersion){
+    flow.updateGithub ()
+  }
 
   return [config.project, releaseVersion, repoId]
 

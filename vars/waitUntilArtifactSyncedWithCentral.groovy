@@ -14,7 +14,7 @@ def call(body) {
       flow.isArtifactAvailableInRepo(config.repo, config.groupId.replaceAll('\\.','/'), config.artifactId, config.version, config.ext)
     }
 
-    message =  "${config.artifact} ${config.version} released and available in maven central"
+    message =  "${config.artifactId} ${config.version} released and available in maven central"
     hubot room: 'release', message: message
 
 }
