@@ -1,0 +1,2 @@
+stages:
+  - 'canary image'

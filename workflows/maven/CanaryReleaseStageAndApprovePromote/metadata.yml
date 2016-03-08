@@ -3,7 +3,7 @@ environments:
   - Staging
   - Production
 stages:
-  - 'canary release'
+  - 'canary image'
   - 'integration test'
   - 'Rolling upgrade Staging'
   - 'approve'

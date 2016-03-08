@@ -2,6 +2,6 @@ environments:
   - Testing
   - Staging
 stages:
-  - 'canary release'
+  - 'canary image'
   - 'integration test'
   - 'Rolling upgrade Staging'
