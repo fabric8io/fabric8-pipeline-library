@@ -21,7 +21,7 @@ def call(body) {
 
     } else if (config.project == 'fabric8-devops'){
       versionBumpPullRequest = bumpFabric8DevOpsVersions{}
-      tagDockerImages = ['hubot-irc','eclipse-orion','nexus','gerrit','fabric8-kiwiirc','brackets','jenkins-jnlp-client','taiga-front','taiga-back','hubot-slack','lets-chat','jenkins-docker']
+      tagDockerImages = ['hubot-irc','eclipse-orion','nexus','gerrit','git-collector','fabric8-kiwiirc','brackets','jenkins-jnlp-client','taiga-front','taiga-back','hubot-slack','lets-chat','jenkins-docker']
       promoteDockerImages = ['chaos-monkey','elasticsearch-logstash-template','hubot-notifier','image-linker','kibana-config','prometheus-kubernetes']
       helm = true
 
