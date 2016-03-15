@@ -19,8 +19,16 @@ def getMavenCentralVersion(String artifact) {
   return version
 }
 
-def isArtifactAvailableInRepo(String repo, String groupId, String artifactId, String version, String ext) {
+def getVersion(String repo, String artifact) {
+  repo = removeTrailingSlash(repo)
+  artifact = removeTrailingSlash(artifact)
 
+  def modelMetaData = new XmlSlurper().parse(repo+'/'+artifact+'/maven-metadata.xml')
+  def version = modelMetaData.versioning.release.text()
+  return version
+}
+
+def isArtifactAvailableInRepo(String repo, String groupId, String artifactId, String version, String ext) {
   repo = removeTrailingSlash(repo)
   groupId = removeTrailingSlash(groupId)
   artifactId = removeTrailingSlash(artifactId)

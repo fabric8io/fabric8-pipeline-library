@@ -6,79 +6,33 @@ def call(body) {
     body.delegate = config
     body()
 
-    String versionBumpPullRequest = ""
-    def tagDockerImages = []
-    def promoteDockerImages = []
-    def helm = false
+    def projectName = config.stagedProject[0]
+    def releaseVersion = config.stagedProject[1]
+    def promoteDockerImages = config.imagesToPromoteToDockerHub ?: []
+    def tagDockerImages = config.extraImagesToTag ?: []
 
-    if (config.project == 'ipaas-quickstarts'){
-      versionBumpPullRequest = bumpiPaaSQuickstartsVersions{}
-
-    } else if (config.project == 'fabric8-ipaas'){
-      versionBumpPullRequest = bumpFabric8iPaaSVersions{}
-      promoteDockerImages = ['amqbroker','api-registry','apiman-gateway','apiman','fabric8mq','fabric8mq-consumer','fabric8mq-producer']
-      helm = true
-
-    } else if (config.project == 'fabric8-devops'){
-      versionBumpPullRequest = bumpFabric8DevOpsVersions{}
-      tagDockerImages = ['hubot-irc','eclipse-orion','nexus','gerrit','git-collector','fabric8-kiwiirc','brackets','jenkins-jnlp-client','taiga-front','taiga-back','hubot-slack','lets-chat','jenkins-docker']
-      promoteDockerImages = ['chaos-monkey','elasticsearch-logstash-template','hubot-notifier','image-linker','kibana-config','prometheus-kubernetes']
-      helm = true
-
-    } else if (config.project == 'fabric8-console'){
-      versionBumpPullRequest = bumpConsoleVersions{}
-      tagDockerImages = ['fabric8-console']
-      promoteDockerImages = ['templates']
-      helm = true
-
-    } else if (config.project == 'fabric8-forge'){
-      versionBumpPullRequest = bumpFabric8ForgeVersions{}
-      promoteDockerImages = ['fabric8-forge']
-      helm = true
-
-    } else if (config.project == 'kubernetes-client'){
-      versionBumpPullRequest = bumpKubernetesClientVersions{}
-
-    } else if (config.project == 'fabric8'){
-      versionBumpPullRequest = bumpFabric8Versions{}
-
+    String pullRequestId = promoteArtifacts {
+      projectStagingDetails = config.stagedProject
+      project = projectName
+      useGitTagForNextVersion = config.useGitTagForNextVersion
+      helmPush = config.helmPush
     }
-
-    if (versionBumpPullRequest != null && versionBumpPullRequest != ""){
-      waitUntilPullRequestMerged{
-        name = config.project
-        prId = versionBumpPullRequest
-      }
-    }
-
-    def stagedProject = stageProject{
-      project = config.project
-    }
-
-    // def proceedMessage = "fabric8 released - would you like to continue?"
-    // hubotApprove message: proceedMessage, room: "release"
-    // input id: 'Proceed', message: "\n${proceedMessage}"
 
     if (promoteDockerImages.size() > 0){
       promoteImages{
-        project = config.project
+        toRegistry = config.promoteToDockerRegistry
+        org = config.dockerOrganisation
+        project = projectName
         images = promoteDockerImages
-        tag = stagedProject[1]
+        tag = releaseVersion
       }
     }
 
     if (tagDockerImages.size() > 0){
       tagImages{
-        project = config.project
         images = tagDockerImages
-        tag = stagedProject[1]
+        tag = releaseVersion
       }
-    }
-
-    String pullRequestId = release {
-      projectStagingDetails = stagedProject
-      project = config.project
-      helmPush = helm
     }
 
     if (pullRequestId != null){
@@ -89,8 +43,10 @@ def call(body) {
     }
 
     waitUntilArtifactSyncedWithCentral {
-      artifact = config.projectArtifact
-      version = stagedProject[1]
+      repo = 'http://central.maven.org/maven2/'
+      groupId = config.groupId
+      artifactId = config.artifactIdToWatchInCentral
+      version = releaseVersion
+      ext = config.artifactExtensionToWatchInCentral
     }
-
 }
