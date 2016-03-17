@@ -15,5 +15,6 @@ Would you like to promote version ${config.version} to the Production namespace?
     stage 'approve'
 
     hubotApprove message: proceedMessage, room: config.room
+
     input id: 'Proceed', message: "\n${config.proceedMessage}"
   }

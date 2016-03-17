@@ -42,9 +42,13 @@ def call(body) {
     // only make a pull request if we've updated a version
     if (updated) {
       sh "git push origin versionUpdate${uid}"
-      prId = flow.createPullRequest("[CD] Update release dependencies","${config.project}")
-      echo "received pull request id ${prId}"
-      return prId
+      def pullRequestId = flow.createPullRequest("[CD] Update release dependencies","${config.project}")
+      echo "received pull request id ${pullRequestId}"
+
+      waitUntilPullRequestMerged{
+        name = config.project
+        prId = pullRequestId
+      }
     }
 
 }
