@@ -6,13 +6,11 @@ def call(body) {
   body.delegate = config
   body()
 
-  stage "Merge PR ${config.project}/${pullRequestId}"
-
-    def flow = new io.fabric8.Fabric8Commands()
-    flow.addMergeCommentToPullRequest(pullRequestId, config.project)
-    waitUntilPullRequestMerged{
-      name = config.project
-      prId = pullRequestId
-    }
+  def flow = new io.fabric8.Fabric8Commands()
+  flow.addMergeCommentToPullRequest(config.pullRequestId, config.project)
+  waitUntilPullRequestMerged{
+    name = config.project
+    prId = config.pullRequestId
+  }
 
 }

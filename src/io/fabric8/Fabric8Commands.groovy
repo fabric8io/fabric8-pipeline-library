@@ -99,7 +99,6 @@ def setupWorkspaceForRelease(String project, Boolean useGitTagForNextVersion){
 
   sh "git tag -d \$(git tag)"
   sh "git fetch --tags"
-  sh "git reset --hard origin/master"
 
   if (useGitTagForNextVersion){
     def newVersion = getNewVersionFromTag()

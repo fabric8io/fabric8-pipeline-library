@@ -11,8 +11,6 @@ def call(body) {
   def flow = new io.fabric8.Fabric8Commands()
   def repoId
   def releaseVersion
-  
-  stage "stage ${config.project}"
 
   kubernetes.pod('buildpod').withImage('fabric8/maven-builder:1.1')
   .withPrivileged(true)

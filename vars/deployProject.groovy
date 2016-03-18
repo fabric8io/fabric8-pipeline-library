@@ -6,7 +6,6 @@ def call(body) {
   body.delegate = config
   body()
 
-  stage "Deploying to environment ${config.environment}"
   def projectName = config.stagedProject[0]
   def releaseVersion = config.stagedProject[1]
 

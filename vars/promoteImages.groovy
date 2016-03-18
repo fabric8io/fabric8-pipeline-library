@@ -6,8 +6,6 @@ def call(body) {
     body.delegate = config
     body()
 
-    stage "promote ${config.project} docker images"
-
     kubernetes.pod('buildpod').withImage('fabric8/builder-openshift-client')
     .withPrivileged(true)
     .withHostPathMount('/var/run/docker.sock','/var/run/docker.sock')

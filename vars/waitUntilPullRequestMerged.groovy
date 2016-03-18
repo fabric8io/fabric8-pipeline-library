@@ -8,12 +8,9 @@ def call(body) {
     body.delegate = config
     body()
 
-    stage "waiting for ${config.name} ${config.prId} PR to merge"
-
     def flow = new io.fabric8.Fabric8Commands()
     def githubToken = flow.getGitHubToken()
 
-        //flow.setupWorkspace (config.name)
     echo "pull request id ${config.prId}"
     String id = config.prId
 
@@ -23,7 +20,7 @@ def call(body) {
     // wait until the PR is merged, if there's a merge conflict the notify and wait until PR is finally merged
     waitUntil {
       echo "https://api.github.com/repos/${config.name}/pulls/${id}"
-      
+
       def apiUrl = new URL("https://api.github.com/repos/${config.name}/pulls/${id}")
       JsonSlurper rs = restGetURL{
         authString = githubToken

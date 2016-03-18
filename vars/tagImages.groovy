@@ -6,7 +6,7 @@ def call(body) {
     body.delegate = config
     body()
 
-    stage "tag images"
+    //stage "tag images"
     kubernetes.pod('buildpod').withImage('fabric8/builder-openshift-client')
     .withPrivileged(true)
     .withHostPathMount('/var/run/docker.sock','/var/run/docker.sock')

@@ -5,15 +5,8 @@ def call(body) {
   body.resolveStrategy = Closure.DELEGATE_FIRST
   body.delegate = config
   body()
-
-  stage "dependency updates"
-
+  
     def flow = new io.fabric8.Fabric8Commands()
-    //flow.setupWorkspace (project)
-    // sh "git config user.email fabric8-admin@googlegroups.com"
-    // sh "git config user.name fusesource-ci"
-    //
-    // sh "git checkout master"
 
     sh "git config user.email fabric8-admin@googlegroups.com"
     sh "git config user.name fabric8-cd"
@@ -22,6 +15,7 @@ def call(body) {
     sh "git checkout -b versionUpdate${uid}"
 
     def updated
+
     // lets default to using maven central to get latest artifact version if no source URL present
     def versionRepository = config.repository ?: 'http://central.maven.org/maven2/'
 
@@ -38,7 +32,6 @@ def call(body) {
         echo "Already on the latest versions of the ${property} dependency"
       }
     }
-
     // only make a pull request if we've updated a version
     if (updated) {
       sh "git push origin versionUpdate${uid}"

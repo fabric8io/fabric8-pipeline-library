@@ -12,7 +12,6 @@ ${config.console}/kubernetes/pods?environment=${config.environment}
 
 Would you like to promote version ${config.version} to the Production namespace?
 """
-    stage 'approve'
 
     hubotApprove message: proceedMessage, room: config.room
 

@@ -6,8 +6,6 @@ def call(body) {
     body.delegate = config
     body()
 
-    stage "waiting for ${config.artifactId} ${config.version} artifacts to sync with central"
-
     def flow = new io.fabric8.Fabric8Commands()
 
     waitUntil {
