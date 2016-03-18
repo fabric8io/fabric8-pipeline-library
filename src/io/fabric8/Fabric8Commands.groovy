@@ -263,9 +263,7 @@ def createPullRequest(String message, String project){
   sh "export GITHUB_TOKEN=${githubToken} && hub pull-request -m \"${message}\" > pr.txt"
   pr = readFile('pr.txt')
   split = pr.split('\\/')
-  def pr = split[6].trim()
-  addMergeCommentToPullRequest(pr, project)
-  return pr
+  return split[6].trim()
 }
 
 def addMergeCommentToPullRequest(String pr, String project){
