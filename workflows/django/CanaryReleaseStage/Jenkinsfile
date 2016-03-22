@@ -1,7 +1,7 @@
 #!/usr/bin/groovy
 def envStage = "${env.JOB_NAME}-staging"
 
-node ('kubernetes'){
+node {
 
   git GIT_URL
 
@@ -21,6 +21,7 @@ node ('kubernetes'){
     }
 
   stage 'Rolling upgrade Staging'
+    def envStage = environmentNamespace("staging")
     kubernetesApply(file: rc, environment: envStage)
 
 }

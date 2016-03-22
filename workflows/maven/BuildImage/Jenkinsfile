@@ -10,7 +10,7 @@ try {
 
 def canaryVersion = "${versionPrefix}.${env.BUILD_NUMBER}"
 
-node ('kubernetes'){
+node{
   git GIT_URL
 
   kubernetes.pod('buildpod').withImage('fabric8/maven-builder')
@@ -22,6 +22,7 @@ node ('kubernetes'){
       .withServiceAccount('jenkins')
       .inside {
 
+    stage 'Canary Release'
     mavenCanaryRelease{
       version = canaryVersion
     }

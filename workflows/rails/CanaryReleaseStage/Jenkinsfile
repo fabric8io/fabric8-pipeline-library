@@ -1,7 +1,7 @@
 #!/usr/bin/groovy
 def envStage = "${env.JOB_NAME}-staging"
 
-node ('kubernetes'){
+node {
 
   git GIT_URL
 

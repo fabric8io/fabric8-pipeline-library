@@ -24,7 +24,7 @@ def canaryVersion = "${versionPrefix}.${env.BUILD_NUMBER}"
 
 def fabric8Console = "${env.FABRIC8_CONSOLE ?: ''}"
 
-node ('kubernetes'){
+node{
   git GIT_URL
 
   kubernetes.pod('buildpod').withImage('fabric8/maven-builder')
@@ -36,23 +36,26 @@ node ('kubernetes'){
       .withServiceAccount('jenkins')
       .inside {
 
+    stage 'Canary Release'
     mavenCanaryRelease{
       version = canaryVersion
     }
 
     // TODO docker push?
-
+    stage 'Integration Testing'
     mavenIntegrationTest{
       environment = 'Testing'
       failIfNoTests = localFailIfNoTests
       itestPattern = localItestPattern
     }
 
+    stage 'Rolling Upgrade Staging'
     mavenRollingUpgrade{
       environment = 'Staging'
       stageDomain = STAGE_DOMAIN
     }
 
+    stage 'Approve'
     approve{
       room = null
       version = canaryVersion
@@ -60,6 +63,7 @@ node ('kubernetes'){
       environment = 'Staging'
     }
 
+    stage 'Rolling Upgrade Production'
     mavenRollingUpgrade{
       environment = 'Production'
       stageDomain = PROMOTE_DOMAIN

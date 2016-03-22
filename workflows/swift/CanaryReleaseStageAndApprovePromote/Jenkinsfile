@@ -2,7 +2,7 @@
 def envStage = "${env.JOB_NAME}-staging"
 def envProd = "${env.JOB_NAME}-production"
 
-node ('kubernetes'){
+node {
 
   git GIT_URL
 
