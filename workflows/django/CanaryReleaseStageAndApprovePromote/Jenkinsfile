@@ -1,29 +1,31 @@
 #!/usr/bin/groovy
-def envStage = "${env.JOB_NAME}-staging"
-def envProd = "${env.JOB_NAME}-production"
+def utils = new io.fabric8.Utils()
 
 node {
+  def envStage = utils.environmentNamespace('staging')
+  def envProd = utils.environmentNamespace('production')
 
   checkout scm
 
   stage 'canary release'
-    if (!fileExists ('Dockerfile')) {
-      writeFile file: 'Dockerfile', text: 'FROM django:onbuild'
-    }
+  if (!fileExists ('Dockerfile')) {
+    writeFile file: 'Dockerfile', text: 'FROM django:onbuild'
+  }
 
-    def newVersion = performCanaryRelease {}
+  def newVersion = performCanaryRelease {}
 
-    def rc = getKubernetesJson {
-      port = 8000
-      label = 'django'
-      icon = 'https://cdn.rawgit.com/fabric8io/fabric8/dc05040/website/src/images/logos/django.svg'
-      version = newVersion
-      imageName = clusterImageName
-    }
+  def rc = getKubernetesJson {
+    port = 8000
+    label = 'django'
+    icon = 'https://cdn.rawgit.com/fabric8io/fabric8/dc05040/website/src/images/logos/django.svg'
+    version = newVersion
+    imageName = clusterImageName
+  }
 
   stage 'Rolling upgrade Staging'
-    kubernetesApply(file: rc, environment: envStage)
+  kubernetesApply(file: rc, environment: envStage)
 
+  stage 'Approve'
   approve{
     room = null
     version = canaryVersion
@@ -32,6 +34,6 @@ node {
   }
 
   stage 'Rolling upgrade Production'
-    kubernetesApply(file: rc, environment: envProd)
+  kubernetesApply(file: rc, environment: envProd)
 
 }
