@@ -3,7 +3,7 @@ def envStage = "${env.JOB_NAME}-staging"
 
 node {
 
-  git GIT_URL
+  checkout scm
 
   stage 'canary release'
     if (!fileExists ('Dockerfile')) {

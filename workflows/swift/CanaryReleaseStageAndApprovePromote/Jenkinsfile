@@ -4,7 +4,7 @@ def envProd = "${env.JOB_NAME}-production"
 
 node {
 
-  git GIT_URL
+  checkout scm
 
   stage 'canary release'
     if (!fileExists ('Dockerfile')) {
