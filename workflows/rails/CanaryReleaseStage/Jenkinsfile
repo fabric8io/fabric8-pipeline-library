@@ -6,7 +6,7 @@ node {
 
   checkout scm
 
-  stage 'canary release'
+  stage 'Canary release'
   if (!fileExists ('Dockerfile')) {
     writeFile file: 'Dockerfile', text: 'FROM rails:onbuild'
   }
