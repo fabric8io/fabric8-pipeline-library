@@ -6,7 +6,7 @@ def call(body) {
     body.delegate = config
     body()
 
-    sh "git config user.email fabric8@googlegroups.com"
+    sh "git config user.email fabric8-admin@googlegroups.com"
     sh "git config user.name fabric8"
 
     sh "git tag -fa v${config.releaseVersion} -m 'Release version ${config.releaseVersion}'"

@@ -6,17 +6,13 @@ def call(body) {
     body.delegate = config
     body()
 
-    stage "waiting for ${config.artifact} ${config.version} artifacts to sync with central"
-    node ('kubernetes'){
-      def flow = new io.fabric8.Fabric8Commands()
-      def newVersion = config.version
+    def flow = new io.fabric8.Fabric8Commands()
 
-      waitUntil {
-        flow.getMavenCentralVersion(config.artifact) == newVersion
-      }
-
-      message =  "${config.artifact} ${config.version} released and available in maven central"
-      hubot room: 'release', message: message
-
+    waitUntil {
+      flow.isArtifactAvailableInRepo(config.repo, config.groupId.replaceAll('\\.','/'), config.artifactId, config.version, config.ext)
     }
+
+    message =  "${config.artifactId} ${config.version} released and available in maven central"
+    hubot room: 'release', message: message
+
 }

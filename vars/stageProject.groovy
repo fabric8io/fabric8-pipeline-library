@@ -6,41 +6,43 @@ def call(body) {
   body.delegate = config
   body()
 
-  stage "stage ${config.project}"
+  sh "git remote set-url origin git@github.com:${config.project}.git"
 
   def flow = new io.fabric8.Fabric8Commands()
-  flow.setupWorkspaceForRelease(config.project)
+  def repoId
+  def releaseVersion
 
-  if (config.project == 'fabric8'){
-    flow.updateDocsAndSite(flow.getProjectVersion())
-  }
+  kubernetes.pod('buildpod').withImage('fabric8/maven-builder:1.1')
+  .withPrivileged(true)
+  .withHostPathMount('/var/run/docker.sock','/var/run/docker.sock')
+  .withEnvVar('DOCKER_CONFIG','/root/.docker/')
+  .withSecret('jenkins-maven-settings','/root/.m2')
+  .withSecret('jenkins-ssh-config','/root/.ssh')
+  .withSecret('jenkins-git-ssh','/root/.ssh-git')
+  .withSecret('jenkins-release-gpg','/root/.gnupg')
+  .withSecret('jenkins-docker-cfg','/root/.docker')
+  .inside {
 
-  // update project specific properties
-  if (config.project == 'fabric8-forge'){
-    try {
-      def archetypeVersion = flow.getMavenCentralVersion('io/fabric8/archetypes/archetypes-catalog')
-      flow.searchAndReplaceMavenVersionProperty("<fabric8.archetypes.release.version>", archetypeVersion)
-      updated = true
-    } catch (err) {
-      echo "Already set archetypes release version dependencies"
+    sh 'chmod 600 /root/.ssh-git/ssh-key'
+    sh 'chmod 600 /root/.ssh-git/ssh-key.pub'
+    sh 'chmod 700 /root/.ssh-git'
+    sh 'chmod 600 /root/.gnupg/pubring.gpg'
+    sh 'chmod 600 /root/.gnupg/secring.gpg'
+    sh 'chmod 600 /root/.gnupg/trustdb.gpg'
+    sh 'chmod 700 /root/.gnupg'
+
+    flow.setupWorkspaceForRelease(config.project, config.useGitTagForNextVersion)
+
+    repoId = flow.stageSonartypeRepo()
+    releaseVersion = flow.getProjectVersion()
+
+    stash excludes: '*/src/', includes: '**', name: "staged-${config.project}-${releaseVersion}".hashCode().toString()
+
+    if (!config.useGitTagForNextVersion){
+      flow.updateGithub ()
     }
 
-    try {
-      def devopsVersion = flow.getMavenCentralVersion('io/fabric8/devops/apps/jenkins')
-      flow.searchAndReplaceMavenVersionProperty("<fabric8.devops.version>", devopsVersion)
-      updated = true
-    } catch (err) {
-      echo "Already set devops release version dependencies"
-    }
+    return [config.project, releaseVersion, repoId]
   }
-
-  def repoId = flow.stageSonartypeRepo()
-  releaseVersion = flow.getProjectVersion()
-
-  stash excludes: '*/src/', includes: '**', name: "staged-${config.project}-${releaseVersion}"
-
-  flow.updateGithub ()
-
-  return [config.project, releaseVersion, repoId]
 
 }

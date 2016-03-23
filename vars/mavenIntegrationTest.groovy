@@ -6,8 +6,6 @@ def call(body) {
     body.delegate = config
     body()
 
-    stage 'integration test'
-
     sh "mvn org.apache.maven.plugins:maven-failsafe-plugin:2.18.1:integration-test -Dfabric8.environment=${config.environment} -Dit.test=${config.itestPattern} -DfailIfNoTests=${config.failIfNoTests} org.apache.maven.plugins:maven-failsafe-plugin:2.18.1:verify"
 
   }

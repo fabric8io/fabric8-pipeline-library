@@ -1,12 +1,6 @@
 #!/usr/bin/groovy
 package io.fabric8;
 
-import groovy.json.JsonSlurper
-
-def getGitRepo(){
-  'fabric8io'
-}
-
 def getProjectVersion(){
   def file = readFile('pom.xml')
   def project = new XmlSlurper().parseText(file)
@@ -25,12 +19,44 @@ def getMavenCentralVersion(String artifact) {
   return version
 }
 
-def getPullRequestState(String project, String id){
-  def gitRepo = getGitRepo()
-  def pr = new JsonSlurper().parse("https://api.github.com/repos/${gitRepo}/${project}/pulls/${id}")
-  return pr.state
+def getVersion(String repo, String artifact) {
+  repo = removeTrailingSlash(repo)
+  artifact = removeTrailingSlash(artifact)
+
+  def modelMetaData = new XmlSlurper().parse(repo+'/'+artifact+'/maven-metadata.xml')
+  def version = modelMetaData.versioning.release.text()
+  return version
 }
 
+def isArtifactAvailableInRepo(String repo, String groupId, String artifactId, String version, String ext) {
+  repo = removeTrailingSlash(repo)
+  groupId = removeTrailingSlash(groupId)
+  artifactId = removeTrailingSlash(artifactId)
+
+  def url = new URL("${repo}/${groupId}/${artifactId}/${version}/${artifactId}-${version}.${ext}")
+  def HttpURLConnection connection = url.openConnection()
+
+  connection.setRequestMethod("GET")
+  connection.setDoInput(true)
+
+  try {
+    connection.connect()
+    new InputStreamReader(connection.getInputStream(),"UTF-8")
+    return true
+  } catch( FileNotFoundException e1 ) {
+    echo "File not yet available: ${url.toString()}"
+    return false
+  } finally {
+    connection.disconnect()
+  }
+}
+
+def removeTrailingSlash (String myString){
+  if (myString.endsWith("/")) {
+    return myString.substring(0, myString.length() - 1);
+  }
+  return myString
+}
 def getRepoIds() {
   // we could have multiple staging repos created, we need to write the names of all the generated files to a well known
   // filename so we can use the workflow readFile (wildcards wont works and new File wont with slaves as groovy is executed on the master jenkins
@@ -67,15 +93,22 @@ def searchAndReplaceMavenSnapshotProfileVersionProperty(String property, String 
   sh "git commit -a -m 'Bump ${property} development profile SNAPSHOT version'"
 }
 
-def setupWorkspaceForRelease(String project){
+def setupWorkspaceForRelease(String project, Boolean useGitTagForNextVersion){
   sh "git config user.email fabric8-admin@googlegroups.com"
-  sh "git config user.name fusesource-ci"
+  sh "git config user.name fabric8-release"
 
   sh "git tag -d \$(git tag)"
   sh "git fetch --tags"
-  sh "git reset --hard origin/master"
 
-  sh 'mvn build-helper:parse-version versions:set -DnewVersion=\\\${parsedVersion.majorVersion}.\\\${parsedVersion.minorVersion}.\\\${parsedVersion.incrementalVersion}'
+  if (useGitTagForNextVersion){
+    def newVersion = getNewVersionFromTag()
+    echo "New release version ${newVersion}"
+    pushTag(newVersion)
+    sh "mvn build-helper:parse-version versions:set -DnewVersion=${newVersion}"
+  } else {
+    sh 'mvn build-helper:parse-version versions:set -DnewVersion=\\\${parsedVersion.majorVersion}.\\\${parsedVersion.minorVersion}.\\\${parsedVersion.incrementalVersion}'
+  }
+
   def releaseVersion = getProjectVersion()
 
   // delete any previous branches of this release
@@ -94,10 +127,37 @@ def setupWorkspaceForRelease(String project){
   sh "git commit -a -m '[CD] released v${releaseVersion}'"
 }
 
-def dockerPush () {
-  // intermittent errors can occur when pushing to dockerhub
-  retry(3){
-    sh "mvn docker:push -P release"
+// if no previous tag found default 1.0.0 is used, else assume version is in the form major.minor or major.minor.micro version
+def getNewVersionFromTag(){
+  def version = '1.0.0'
+
+  // if the repo has no tags this command will fail
+  sh "git tag --sort version:refname | tail -1 > version.tmp"
+
+  def tag = readFile 'version.tmp'
+
+  if (tag == null || tag.size() == 0){
+    echo "no existing tag found using version ${version}"
+    return version
+  }
+
+  tag = tag.trim()
+
+  // strip the v prefix from the tag so we can use in a maven version number
+  def previousReleaseVersion = tag.substring(tag.lastIndexOf('v')+1)
+  echo "Previous version found ${previousReleaseVersion}"
+
+  // if there's an int as the version then turn it into a major.minor.micro version
+  if (previousReleaseVersion.isNumber()){
+    return previousReleaseVersion + '.0.1'
+  } else {
+    // if previous tag is not a number and doesnt have a '.' version seperator then error until we have one
+    if (previousReleaseVersion.lastIndexOf('.') == 0){
+      error "found invalid latest tag [${previousReleaseVersion}] set to major.minor.micro to calculate next release version"
+    }
+    // incrememnt the release number after the last seperator '.'
+    def microVersion = previousReleaseVersion.substring(previousReleaseVersion.lastIndexOf('.')+1) as int
+    return previousReleaseVersion.substring(0, previousReleaseVersion.lastIndexOf('.')+1) + (microVersion+1)
   }
 }
 
@@ -140,14 +200,15 @@ def helm(){
   }
 }
 
-def updateGithub(){
-  // push release versions and tag it
-  def releaseVersion = getProjectVersion()
-
+def pushTag(String releaseVersion){
   sh "git tag -fa v${releaseVersion} -m 'Release version ${releaseVersion}'"
+  sh "git push origin v${releaseVersion}"
+}
+
+
+def updateGithub(){
+  def releaseVersion = getProjectVersion()
   sh "git push origin release-v${releaseVersion}"
-  // also force push the tag incase release fails further along the pipeline
-  sh "git push --force origin v${releaseVersion}"
 }
 
 def updateNextDevelopmentVersion(String releaseVersion){
@@ -201,15 +262,12 @@ def createPullRequest(String message, String project){
   sh "export GITHUB_TOKEN=${githubToken} && hub pull-request -m \"${message}\" > pr.txt"
   pr = readFile('pr.txt')
   split = pr.split('\\/')
-  def pr = split[6].trim()
-  addMergeCommentToPullRequest(pr, project)
-  return pr
+  return split[6].trim()
 }
 
 def addMergeCommentToPullRequest(String pr, String project){
-  def gitRepo = getGitRepo()
   def githubToken = getGitHubToken()
-  def apiUrl = new URL("https://api.github.com/repos/${gitRepo}/${project}/issues/${pr}/comments")
+  def apiUrl = new URL("https://api.github.com/repos/${project}/issues/${pr}/comments")
   echo "merge PR using comment sent to ${apiUrl}"
   try {
     def HttpURLConnection connection = apiUrl.openConnection()

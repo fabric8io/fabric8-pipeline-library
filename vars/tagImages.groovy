@@ -6,29 +6,32 @@ def call(body) {
     body.delegate = config
     body()
 
-    stage "tag ${config.project} docker images"
-    for(int i = 0; i < config.images.size(); i++){
-      node ('kubernetes'){
-        ws ('tag'){
-          image = config.images[i]
-          retry (3){
-            // first try and find an image marked as release
+    //stage "tag images"
+    kubernetes.pod('buildpod').withImage('fabric8/builder-openshift-client')
+    .withPrivileged(true)
+    .withHostPathMount('/var/run/docker.sock','/var/run/docker.sock')
+    .withEnvVar('DOCKER_CONFIG','/root/.docker/')
+    .withSecret('jenkins-docker-cfg','/root/.docker')
+    .inside {
+      for(int i = 0; i < config.images.size(); i++){
+        image = config.images[i]
+        retry (3){
+          // first try and find an image marked as release
+          try {
+            sh "docker pull docker.io/fabric8/${image}:staged"
+            sh "docker tag -f docker.io/fabric8/${image}:staged docker.io/fabric8/${image}:${config.tag}"
+          } catch (err) {
             try {
-              sh "docker pull docker.io/fabric8/${image}:staged"
-              sh "docker tag -f docker.io/fabric8/${image}:staged docker.io/fabric8/${image}:${config.tag}"
-            } catch (err) {
-              try {
-                //hubot room: 'release', message: "WARNING No staged tag found for image ${image} so will apply release tag to :latest"
-                echo "WARNING No staged tag found for image ${image} so will apply release tag to :latest"
-              } catch (err1) {
-                echo 'unable to send hubot message'
-              }
-              sh "docker pull docker.io/fabric8/${image}:latest"
-              sh "docker tag -f docker.io/fabric8/${image}:latest docker.io/fabric8/${image}:${config.tag}"
+              //hubot room: 'release', message: "WARNING No staged tag found for image ${image} so will apply release tag to :latest"
+              echo "WARNING No staged tag found for image ${image} so will apply release tag to :latest"
+            } catch (err1) {
+              echo 'unable to send hubot message'
             }
-
-            sh "docker push -f docker.io/fabric8/${image}:${config.tag}"
+            sh "docker pull docker.io/fabric8/${image}:latest"
+            sh "docker tag -f docker.io/fabric8/${image}:latest docker.io/fabric8/${image}:${config.tag}"
           }
+
+          sh "docker push -f docker.io/fabric8/${image}:${config.tag}"
         }
       }
     }

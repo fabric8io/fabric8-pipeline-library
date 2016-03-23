@@ -8,31 +8,27 @@ def call(body) {
 
   def project = 'kubernetes-client'
   stage "bump ${project} versions"
-  node ('kubernetes'){
-    ws (project){
-      withEnv(["PATH+MAVEN=${tool 'maven-3.3.1'}/bin"]) {
+    withEnv(["PATH+MAVEN=${tool 'maven-3.3.1'}/bin"]) {
 
-        def flow = new io.fabric8.Fabric8Commands()
-        flow.setupWorkspace (project)
+    def flow = new io.fabric8.Fabric8Commands()
+    flow.setupWorkspace (project)
 
-        def uid = UUID.randomUUID().toString()
-        sh "git checkout -b versionUpdate${uid}"
+    def uid = UUID.randomUUID().toString()
+    sh "git checkout -b versionUpdate${uid}"
 
-        try{
-          // bump dependency versions from the previous stage
-          def kubernetesModelVersion = flow.getReleaseVersion "io/fabric8/kubernetes-model"
-          flow.searchAndReplaceMavenVersionProperty("<kubernetes.model.version>", kubernetesModelVersion)
+    try{
+      // bump dependency versions from the previous stage
+      def kubernetesModelVersion = flow.getReleaseVersion "io/fabric8/kubernetes-model"
+      flow.searchAndReplaceMavenVersionProperty("<kubernetes.model.version>", kubernetesModelVersion)
 
-        } catch (err) {
-          echo "Already on the latest versions of kubernetes-model"
-          message = "kubernetes-client already on the latest release versions"
-          hubot room: 'release', message: message
-          return
-        }
-
-        sh "git push origin versionUpdate${uid}"
-        return flow.createPullRequest("[CD] Update release dependencies","${project}")
-      }
+    } catch (err) {
+      echo "Already on the latest versions of kubernetes-model"
+      message = "kubernetes-client already on the latest release versions"
+      hubot room: 'release', message: message
+      return
     }
+
+    sh "git push origin versionUpdate${uid}"
+    return flow.createPullRequest("[CD] Update release dependencies","${project}")
   }
 }
