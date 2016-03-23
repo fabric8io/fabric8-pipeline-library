@@ -23,9 +23,13 @@ try {
 def canaryVersion = "${versionPrefix}.${env.BUILD_NUMBER}"
 
 def fabric8Console = "${env.FABRIC8_CONSOLE ?: ''}"
+def utils = new io.fabric8.Utils()
 
-node{
-  git GIT_URL
+node {
+  def envStage = utils.environmentNamespace('staging')
+  def envProd = utils.environmentNamespace('production')
+
+  checkout scm
 
   kubernetes.pod('buildpod').withImage('fabric8/maven-builder')
       .withPrivileged(true)
@@ -41,7 +45,6 @@ node{
       version = canaryVersion
     }
 
-    // TODO docker push?
     stage 'Integration Testing'
     mavenIntegrationTest{
       environment = 'Testing'
@@ -50,10 +53,8 @@ node{
     }
 
     stage 'Rolling Upgrade Staging'
-    mavenRollingUpgrade{
-      environment = 'Staging'
-      stageDomain = STAGE_DOMAIN
-    }
+    def rc = readFile 'target/classes/kubernetes.json'
+    kubernetesApply(file: rc, environment: envStage)
 
     stage 'Approve'
     approve{
@@ -64,9 +65,8 @@ node{
     }
 
     stage 'Rolling Upgrade Production'
-    mavenRollingUpgrade{
-      environment = 'Production'
-      stageDomain = PROMOTE_DOMAIN
-    }
+    def rc = readFile 'target/classes/kubernetes.json'
+    kubernetesApply(file: rc, environment: envProd)
+
   }
 }

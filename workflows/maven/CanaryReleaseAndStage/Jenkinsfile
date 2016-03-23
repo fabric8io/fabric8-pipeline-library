@@ -21,9 +21,12 @@ try {
 }
 
 def canaryVersion = "${versionPrefix}.${env.BUILD_NUMBER}"
+def utils = new io.fabric8.Utils()
 
-node{
-  git GIT_URL
+node {
+  def envStage = utils.environmentNamespace('staging')
+
+  checkout scm
 
   kubernetes.pod('buildpod').withImage('fabric8/maven-builder')
       .withPrivileged(true)
@@ -47,9 +50,8 @@ node{
     }
 
     stage 'Rolling Upgrade Staging'
-    mavenRollingUpgrade{
-      environment = 'Staging'
-      stageDomain = STAGE_DOMAIN
-    }
+    def rc = readFile 'target/classes/kubernetes.json'
+    kubernetesApply(file: rc, environment: envStage)
+
   }
 }
