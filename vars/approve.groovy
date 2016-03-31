@@ -14,6 +14,13 @@ Would you like to promote version ${config.version} to the Production namespace?
 """
 
     hubotApprove message: proceedMessage, room: config.room
+    def id = approveRequestedEvent(app: "${env.JOB_NAME}", environment: config.environment)
 
-    input id: 'Proceed', message: "\n${config.proceedMessage}"
+    try {
+      input id: 'Proceed', message: "\n${config.proceedMessage}"
+    } catch (err) {
+      approveReceivedEvent(id: id, approved: false)
+      throw err
+    }
+    approveReceivedEvent(id: id, approved: true)
   }
