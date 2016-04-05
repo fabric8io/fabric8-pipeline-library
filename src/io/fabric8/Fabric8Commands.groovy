@@ -125,12 +125,12 @@ def setupWorkspaceForRelease(String project, Boolean useGitTagForNextVersion){
   } catch (err){
   }
 
-  sh "git commit -a -m '[CD] released v${releaseVersion}'"
+  //sh "git commit -a -m '[CD] released v${releaseVersion}'"
 }
 
 // if no previous tag found default 1.0.0 is used, else assume version is in the form major.minor or major.minor.micro version
 def getNewVersionFromTag(){
-  def version = '1.0.0'
+  def version = '0.0.1'
 
   // if the repo has no tags this command will fail
   sh "git tag --sort version:refname | tail -1 > version.tmp"
