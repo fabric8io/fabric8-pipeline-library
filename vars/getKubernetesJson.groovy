@@ -14,8 +14,7 @@ def call(body) {
       "metadata" : {
         "annotations" : {
           "description" : "${config.label} example",
-          "fabric8.${env.JOB_NAME}/iconUrl" : "${config.icon}",
-          "fabric8.${env.JOB_NAME}/summary" : "A nodeJS example"
+          "fabric8.${env.JOB_NAME}/iconUrl" : "${config.icon}"
         },
         "labels" : { },
         "name" : "${env.JOB_NAME}"
@@ -35,6 +34,7 @@ def call(body) {
                 "version": "${config.version}"
             },
             "annotations": {
+                "fabric8.${env.JOB_NAME}/iconUrl" : "${config.icon}",
                 "prometheus.io/port": "${config.port}",
                 "prometheus.io/scheme": "http",
                 "prometheus.io/scrape": "true"
@@ -77,6 +77,9 @@ def call(body) {
                 "project": "${env.JOB_NAME}",
                 "provider": "fabric8",
                 "version": "${config.version}"
+            },
+            "annotations": {
+                "fabric8.${env.JOB_NAME}/iconUrl" : "${config.icon}"
             }
         },
         "spec": {
