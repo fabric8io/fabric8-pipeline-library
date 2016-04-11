@@ -5,7 +5,7 @@ node {
   def envStage = utils.environmentNamespace('staging')
   def envProd = utils.environmentNamespace('production')
 
-  checkout scm
+  git GIT_URL
 
   stage 'Canary release'
   if (!fileExists ('Dockerfile')) {

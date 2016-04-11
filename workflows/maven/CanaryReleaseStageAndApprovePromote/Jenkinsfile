@@ -29,7 +29,7 @@ node {
   def envStage = utils.environmentNamespace('staging')
   def envProd = utils.environmentNamespace('production')
 
-  checkout scm
+  git GIT_URL
 
   kubernetes.pod('buildpod').withImage('fabric8/maven-builder')
       .withPrivileged(true)
