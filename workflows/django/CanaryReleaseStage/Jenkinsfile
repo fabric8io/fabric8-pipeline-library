@@ -3,7 +3,7 @@ def utils = new io.fabric8.Utils()
 
 node {
   def envStage = utils.environmentNamespace('staging')
-  checkout scm
+  git GIT_URL
 
   stage 'Canary release'
   if (!fileExists ('Dockerfile')) {
