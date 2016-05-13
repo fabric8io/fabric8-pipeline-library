@@ -31,6 +31,7 @@ node {
 
   git GIT_URL
 
+  echo 'NOTE: running pipelines for the first time will take longer as build and base docker images are pulled onto the node'
   kubernetes.pod('buildpod').withImage('fabric8/maven-builder')
       .withPrivileged(true)
       .withHostPathMount('/var/run/docker.sock','/var/run/docker.sock')
