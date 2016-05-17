@@ -11,6 +11,7 @@ def call(body) {
   def flow = new io.fabric8.Fabric8Commands()
   def repoId
   def releaseVersion
+  def extraStageImages = config.extraImagesToStage ?: []
 
   kubernetes.pod('buildpod').withImage('fabric8/maven-builder:1.1')
   .withPrivileged(true)
@@ -43,9 +44,11 @@ def call(body) {
     }
   }
 
-  stageExtraImages {
-    images = extraImagesToStage
-    tag = releaseVersion
+  if (config.extraImagesToStage != null){
+    stageExtraImages {
+      images = extraStageImages
+      tag = releaseVersion
+    }
   }
 
   return [config.project, releaseVersion, repoId]
