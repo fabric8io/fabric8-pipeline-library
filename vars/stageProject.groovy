@@ -41,8 +41,12 @@ def call(body) {
     if (!config.useGitTagForNextVersion){
       flow.updateGithub ()
     }
-
-    return [config.project, releaseVersion, repoId]
   }
 
+  stageExtraImages {
+    images = extraImagesToStage
+    tag = releaseVersion
+  }
+
+  return [config.project, releaseVersion, repoId]
 }
