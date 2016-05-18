@@ -20,24 +20,38 @@ You can then either
 
 These flows make use of the [Fabric8 DevOps Workflow Steps](https://github.com/fabric8io/fabric8-jenkins-workflow-steps) which help when working with [Fabric8 DevOps](http://fabric8.io/guide/cdelivery.html) in particular for clean integration with the [Hubot chat bot](https://hubot.github.com/) and human approval of staging, promotion and releasing.
 
-### Overview of flows
+### Functions from the global library
 
-The flows are grouped by the kinds of build technologies used:
+#### Generic  
 
-* [maven](maven)
+__TODO__
 
-### [Atom](https://atom.io/) users
+#### fabric8 release specific
 
-So that the Atom groovy plugin works with Jenkinsfile make sure the file type appears in the plugin config..
+These functions are focused specifically on the fabric8 release itself however could be used as examples or extended in users own setup.
 
-`atom ~/.atom/packages/language-groovy/grammars/groovy.cson`
+##### deployRemoteOpenShift
 
-```
-'fileTypes': [
-  'groovy'
-  'gvy'
-  'gradle'
-  'Jenkinsfile'
-]
-...
-```
+Deploys the staged fabric8 release to a remote OpenShift cluster.  
+
+NOTE: in order for images to be found by the the remote OpenShift instance it must be able to pull images from the staging docker registry.  Noting private networks and insecure-registry flags.
+
+    node{
+      deployRemoteOpenShift{
+          url = 'test.fabric8.io'
+          domain = 'staging.test.fabric8.io'
+      }
+    }
+
+##### deployRemoteKubernetes
+
+Deploys the staged fabric8 release to a remote Kubetnetes cluster.  
+
+NOTE: in order for images to be found by the the remote OpenShift instance it must be able to pull images from the staging docker registry.  Noting private networks and insecure-registry flags.    
+
+    node{
+      deployRemoteKubernetes{
+          url = 'https://kubernetes.fabric8.io'
+          defaultNamespace = 'default'
+      }
+    }

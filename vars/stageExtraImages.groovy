@@ -6,7 +6,6 @@ def call(body) {
     body.delegate = config
     body()
 
-    //stage "tag images"
     kubernetes.pod('buildpod').withImage('fabric8/builder-openshift-client')
     .withPrivileged(true)
     .withHostPathMount('/var/run/docker.sock','/var/run/docker.sock')
@@ -16,9 +15,9 @@ def call(body) {
       for(int i = 0; i < config.images.size(); i++){
         image = config.images[i]
         retry (3){
-          sh "docker pull ${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}/fabric8/${image}:latest"
-          sh "docker tag -f docker.io/fabric8/${image}:latest docker.io/fabric8/${image}:${config.tag}"
-          sh "docker push -f docker.io/fabric8/${image}:${config.tag}"
+          sh "docker pull docker.io/fabric8/${image}:latest"
+          sh "docker tag -f docker.io/fabric8/${image}:latest ${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}/fabric8/${image}:${config.tag}"
+          sh "docker push -f ${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}/fabric8/${image}:${config.tag}"
         }
       }
     }
