@@ -8,7 +8,7 @@ def call(body) {
 
   def flow = new io.fabric8.Fabric8Commands()
 
-  kubernetes.pod('buildpod').withImage('fabric8/builder-clients')
+  kubernetes.pod('buildpod').withImage('fabric8/builder-clients:latest')
   .withSecret('remote-openshift-token','/root/.oc/')
   .withPrivileged(true)
   .inside {
@@ -32,7 +32,7 @@ def call(body) {
       // dont need to worry if there's no existing test environment to delete
     }
     sh 'oc new-project fabric8-test'
-    sh "gofabric8 deploy -y --docker-registry ${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT} --api-server ${config.url} --domain ${config.domain} --maven-repo https://oss.sonatype.org/content/repositories/staging/"
+    sh "gofabric8 deploy -y --docker-registry ${config.stagingDockerRegistry} --api-server ${config.url} --domain ${config.domain} --maven-repo https://oss.sonatype.org/content/repositories/staging/"
 
   }
 }

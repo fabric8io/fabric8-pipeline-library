@@ -6,7 +6,7 @@ def call(body) {
   body.delegate = config
   body()
 
-  kubernetes.pod('buildpod').withImage('fabric8/builder-clients')
+  kubernetes.pod('buildpod').withImage('fabric8/builder-clients:latest')
   .withSecret('remote-kubernetes-token','/root/.kc/')
   .withPrivileged(true)
   .inside {
@@ -34,7 +34,9 @@ def call(body) {
       // dont need to worry if there's no existing test environment to delete
     }
     sh 'kubectl create namespace fabric8-test'
-    sh "gofabric8 deploy -y --docker-registry ${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT} --api-server ${config.url} --maven-repo https://oss.sonatype.org/content/repositories/staging/"
+    sh "kubectl config set-context test --user=kube --namespace=fabric8-test --cluster=kube"
+    sh 'kubectl config use-context test'
+    sh "gofabric8 deploy -y --docker-registry ${config.stagingDockerRegistry} --api-server ${config.url} --maven-repo https://oss.sonatype.org/content/repositories/staging/"
 
   }
 }
