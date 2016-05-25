@@ -296,6 +296,73 @@ def addMergeCommentToPullRequest(String pr, String project){
   }
 }
 
+def drop(String pr, String project){
+  def githubToken = getGitHubToken()
+  def apiUrl = new URL("https://api.github.com/repos/${project}/pulls/${pr}")
+  def branch
+  def HttpURLConnection connection
+  def OutputStreamWriter writer
+  echo "closing PR ${apiUrl}"
+
+  try {
+    HttpURLConnection connection = apiUrl.openConnection()
+    if(githubToken.length() > 0)
+    {
+      connection.setRequestProperty("Authorization", "Bearer ${githubToken}")
+    }
+    connection.setRequestMethod("POST")
+    connection.setDoOutput(true)
+    connection.connect()
+
+    def body  = '''
+    {
+      "body": "release aborted",
+      "state": "closed"
+    }
+    '''
+
+    writer = new OutputStreamWriter(connection.getOutputStream())
+    writer.write(body);
+    writer.flush();
+
+    // execute the POST request
+    def rs = new JsonSlurper().parse(new InputStreamReader(connection.getInputStream(),"UTF-8"))
+
+    connection.disconnect()
+
+    branchName = rs.head.ref
+
+  } catch (err) {
+     echo "ERROR  ${err}"
+     return
+  }
+
+  try {
+    apiUrl = new URL("https://api.github.com/repos/${project}/git/refs/heads/${branchName}")
+    HttpURLConnection connection = apiUrl.openConnection()
+    if(githubToken.length() > 0)
+    {
+      connection.setRequestProperty("Authorization", "Bearer ${githubToken}")
+    }
+    connection.setRequestMethod("DELETE")
+    connection.setDoOutput(true)
+    connection.connect()
+
+    writer = new OutputStreamWriter(connection.getOutputStream())
+    writer.write(body);
+    writer.flush();
+
+    // execute the POST request
+    new InputStreamReader(connection.getInputStream())
+
+    connection.disconnect()
+
+  } catch (err) {
+     echo "ERROR  ${err}"
+     return
+  }
+}
+
 def deleteRemoteBranch(String branchName){
   sh "git push origin --delete ${branchName}"
 }

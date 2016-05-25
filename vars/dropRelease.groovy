@@ -1,5 +1,4 @@
 #!/usr/bin/groovy
-stage 'drop dryrun release'
 def call(body) {
     // evaluate the body block, and collect configuration into the object
     def config = [:]
@@ -22,6 +21,6 @@ def call(body) {
           flow.dropStagingRepo(repoIds[j])
         }
         flow.deleteRemoteBranch("release-v${version}")
-      }      
+      }
     }
   }
