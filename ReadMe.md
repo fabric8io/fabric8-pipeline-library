@@ -1,6 +1,6 @@
 ## Fabric8 Jenkins Workflow Library
 
-This git repository contains a library of reusable [Jenkins Workflows](https://github.com/jenkinsci/workflow-plugin) that can be used on a project.
+This git repository contains a library of reusable [Jenkins Pipeline](https://github.com/jenkinsci/workflow-plugin) scripts that can be used on a project.
 
 <p align="center">
   <a href="http://fabric8.io/guide/cdelivery.html">
@@ -18,13 +18,42 @@ You can then either
 
 ### Requirements
 
-These flows make use of the [Fabric8 DevOps Workflow Steps](https://github.com/fabric8io/fabric8-jenkins-workflow-steps) which help when working with [Fabric8 DevOps](http://fabric8.io/guide/cdelivery.html) in particular for clean integration with the [Hubot chat bot](https://hubot.github.com/) and human approval of staging, promotion and releasing.
+These flows make use of the [Fabric8 DevOps Workflow Steps](https://github.com/fabric8io/fabric8-jenkins-workflow-steps) and [kubernetes-worflow](https://github.com/fabric8io/kubernetes-workflow) which help when working with [Fabric8 DevOps](http://fabric8.io/guide/cdelivery.html) in particular for clean integration with the [Hubot chat bot](https://hubot.github.com/) and human approval of staging, promotion and releasing.
 
-### Functions from the global library
+
+### Functions from the Jenkins global library
+
+When the fabric8 Jenkins app is run, we use a kubernetes post start script to populate the Jenkins internal global library with scripts from this repo.  We are then able to easily call the groovy functions from within our Jenkinsfiles.
+
 
 #### Generic  
 
-__TODO__
+#### Approve
+
+#### Deploy Project
+
+#### Drop Project
+
+#### Get Kubernetes JSON
+
+#### Get New Version
+
+#### Git Tag
+
+#### Maven Canary Release
+
+#### Maven Integration Test
+
+#### Merge and Wait for Pull Request
+
+
+For example, this function will watch for a GitHub pull request to be merged by an external CI system.  Once the PR is merged it
+
+
+mergeAndWaitForPullRequest{
+  project = 'fabric8/fabric8'
+  pullRequestId = prId
+}
 
 #### fabric8 release specific
 

@@ -1,5 +1,6 @@
 #!/usr/bin/groovy
-package io.fabric8;
+package io.fabric8
+import groovy.json.JsonSlurper
 
 def getProjectVersion(){
   def file = readFile('pom.xml')
@@ -305,7 +306,7 @@ def drop(String pr, String project){
   echo "closing PR ${apiUrl}"
 
   try {
-    HttpURLConnection connection = apiUrl.openConnection()
+    connection = apiUrl.openConnection()
     if(githubToken.length() > 0)
     {
       connection.setRequestProperty("Authorization", "Bearer ${githubToken}")
@@ -339,7 +340,7 @@ def drop(String pr, String project){
 
   try {
     apiUrl = new URL("https://api.github.com/repos/${project}/git/refs/heads/${branchName}")
-    HttpURLConnection connection = apiUrl.openConnection()
+    connection = apiUrl.openConnection()
     if(githubToken.length() > 0)
     {
       connection.setRequestProperty("Authorization", "Bearer ${githubToken}")
