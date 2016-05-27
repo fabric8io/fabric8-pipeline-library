@@ -2,7 +2,7 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
-- [Fabric8 Jenkins Workflow Library](#fabric8-jenkins-workflow-library)
+- [Fabric8 Jenkins Pipeline Library](#fabric8-jenkins-pipeline-library)
   - [Requirements](#requirements)
   - [How it works](#how-it-works)
   - [Functions from the Jenkins global library](#functions-from-the-jenkins-global-library)
@@ -31,7 +31,7 @@
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-# Fabric8 Jenkins Workflow Library
+# Fabric8 Jenkins Pipeline Library
 
 This git repository contains a library of reusable [Jenkins Pipeline](https://github.com/jenkinsci/workflow-plugin) scripts that can be used on a project.
 
@@ -41,7 +41,7 @@ This git repository contains a library of reusable [Jenkins Pipeline](https://gi
   </a>
 </p>
 
-The idea is to try promote sharing of workflows across projects where it makes sense.
+The idea is to try promote sharing of scripts across projects where it makes sense.
 
 You can then either
 
@@ -51,7 +51,7 @@ You can then either
 
 ### Requirements
 
-These flows make use of the [Fabric8 DevOps Workflow Steps](https://github.com/fabric8io/fabric8-jenkins-workflow-steps) and [kubernetes-worflow](https://github.com/fabric8io/kubernetes-workflow) which help when working with [Fabric8 DevOps](http://fabric8.io/guide/cdelivery.html) in particular for clean integration with the [Hubot chat bot](https://hubot.github.com/) and human approval of staging, promotion and releasing.
+These flows make use of the [Fabric8 DevOps Pipeline Steps](https://github.com/fabric8io/fabric8-jenkins-workflow-steps) and [kubernetes-workflow](https://github.com/fabric8io/kubernetes-workflow) which help when working with [Fabric8 DevOps](http://fabric8.io/guide/cdelivery.html) in particular for clean integration with the [Hubot chat bot](https://hubot.github.com/) and human approval of staging, promotion and releasing.
 
 ### How it works
 
