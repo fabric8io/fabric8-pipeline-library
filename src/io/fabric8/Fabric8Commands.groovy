@@ -108,7 +108,7 @@ def setupWorkspaceForRelease(String project, Boolean useGitTagForNextVersion, St
     sh "git commit -a -m 'release ${newVersion}'"
     pushTag(newVersion)
   } else {
-    sh 'mvn build-helper:parse-version versions:set -DnewVersion=\\\${parsedVersion.majorVersion}.\\\${parsedVersion.minorVersion}.\\\${parsedVersion.incrementalVersion} ' + mvnExtraArgs
+    sh 'mvn build-helper:parse-version versions:set -DnewVersion=\\\${parsedVersion.majorVersion}.\\\${parsedVersion.minorVersion}.\\\${parsedVersion.nextIncrementalVersion} ' + mvnExtraArgs
   }
 
   def releaseVersion = getProjectVersion()
