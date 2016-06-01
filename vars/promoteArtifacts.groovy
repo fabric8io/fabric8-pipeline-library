@@ -10,8 +10,9 @@ def call(body) {
     def version = config.projectStagingDetails[1]
     def repoIds = config.projectStagingDetails[2]
 
+    // lets avoide the stash / unstash for now as we're not using helm ATM
     // use hash to avoid incompatible chars
-    unstash name:"staged-${config.project}-${version}".hashCode().toString()
+    //unstash name:"staged-${config.project}-${version}".hashCode().toString()
 
     kubernetes.pod('buildpod').withImage('fabric8/maven-builder:1.1')
     .withPrivileged(true)
