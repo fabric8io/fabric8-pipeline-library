@@ -133,6 +133,11 @@ def setupWorkspaceForRelease(String project, Boolean useGitTagForNextVersion){
 def getNewVersionFromTag(){
   def version = '0.0.1'
 
+  // Set known prerelease prefixes, needed for the proper sort order
+  // in the next command
+  sh "git config versionsort.prereleaseSuffix -RC"
+  sh "git config versionsort.prereleaseSuffix -M"
+
   // if the repo has no tags this command will fail
   sh "git tag --sort version:refname | tail -1 > version.tmp"
 
