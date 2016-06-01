@@ -6,8 +6,6 @@ def call(body) {
   body.delegate = config
   body()
 
-  sh "git remote set-url origin git@github.com:${config.project}.git"
-
   def flow = new io.fabric8.Fabric8Commands()
   def repoId
   def releaseVersion
@@ -32,12 +30,15 @@ def call(body) {
     sh 'chmod 600 /root/.gnupg/trustdb.gpg'
     sh 'chmod 700 /root/.gnupg'
 
+    sh "git remote set-url origin git@github.com:${config.project}.git"
+
     flow.setupWorkspaceForRelease(config.project, config.useGitTagForNextVersion)
 
     repoId = flow.stageSonartypeRepo()
     releaseVersion = flow.getProjectVersion()
 
-    stash excludes: '*/src/', includes: '**', name: "staged-${config.project}-${releaseVersion}".hashCode().toString()
+    // lets avoide the stash / unstash for now as we're not using helm ATM
+    //stash excludes: '*/src/', includes: '**', name: "staged-${config.project}-${releaseVersion}".hashCode().toString()
 
     if (!config.useGitTagForNextVersion){
       flow.updateGithub ()
