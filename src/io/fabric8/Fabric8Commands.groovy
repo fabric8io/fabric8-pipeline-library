@@ -94,7 +94,7 @@ def searchAndReplaceMavenSnapshotProfileVersionProperty(String property, String 
   sh "git commit -a -m 'Bump ${property} development profile SNAPSHOT version'"
 }
 
-def setupWorkspaceForRelease(String project, Boolean useGitTagForNextVersion){
+def setupWorkspaceForRelease(String project, Boolean useGitTagForNextVersion, String mvnExtraArgs = ""){
   sh "git config user.email fabric8-admin@googlegroups.com"
   sh "git config user.name fabric8-release"
 
@@ -104,11 +104,11 @@ def setupWorkspaceForRelease(String project, Boolean useGitTagForNextVersion){
   if (useGitTagForNextVersion){
     def newVersion = getNewVersionFromTag()
     echo "New release version ${newVersion}"
-    sh "mvn build-helper:parse-version versions:set -DnewVersion=${newVersion}"
+    sh "mvn versions:set -DnewVersion=${newVersion} " + mvnExtraArgs
     sh "git commit -a -m 'release ${newVersion}'"
     pushTag(newVersion)
   } else {
-    sh 'mvn build-helper:parse-version versions:set -DnewVersion=\\\${parsedVersion.majorVersion}.\\\${parsedVersion.minorVersion}.\\\${parsedVersion.incrementalVersion}'
+    sh 'mvn build-helper:parse-version versions:set -DnewVersion=\\\${parsedVersion.majorVersion}.\\\${parsedVersion.minorVersion}.\\\${parsedVersion.incrementalVersion} ' + mvnExtraArgs
   }
 
   def releaseVersion = getProjectVersion()
@@ -218,9 +218,9 @@ def updateGithub(){
   sh "git push origin release-v${releaseVersion}"
 }
 
-def updateNextDevelopmentVersion(String releaseVersion){
+def updateNextDevelopmentVersion(String releaseVersion, String mvnExtraArgs = ""){
   // update poms back to snapshot again
-  sh 'mvn build-helper:parse-version versions:set -DnewVersion=\\\${parsedVersion.majorVersion}.\\\${parsedVersion.minorVersion}.\\\${parsedVersion.nextIncrementalVersion}-SNAPSHOT'
+  sh 'mvn build-helper:parse-version versions:set -DnewVersion=\\\${parsedVersion.majorVersion}.\\\${parsedVersion.minorVersion}.\\\${parsedVersion.nextIncrementalVersion}-SNAPSHOT ' + mvnExtraArgs
   def snapshotVersion = getProjectVersion()
   sh "git commit -a -m '[CD] prepare for next development iteration ${snapshotVersion}'"
   sh "git push origin release-v${releaseVersion}"

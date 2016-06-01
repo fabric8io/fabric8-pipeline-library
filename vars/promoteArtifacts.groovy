@@ -36,7 +36,7 @@ def call(body) {
       }
 
       if (!config.useGitTagForNextVersion){
-        flow.updateNextDevelopmentVersion(version)
+        flow.updateNextDevelopmentVersion(version, config.setVersionExtraArgs ?: "")
         return flow.createPullRequest("[CD] Release ${version}","${config.project}")
       }
     }

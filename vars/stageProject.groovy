@@ -32,7 +32,7 @@ def call(body) {
 
     sh "git remote set-url origin git@github.com:${config.project}.git"
 
-    flow.setupWorkspaceForRelease(config.project, config.useGitTagForNextVersion)
+    flow.setupWorkspaceForRelease(config.project, config.useGitTagForNextVersion, config.setVersionExtraArgs ?: "")
 
     repoId = flow.stageSonartypeRepo()
     releaseVersion = flow.getProjectVersion()
