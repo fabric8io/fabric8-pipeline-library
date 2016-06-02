@@ -10,6 +10,7 @@ def call(body) {
   def repoId
   def releaseVersion
   def extraStageImages = config.extraImagesToStage ?: []
+  def extraSetVersionArgs = config.setVersionExtraArgs ?: ""
 
   kubernetes.pod('buildpod').withImage('fabric8/maven-builder:latest')
   .withPrivileged(true)
@@ -32,7 +33,7 @@ def call(body) {
 
     sh "git remote set-url origin git@github.com:${config.project}.git"
 
-    flow.setupWorkspaceForRelease(config.project, config.useGitTagForNextVersion, config.setVersionExtraArgs ?: "")
+    flow.setupWorkspaceForRelease(config.project, config.useGitTagForNextVersion, extraSetVersionArgs)
 
     repoId = flow.stageSonartypeRepo()
     releaseVersion = flow.getProjectVersion()
