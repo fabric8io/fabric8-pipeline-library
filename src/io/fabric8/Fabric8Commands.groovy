@@ -262,7 +262,7 @@ def updateDocsAndSite(String newVersion){
 }
 
 def runSystemTests(){
-  sh 'cd systests && mvn clean integration-test verify'
+  sh 'cd systests && mvn clean && mvn integration-test verify'
 }
 
 def createPullRequest(String message, String project){
