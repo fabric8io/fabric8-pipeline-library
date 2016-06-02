@@ -108,7 +108,7 @@ def setupWorkspaceForRelease(String project, Boolean useGitTagForNextVersion, St
     sh "git commit -a -m 'release ${newVersion}'"
     pushTag(newVersion)
   } else {
-    sh 'mvn build-helper:parse-version versions:set -DnewVersion=\\\${parsedVersion.majorVersion}.\\\${parsedVersion.minorVersion}.\\\${parsedVersion.incrementalVersion} ' + mvnExtraArgs
+    sh 'mvn build-helper:parse-version versions:set -DnewVersion=\\\${parsedVersion.majorVersion}.\\\${parsedVersion.minorVersion}.\\\${parsedVersion.nextIncrementalVersion} ' + mvnExtraArgs
   }
 
   def releaseVersion = getProjectVersion()
@@ -170,7 +170,8 @@ def getNewVersionFromTag(){
 
 def stageSonartypeRepo () {
   try {
-    sh "mvn -V -B -U clean install org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:deploy -P release -DnexusUrl=https://oss.sonatype.org -DserverId=oss-sonatype-staging -Ddocker.registry=${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}"
+    sh "mvn clean -B"
+    sh "mvn -V -B -U install org.sonatype.plugins:nexus-staging-maven-plugin:1.6.7:deploy -P release -DnexusUrl=https://oss.sonatype.org -DserverId=oss-sonatype-staging -Ddocker.registry=${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}"
   } catch (err) {
     hubot room: 'release', message: "Release failed when building and deploying to Nexus ${err}"
     currentBuild.result = 'FAILURE'
@@ -261,7 +262,7 @@ def updateDocsAndSite(String newVersion){
 }
 
 def runSystemTests(){
-  sh 'cd systests && mvn clean integration-test verify'
+  sh 'cd systests && mvn clean && mvn integration-test verify'
 }
 
 def createPullRequest(String message, String project){
