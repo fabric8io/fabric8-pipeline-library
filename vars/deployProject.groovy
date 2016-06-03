@@ -9,7 +9,8 @@ def call(body) {
   def projectName = config.stagedProject[0]
   def releaseVersion = config.stagedProject[1]
 
-  unstash name:"staged-${projectName}-${releaseVersion}".hashCode().toString()
+  //comment out as we're not using helm charts
+  //unstash name:"staged-${projectName}-${releaseVersion}".hashCode().toString()
 
   def rc = readFile config.resourceLocation
 
