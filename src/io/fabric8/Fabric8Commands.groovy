@@ -172,6 +172,8 @@ def stageSonartypeRepo () {
   try {
     sh "mvn clean -B"
     sh "mvn -V -B -U install org.sonatype.plugins:nexus-staging-maven-plugin:1.6.7:deploy -P release -DnexusUrl=https://oss.sonatype.org -DserverId=oss-sonatype-staging -Ddocker.registry=${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}"
+    step([$class: 'ArtifactArchiver', artifacts: '**/target/*.jar', fingerprint: true])
+
   } catch (err) {
     hubot room: 'release', message: "Release failed when building and deploying to Nexus ${err}"
     currentBuild.result = 'FAILURE'
