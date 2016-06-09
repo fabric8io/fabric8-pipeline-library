@@ -17,54 +17,48 @@ def call(body) {
       def org = items[0]
       def repo = items[1]
 
-      try {
-        stage "Updating ${project}"
-        sh "rm -rf ${repo}"
-        sh "git clone git@github.com:${project}.git"
+      stage "Updating ${project}"
+      sh "rm -rf ${repo}"
+      sh "git clone https://github.com/${project}.git"
+      sh "cd ${repo} && git remote set-url origin git@github.com:${project}.git"
 
-        def uid = UUID.randomUUID().toString()
-        sh "cd ${repo} && git checkout -b versionUpdate${uid}"
+      def uid = UUID.randomUUID().toString()
+      sh "cd ${repo} && git checkout -b versionUpdate${uid}"
 
-        def xml = readFile file: "${repo}/pom.xml"
-        sh "cat ${repo}/pom.xml"
+      def xml = readFile file: "${repo}/pom.xml"
+      sh "cat ${repo}/pom.xml"
 
-        def pom = updateParentVersion (xml, config.version)
+      def pom = updateParentVersion (xml, config.version)
 
-        writeFile file: "${repo}/pom.xml", text: pom
+      writeFile file: "${repo}/pom.xml", text: pom
 
-        sh "cat ${repo}/pom.xml"
+      sh "cat ${repo}/pom.xml"
 
-        kubernetes.pod('buildpod').withImage('fabric8/maven-builder:latest')
-          .withPrivileged(true)
-          .withSecret('jenkins-git-ssh','/root/.ssh-git')
-          .withSecret('jenkins-ssh-config','/root/.ssh')
-          .inside {
+      kubernetes.pod('buildpod').withImage('fabric8/maven-builder:latest')
+        .withPrivileged(true)
+        .withSecret('jenkins-git-ssh','/root/.ssh-git')
+        .withSecret('jenkins-ssh-config','/root/.ssh')
+        .inside {
 
-            sh 'chmod 600 /root/.ssh-git/ssh-key'
-            sh 'chmod 600 /root/.ssh-git/ssh-key.pub'
-            sh 'chmod 700 /root/.ssh-git'
+          sh 'chmod 600 /root/.ssh-git/ssh-key'
+          sh 'chmod 600 /root/.ssh-git/ssh-key.pub'
+          sh 'chmod 700 /root/.ssh-git'
 
-            sh "git config --global user.email fabric8-admin@googlegroups.com"
-            sh "git config --global user.name fabric8-release"
+          sh "git config --global user.email fabric8-admin@googlegroups.com"
+          sh "git config --global user.name fabric8-release"
 
-            def githubToken = flow.getGitHubToken()
-            def message = "\"Update parent pom version ${config.version}\""
-            sh "cd ${repo} && git add pom.xml"
-            sh "cd ${repo} && git commit -m ${message}"
-            sh "cd ${repo} && git push origin versionUpdate${uid}"
-            sh "export GITHUB_TOKEN=${githubToken} && cd ${repo} && hub pull-request -m ${message} > pr.txt"
-        }
-        pr = readFile("${repo}/pr.txt")
-        split = pr.split('\\/')
-        def prId = split[6].trim()
-        echo "received Pull Request Id: ${prId}"
-        //addMergeCommentToPullRequest(prId, project)
-      } catch (err) {
-        // clean up
-        sh "ERROR ${err}"
-        sh "rm -rf ${repo}"
-        throw err
+          def githubToken = flow.getGitHubToken()
+          def message = "\"Update parent pom version ${config.version}\""
+          sh "cd ${repo} && git add pom.xml"
+          sh "cd ${repo} && git commit -m ${message}"
+          sh "cd ${repo} && git push origin versionUpdate${uid}"
+          sh "export GITHUB_TOKEN=${githubToken} && cd ${repo} && hub pull-request -m ${message} > pr.txt"
       }
+      pr = readFile("${repo}/pr.txt")
+      split = pr.split('\\/')
+      def prId = split[6].trim()
+      echo "received Pull Request Id: ${prId}"
+      addMergeCommentToPullRequest(prId, project)
     }
   }
 
