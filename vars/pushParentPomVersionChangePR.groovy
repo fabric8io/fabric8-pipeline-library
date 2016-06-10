@@ -58,7 +58,7 @@ def call(body) {
       split = pr.split('\\/')
       def prId = split[6].trim()
       echo "received Pull Request Id: ${prId}"
-      addMergeCommentToPullRequest(prId, project)
+      flow.addMergeCommentToPullRequest(prId, project)
     }
   }
 
