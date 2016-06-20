@@ -1,5 +1,7 @@
 #!/usr/bin/groovy
 package io.fabric8
+import io.fabric8.kubernetes.client.DefaultKubernetesClient
+import io.fabric8.kubernetes.client.KubernetesClient
 import groovy.json.JsonSlurper
 
 def getProjectVersion(){
@@ -383,6 +385,16 @@ def getGitHubToken(){
     error "No GitHub token found in ${tokenPath}"
   }
   return githubToken.trim()
+}
+
+@NonCPS
+def isSingleNode() {
+  KubernetesClient kubernetes = new DefaultKubernetesClient();
+  if (kubernetes.nodes().list().getItems().size() == 1){
+    return true
+  } else {
+    return false
+  }
 }
 
 return this;
