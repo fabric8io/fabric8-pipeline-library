@@ -35,6 +35,7 @@ node {
   kubernetes.pod('buildpod').withImage('fabric8/maven-builder')
       .withPrivileged(true)
       .withHostPathMount('/var/run/docker.sock','/var/run/docker.sock')
+      .withHostPathMount('/root/.mvnrepository','/var/lib/maven/repository')
       .withEnvVar('DOCKER_CONFIG','/home/jenkins/.docker/')
       .withSecret('jenkins-docker-cfg','/home/jenkins/.docker')
       .withSecret('jenkins-maven-settings','/root/.m2')
