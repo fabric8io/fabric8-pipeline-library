@@ -6,12 +6,13 @@ try {
   failIfNoTests = "false"
 }
 
-def itestPattern = ""
+def localItestPattern = ""
 try {
-  itestPattern = ITEST_PATTERN
+  localItestPattern = ITEST_PATTERN
 } catch (Throwable e) {
-  itestPattern = "*KT"
+  localItestPattern = "*KT"
 }
+
 
 def versionPrefix = ""
 try {
