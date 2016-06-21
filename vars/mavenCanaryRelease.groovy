@@ -13,12 +13,22 @@ def call(body) {
     sh "mvn org.codehaus.mojo:versions-maven-plugin:2.2:set -DnewVersion=${config.version}"
     sh "mvn clean"
 
+    sh "mvn install -U org.apache.maven.plugins:maven-deploy-plugin:2.8.2:deploy io.fabric8:docker-maven-plugin:${dockerMavenPluginVersion}:build  -Dspring.boot.name=${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}/fabric8/${env.JOB_NAME}:${config.version} -Dfabric8.dockerUser=${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}/fabric8/"
+
     if (flow.isSingleNode()){
         echo 'Running on a single node, skipping docker push as not needed'
-        sh "mvn install -U org.apache.maven.plugins:maven-deploy-plugin:2.8.2:deploy io.fabric8:docker-maven-plugin:${dockerMavenPluginVersion}:build -Ddocker.push.registry=${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT} -Dfabric8.dockerUser=fabric8/"
-    } else {
-      sh "mvn install -U org.apache.maven.plugins:maven-deploy-plugin:2.8.2:deploy io.fabric8:docker-maven-plugin:${dockerMavenPluginVersion}:build io.fabric8:docker-maven-plugin:${dockerMavenPluginVersion}:push -Ddocker.push.registry=${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT} -Dfabric8.dockerUser=fabric8/"
 
+    } else {
+      // until we port the quickstarts to use the new f-m-p we need to force a tag and push to a registry if running in a cluster
+      Model m = readMavenPom file: 'pom.xml'
+      def groupId = m.groupId.split( '\\.' )
+      def user = groupId[1].trim()
+
+      kubernetes.image().withName("${user}/${env.JOB_NAME}:${config.version}").tag().inRepository("${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}/${user}/${env.JOB_NAME}").withTag("${config.version}")
+
+      // couldnt get the docker:push to work, maybe it will work after switching to fabric8:push
+      //sh "mvn io.fabric8:docker-maven-plugin:${dockerMavenPluginVersion}:push -Ddocker.push.registry=${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT} -Dspring.boot.name=${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}/${user}/${env.JOB_NAME}:${config.version} -Dfabric8.dockerUser=${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}/fabric8/"
+      kubernetes.image().withName("${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}/${user}/${env.JOB_NAME}").push().withTag("${config.version}").toRegistry()
     }
 
     try {
