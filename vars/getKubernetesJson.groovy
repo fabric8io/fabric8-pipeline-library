@@ -56,11 +56,8 @@ def call(body) {
                 "provider": "fabric8",
                 "version": "${config.version}"
             },
-            "type": "ClusterIP",
+            "type": "LoadBalancer",
             "sessionAffinity": "None"
-        },
-        "status": {
-            "loadBalancer": {}
         }
     },
     {
