@@ -397,4 +397,26 @@ def isSingleNode() {
   }
 }
 
+@NonCPS
+def hasService(String name) {
+  KubernetesClient kubernetes = new DefaultKubernetesClient();
+  try {
+    def service = kubernetes.services().withName(name).get();
+    if (service != null) {
+      return service.metadata != null
+    }
+    return false
+  } catch (e) {
+    // ignore errors
+    return false
+  }
+}
+
+@NonCPS
+def getServiceURL(String serviceName, String namespace = null, String protocol = "http", boolean external = true) {
+  KubernetesClient kubernetes = new DefaultKubernetesClient()
+  if (namespace == null) namespace = kubernetes.getNamespace()
+  return KubernetesHelper.getServiceURL(kubernetes, serviceName, namespace, protocol, external)
+}
+
 return this;
