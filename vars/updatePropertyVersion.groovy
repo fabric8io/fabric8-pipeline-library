@@ -5,7 +5,7 @@ def call(body) {
   body.resolveStrategy = Closure.DELEGATE_FIRST
   body.delegate = config
   body()
-  
+
     def flow = new io.fabric8.Fabric8Commands()
 
     sh "git config user.email fabric8-admin@googlegroups.com"
@@ -33,9 +33,24 @@ def call(body) {
       }
     }
     // only make a pull request if we've updated a version
+    def rs
     if (updated) {
-      sh "git push origin versionUpdate${uid}"
-      return flow.createPullRequest("[CD] Update release dependencies","${config.project}")
+      kubernetes.pod('buildpod').withImage('fabric8/maven-builder:latest')
+      .withPrivileged(true)
+      .withSecret('jenkins-ssh-config','/root/.ssh')
+      .withSecret('jenkins-git-ssh','/root/.ssh-git')
+      .inside {
+
+        sh 'chmod 600 /root/.ssh-git/ssh-key'
+        sh 'chmod 600 /root/.ssh-git/ssh-key.pub'
+        sh 'chmod 700 /root/.ssh-git'
+
+        sh "git push origin versionUpdate${uid}"
+
+        rs = flow.createPullRequest("[CD] Update release dependencies","${config.project}")
+
+      }
+      return rs
     }
 
 }
