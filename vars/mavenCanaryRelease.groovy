@@ -33,10 +33,14 @@ def call(body) {
       kubernetes.image().withName("${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}/${user}/${env.JOB_NAME}").push().withTag("${config.version}").toRegistry()
     }
 
-    try {
-      sh 'mvn site site:deploy'
-    } catch (err) {
-      // lets carry on as maven site isn't critical
-      echo 'unable to generate maven site'
+    if (flow.hasService("content-repository")) {
+      try {
+        sh 'mvn site site:deploy'
+      } catch (err) {
+        // lets carry on as maven site isn't critical
+        echo 'unable to generate maven site'
+      }
+    } else {
+      echo 'no content-repository service so not deploying the maven site report'
     }
   }
