@@ -11,6 +11,12 @@ def call(body) {
 
     def flow = new io.fabric8.Fabric8Commands()
 
+    def pomLocation = config.parentPomLocation ?: '/pom.xml'
+
+    if(!pomLocation.startsWith('/')){
+     pomLocation = '/' + pomLocation
+    }
+
     for(int i = 0; i < config.projects.size(); i++){
       def project = config.projects[i]
       def items = project.split( '/' )
@@ -25,14 +31,14 @@ def call(body) {
       def uid = UUID.randomUUID().toString()
       sh "cd ${repo} && git checkout -b versionUpdate${uid}"
 
-      def xml = readFile file: "${repo}/pom.xml"
-      sh "cat ${repo}/pom.xml"
+      def xml = readFile file: "${repo}${pomLocation}"
+      sh "cat ${repo}${pomLocation}"
 
       def pom = updateParentVersion (xml, config.version)
 
-      writeFile file: "${repo}/pom.xml", text: pom
+      writeFile file: "${repo}${pomLocation}", text: pom
 
-      sh "cat ${repo}/pom.xml"
+      sh "cat ${repo}${pomLocation}"
 
       kubernetes.pod('buildpod').withImage('fabric8/maven-builder:latest')
         .withPrivileged(true)
@@ -49,7 +55,7 @@ def call(body) {
 
           def githubToken = flow.getGitHubToken()
           def message = "\"Update parent pom version ${config.version}\""
-          sh "cd ${repo} && git add pom.xml"
+          sh "cd ${repo} && git add ${pomLocation}"
           sh "cd ${repo} && git commit -m ${message}"
           sh "cd ${repo} && git push origin versionUpdate${uid}"
           sh "export GITHUB_TOKEN=${githubToken} && cd ${repo} && hub pull-request -m ${message} > pr.txt"
