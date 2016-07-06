@@ -30,7 +30,7 @@ def call(body) {
       def xml = readFile file: "${repo}/${pomLocation}"
       sh "cat ${repo}/${pomLocation}"
 
-      def pom = updateParentVersion (xml, config.version)
+      def pom = updateVersion (xml, config.propertyName, config.version)
 
       writeFile file: "${repo}/${pomLocation}", text: pom
 
@@ -65,16 +65,23 @@ def call(body) {
   }
 
   @NonCPS
-  def updateParentVersion(xml, newVersion) {
+  def updateVersion(xml, elementName, newVersion) {
     def index = xml.indexOf('<project')
     def header = xml.take(index)
     def xmlDom = DOMBuilder.newInstance().parseText(xml)
     def root = xmlDom.documentElement
     use (DOMCategory) {
-      root.parent.version*.setTextContent(newVersion)
-      def newXml = XmlUtil.serialize(root)
+      def versions = xmlDom.getElementsByTagName(elementName)
+        if (versions.length == 0) {
+           echo "No element found called ${elementName}"
+        } else {
+          def version = versions.item(0)
+          echo "version ${elementName} = ${version.textContent}"
+          version.textContent = newVersion
 
-      // need to fix this, we get errors above then next time round if this is left in
-      return header + newXml.minus('<?xml version="1.0" encoding="UTF-8"?>')
+          def newXml = XmlUtil.serialize(root)
+          // need to fix this, we get errors above then next time round if this is left in
+          return header + newXml.minus('<?xml version="1.0" encoding="UTF-8"?>')
+       }
     }
   }
