@@ -19,9 +19,8 @@ def call(body) {
   } else {
     repoApi = new URL("https://api.github.com/orgs/${organisation}/repos")
     repos = new groovy.json.JsonSlurper().parse(repoApi.newReader())
-    repos.each {
-      def repo = it.name
 
+    for (repo in repos) {
       // lets check if the repo has a pom.xml
       pomUrl = new URL("https://raw.githubusercontent.com/${organisation}/${repo}/master/pom.xml")
       def hasPom = false
