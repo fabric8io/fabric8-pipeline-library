@@ -14,7 +14,7 @@ def call(body) {
 
   def pomLocation = config.parentPomLocation ?: 'pom.xml'
   def organisation = config.organisation
-  if (organsation == null || organisation.isEmpty()) {
+  if (organisation == null || organisation.isEmpty()) {
     println "Missing parameter: organisation"
   } else {
     repoApi = new URL("https://api.github.com/orgs/${organisation}/repos")
