@@ -50,7 +50,7 @@ def call(body) {
           sh "git config --global user.name fabric8-release"
 
           def githubToken = flow.getGitHubToken()
-          def message = "\"Update parent pom version ${config.version}\""
+          def message = "\"Update pom property ${config.propertyName} to ${config.version}\""
           sh "cd ${repo} && git add ${pomLocation}"
           sh "cd ${repo} && git commit -m ${message}"
           sh "cd ${repo} && git push origin versionUpdate${uid}"
