@@ -32,35 +32,37 @@ def call(body) {
 
       def pom = updateVersion (xml, config.propertyName, config.version)
 
-      writeFile file: "${repo}/${pomLocation}", text: pom
+      if (pom != null){
+        writeFile file: "${repo}/${pomLocation}", text: pom
 
-      sh "cat ${repo}/${pomLocation}"
+        sh "cat ${repo}/${pomLocation}"
 
-      kubernetes.pod('buildpod').withImage('fabric8/maven-builder:latest')
-        .withPrivileged(true)
-        .withSecret('jenkins-git-ssh','/root/.ssh-git')
-        .withSecret('jenkins-ssh-config','/root/.ssh')
-        .inside {
+        kubernetes.pod('buildpod').withImage('fabric8/maven-builder:latest')
+          .withPrivileged(true)
+          .withSecret('jenkins-git-ssh','/root/.ssh-git')
+          .withSecret('jenkins-ssh-config','/root/.ssh')
+          .inside {
 
-          sh 'chmod 600 /root/.ssh-git/ssh-key'
-          sh 'chmod 600 /root/.ssh-git/ssh-key.pub'
-          sh 'chmod 700 /root/.ssh-git'
+            sh 'chmod 600 /root/.ssh-git/ssh-key'
+            sh 'chmod 600 /root/.ssh-git/ssh-key.pub'
+            sh 'chmod 700 /root/.ssh-git'
 
-          sh "git config --global user.email fabric8-admin@googlegroups.com"
-          sh "git config --global user.name fabric8-release"
+            sh "git config --global user.email fabric8-admin@googlegroups.com"
+            sh "git config --global user.name fabric8-release"
 
-          def githubToken = flow.getGitHubToken()
-          def message = "\"Update pom property ${config.propertyName} to ${config.version}\""
-          sh "cd ${repo} && git add ${pomLocation}"
-          sh "cd ${repo} && git commit -m ${message}"
-          sh "cd ${repo} && git push origin versionUpdate${uid}"
-          sh "export GITHUB_TOKEN=${githubToken} && cd ${repo} && hub pull-request -m ${message} > pr.txt"
+            def githubToken = flow.getGitHubToken()
+            def message = "\"Update pom property ${config.propertyName} to ${config.version}\""
+            sh "cd ${repo} && git add ${pomLocation}"
+            sh "cd ${repo} && git commit -m ${message}"
+            sh "cd ${repo} && git push origin versionUpdate${uid}"
+            sh "export GITHUB_TOKEN=${githubToken} && cd ${repo} && hub pull-request -m ${message} > pr.txt"
+        }
+        pr = readFile("${repo}/pr.txt")
+        split = pr.split('\\/')
+        def prId = split[6].trim()
+        echo "received Pull Request Id: ${prId}"
+        flow.addMergeCommentToPullRequest(prId, project)
       }
-      pr = readFile("${repo}/pr.txt")
-      split = pr.split('\\/')
-      def prId = split[6].trim()
-      echo "received Pull Request Id: ${prId}"
-      flow.addMergeCommentToPullRequest(prId, project)
     }
   }
 
