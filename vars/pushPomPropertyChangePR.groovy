@@ -55,7 +55,9 @@ def call(body) {
             sh "cd ${repo} && git add ${pomLocation}"
             sh "cd ${repo} && git commit -m ${message}"
             sh "cd ${repo} && git push origin versionUpdate${uid}"
-            sh "export GITHUB_TOKEN=${githubToken} && cd ${repo} && hub pull-request -m ${message} > pr.txt"
+            retry (5){
+              sh "export GITHUB_TOKEN=${githubToken} && cd ${repo} && hub pull-request -m ${message} > pr.txt"
+            }
         }
         pr = readFile("${repo}/pr.txt")
         split = pr.split('\\/')
