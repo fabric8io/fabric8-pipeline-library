@@ -17,7 +17,7 @@ def call(body) {
     def groupId = m.groupId.split( '\\.' )
     def user = groupId[groupId.size()-1].trim()
 
-    sh "mvn install -U org.apache.maven.plugins:maven-deploy-plugin:2.8.2:deploy io.fabric8:docker-maven-plugin:${dockerMavenPluginVersion}:build -Ddocker.image=${user}/${env.JOB_NAME}:${config.version} -Dspring.boot.name=${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}/${user}/${env.JOB_NAME}:${config.version} -Dfabric8.dockerUser=${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}/${user}/"
+    sh "mvn install -U org.apache.maven.plugins:maven-deploy-plugin:2.8.2:deploy -P  -Dfabric8.image=${user}/${env.JOB_NAME}:${config.version} -Dspring.boot.name=${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}/${user}/${env.JOB_NAME}:${config.version} -Dfabric8.dockerUser=${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}/${user}/"
 
     // until we port the quickstarts to use the new f-m-p we need to force a tag and push to a registry if running in a cluster
 
