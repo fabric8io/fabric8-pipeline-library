@@ -22,7 +22,6 @@ node {
   }
 
   stage 'Rolling upgrade Staging'
-  def envStage = environmentNamespace("staging")
   kubernetesApply(file: rc, environment: envStage)
 
 }
