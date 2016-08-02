@@ -33,7 +33,9 @@ def call(body) {
 
     sh "git remote set-url origin git@github.com:${config.project}.git"
 
-    flow.setupWorkspaceForRelease(config.project, config.useGitTagForNextVersion, extraSetVersionArgs)
+    def currentVersion = flow.getProjectVersion()
+
+    flow.setupWorkspaceForRelease(config.project, config.useGitTagForNextVersion, extraSetVersionArgs, currentVersion)
 
     repoId = flow.stageSonartypeRepo()
     releaseVersion = flow.getProjectVersion()

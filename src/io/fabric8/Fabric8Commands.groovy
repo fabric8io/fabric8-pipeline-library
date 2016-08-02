@@ -96,7 +96,7 @@ def searchAndReplaceMavenSnapshotProfileVersionProperty(String property, String 
   sh "git commit -a -m 'Bump ${property} development profile SNAPSHOT version'"
 }
 
-def setupWorkspaceForRelease(String project, Boolean useGitTagForNextVersion, String mvnExtraArgs = ""){
+def setupWorkspaceForRelease(String project, Boolean useGitTagForNextVersion, String mvnExtraArgs = "", String currentVersion = ""){
   sh "git config user.email fabric8-admin@googlegroups.com"
   sh "git config user.name fabric8-release"
 
@@ -104,7 +104,7 @@ def setupWorkspaceForRelease(String project, Boolean useGitTagForNextVersion, St
   sh "git fetch --tags"
 
   if (useGitTagForNextVersion){
-    def newVersion = getNewVersionFromTag()
+    def newVersion = getNewVersionFromTag(currentVersion)
     echo "New release version ${newVersion}"
     sh "mvn versions:set -DnewVersion=${newVersion} " + mvnExtraArgs
     sh "git commit -a -m 'release ${newVersion}'"
@@ -132,7 +132,7 @@ def setupWorkspaceForRelease(String project, Boolean useGitTagForNextVersion, St
 }
 
 // if no previous tag found default 1.0.0 is used, else assume version is in the form major.minor or major.minor.micro version
-def getNewVersionFromTag(){
+def getNewVersionFromTag(pomVersion = null){
   def version = '0.0.1'
 
   // Set known prerelease prefixes, needed for the proper sort order
@@ -150,23 +150,49 @@ def getNewVersionFromTag(){
     return version
   }
 
-  tag = tag.trim()
+  def semver = tag =~ /\bv?(?<major>0|[1-9]\d*)(?:\.(?<minor>0|[1-9]\d*)(?:\.(?<patch>0|[1-9]\d*))?)?(?:-(?<prerelease>[\da-z\-]+(?:\.[\da-z\-]+)*))?(?:\+(?<build>[\da-z\-]+(?:\.[\da-z\-]+)*))?\b/
 
-  // strip the v prefix from the tag so we can use in a maven version number
-  def previousReleaseVersion = tag.substring(tag.lastIndexOf('v')+1)
-  echo "Previous version found ${previousReleaseVersion}"
+  if (semver.matches()) {
+    def majorVersion = semver.group('major') as int
+    def minorVersion = (semver.group('minor') ?: 0) as int
+    def patchVersion = ((semver.group('patch') ?: 0) as int) + 1
 
-  // if there's an int as the version then turn it into a major.minor.micro version
-  if (previousReleaseVersion.isNumber()){
-    return previousReleaseVersion + '.0.1'
-  } else {
-    // if previous tag is not a number and doesnt have a '.' version seperator then error until we have one
-    if (previousReleaseVersion.lastIndexOf('.') == 0){
-      error "found invalid latest tag [${previousReleaseVersion}] set to major.minor.micro to calculate next release version"
+    def pomSemver = pomVersion =~ /\bv?(?<major>0|[1-9]\d*)(?:\.(?<minor>0|[1-9]\d*)(?:\.(?<patch>0|[1-9]\d*))?)?(?:-(?<prerelease>[\da-z\-]+(?:\.[\da-z\-]+)*))?(?:\+(?<build>[\da-z\-]+(?:\.[\da-z\-]+)*))?\b/
+    if (pomSemver.matches()) {
+      def pomMajorVersion = pomSemver.group('major') as int
+      def pomMinorVersion = (pomSemver.group('minor') ?: 0) as int
+      def pomPatchVersion = (pomSemver.group('patch') ?: 0) as int
+
+      if (pomMajorVersion > majorVersion ||
+          (pomMajorVersions == majorVersion &&
+           (pomMinorVersion > minorVersion) || (pomMinorVersion == minorVersion && pomPatchVersion > patchVersion)
+          )
+         ) {
+        majorVersion = pomMajorVersion
+        minorVersion = pomMinorVersion
+        patchVersion = pomPatchVersion
+      }
     }
-    // incrememnt the release number after the last seperator '.'
-    def microVersion = previousReleaseVersion.substring(previousReleaseVersion.lastIndexOf('.')+1) as int
-    return previousReleaseVersion.substring(0, previousReleaseVersion.lastIndexOf('.')+1) + (microVersion+1)
+
+    return majorVersion + '.' + minorVersion + '.' + patchVersion
+  } else {
+    tag = tag.trim()
+    // strip the v prefix from the tag so we can use in a maven version number
+    def previousReleaseVersion = tag.substring(tag.lastIndexOf('v')+1)
+    echo "Previous version found ${previousReleaseVersion}"
+
+    // if there's an int as the version then turn it into a major.minor.micro version
+    if (previousReleaseVersion.isNumber()){
+      return previousReleaseVersion + '.0.1'
+    } else {
+      // if previous tag is not a number and doesnt have a '.' version seperator then error until we have one
+      if (previousReleaseVersion.lastIndexOf('.') == 0){
+        error "found invalid latest tag [${previousReleaseVersion}] set to major.minor.micro to calculate next release version"
+      }
+      // increment the release number after the last seperator '.'
+      def microVersion = previousReleaseVersion.substring(previousReleaseVersion.lastIndexOf('.')+1) as int
+      return previousReleaseVersion.substring(0, previousReleaseVersion.lastIndexOf('.')+1) + (microVersion+1)
+    }
   }
 }
 
