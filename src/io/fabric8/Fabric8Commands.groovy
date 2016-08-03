@@ -150,21 +150,31 @@ def getNewVersionFromTag(pomVersion = null){
     return version
   }
 
-  def semver = tag =~ /\bv?(?<major>0|[1-9]\d*)(?:\.(?<minor>0|[1-9]\d*)(?:\.(?<patch>0|[1-9]\d*))?)?(?:-(?<prerelease>[\da-z\-]+(?:\.[\da-z\-]+)*))?(?:\+(?<build>[\da-z\-]+(?:\.[\da-z\-]+)*))?\b/
+  tag = tag.trim()
+
+  echo "Testing to see if version ${tag} is semver compatible"
+
+  def semver = tag =~ /(?i)\bv?(?<major>0|[1-9]\d*)(?:\.(?<minor>0|[1-9]\d*)(?:\.(?<patch>0|[1-9]\d*))?)?(?:-(?<prerelease>[\da-z\-]+(?:\.[\da-z\-]+)*))?(?:\+(?<build>[\da-z\-]+(?:\.[\da-z\-]+)*))?\b/
 
   if (semver.matches()) {
+    echo "Version ${tag} is semver compatible"
+
     def majorVersion = semver.group('major') as int
     def minorVersion = (semver.group('minor') ?: 0) as int
     def patchVersion = ((semver.group('patch') ?: 0) as int) + 1
 
-    def pomSemver = pomVersion =~ /\bv?(?<major>0|[1-9]\d*)(?:\.(?<minor>0|[1-9]\d*)(?:\.(?<patch>0|[1-9]\d*))?)?(?:-(?<prerelease>[\da-z\-]+(?:\.[\da-z\-]+)*))?(?:\+(?<build>[\da-z\-]+(?:\.[\da-z\-]+)*))?\b/
+    echo "Testing to see if current POM version ${pomVersion} is semver compatible"
+
+    def pomSemver = pomVersion.trim() =~ /(?i)\bv?(?<major>0|[1-9]\d*)(?:\.(?<minor>0|[1-9]\d*)(?:\.(?<patch>0|[1-9]\d*))?)?(?:-(?<prerelease>[\da-z\-]+(?:\.[\da-z\-]+)*))?(?:\+(?<build>[\da-z\-]+(?:\.[\da-z\-]+)*))?\b/
     if (pomSemver.matches()) {
+      echo "Current POM version ${pomVersion} is semver compatible"
+
       def pomMajorVersion = pomSemver.group('major') as int
       def pomMinorVersion = (pomSemver.group('minor') ?: 0) as int
       def pomPatchVersion = (pomSemver.group('patch') ?: 0) as int
 
       if (pomMajorVersion > majorVersion ||
-          (pomMajorVersions == majorVersion &&
+          (pomMajorVersion == majorVersion &&
            (pomMinorVersion > minorVersion) || (pomMinorVersion == minorVersion && pomPatchVersion > patchVersion)
           )
          ) {
@@ -174,9 +184,12 @@ def getNewVersionFromTag(pomVersion = null){
       }
     }
 
-    return majorVersion + '.' + minorVersion + '.' + patchVersion
+    def newVersion = "${majorVersion}.${minorVersion}.${patchVersion}"
+    echo "New version is ${newVersion}"
+    return newVersion
   } else {
-    tag = tag.trim()
+    echo "Version is not semver compatible"
+
     // strip the v prefix from the tag so we can use in a maven version number
     def previousReleaseVersion = tag.substring(tag.lastIndexOf('v')+1)
     echo "Previous version found ${previousReleaseVersion}"
