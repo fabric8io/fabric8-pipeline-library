@@ -10,7 +10,7 @@ def call(body) {
     def dockerMavenPluginVersion = flow.getReleaseVersion "io/fabric8/docker-maven-plugin"
 
     sh "git checkout -b ${env.JOB_NAME}-${config.version}"
-    sh "mvn org.codehaus.mojo:versions-maven-plugin:2.2:set -DnewVersion=${config.version}"
+    sh "mvn org.codehaus.mojo:versions-maven-plugin:2.2:set -U -DnewVersion=${config.version}"
     sh "mvn clean"
 
     Model m = readMavenPom file: 'pom.xml'
