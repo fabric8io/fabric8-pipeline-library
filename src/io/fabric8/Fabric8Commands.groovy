@@ -106,7 +106,7 @@ def setupWorkspaceForRelease(String project, Boolean useGitTagForNextVersion, St
   if (useGitTagForNextVersion){
     def newVersion = getNewVersionFromTag(currentVersion)
     echo "New release version ${newVersion}"
-    sh "mvn versions:set -DnewVersion=${newVersion} " + mvnExtraArgs
+    sh "mvn -U versions:set -DnewVersion=${newVersion} " + mvnExtraArgs
     sh "git commit -a -m 'release ${newVersion}'"
     pushTag(newVersion)
   } else {
