@@ -1,12 +1,18 @@
 #!/usr/bin/groovy
 def call(body) {
     // evaluate the body block, and collect configuration into the object
-    def config = [:]
+    def config = [version:'']
     body.resolveStrategy = Closure.DELEGATE_FIRST
     body.delegate = config
     body()
 
-    def newVersion = getNewVersion{}
+    def newVersion = ''
+    if (config.version == '') {
+        newVersion = getNewVersion {}
+    } else {
+        newVersion = config.version
+    }
+
     def flow = new io.fabric8.Fabric8Commands()
 
     env.setProperty('VERSION',newVersion)
