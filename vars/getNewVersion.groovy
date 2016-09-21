@@ -9,11 +9,9 @@ def call(body) {
     // until we fix up pushing tags to remote repos with correct secrets lets default to use the short commit sha as the version
     echo 'NOTE: until we support pushing tags to remote repos with correct secrets lets default to use the short commit sha as the version'
 
-    sh 'git rev-parse --short HEAD > short-git-sha.tmp'
-    def sha = readFile 'short-git-sha.tmp'
-
-
-    return sha.trim()
+    def version = sh( script: 'git rev-parse --short HEAD > short-git-sha.tmp', returnStdout: true).toString().trim()
+    echo 'using new version ' +  version
+    return version
 
     // def version = '1.0.0'
     //
