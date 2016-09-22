@@ -51,11 +51,14 @@ You can then either
 
 ### Requirements
 
-These flows make use of the [Fabric8 DevOps Pipeline Steps](https://github.com/fabric8io/fabric8-jenkins-workflow-steps) and [kubernetes-workflow](https://github.com/fabric8io/kubernetes-workflow) which help when working with [Fabric8 DevOps](http://fabric8.io/guide/cdelivery.html) in particular for clean integration with the [Hubot chat bot](https://hubot.github.com/) and human approval of staging, promotion and releasing.
+These flows make use of the [Fabric8 DevOps Pipeline Steps](https://github.com/fabric8io/fabric8-jenkins-workflow-steps) and [kubernetes-pipeline-plugin](https://github.com/jenkinsci/kubernetes-pipeline-plugin) which help when working with [Fabric8 DevOps](http://fabric8.io/guide/cdelivery.html) in particular for clean integration with the [Hubot chat bot](https://hubot.github.com/) and human approval of staging, promotion and releasing.
 
 ### How it works
 
-When the fabric8 Jenkins app is run, we use a kubernetes post start script to populate the Jenkins internal global library with scripts from this repo.  We are then able to easily call the groovy functions from within our Jenkinsfiles.
+With the [Jenkins global library](https://github.com/jenkinsci/workflow-cps-global-lib-plugin#pipeline-shared-libraries) we can take advantage from a shared library of reusable scripts.
+When the fabric8 Jenkins app is run, we use a kubernetes [post start script](https://github.com/fabric8io/jenkins-docker/blob/master/postStart.sh) to populate the Jenkins internal global library with scripts from this repo.  We are then able to easily call the groovy functions from within our Jenkinsfiles.  
+
+_NOTE_ Hopefully we will switch to using Kubernetes initContainers when they're available to help with this.  
 
 These scripts are baked into the fabric8 jenkins docker image during the fabric8 release however you can override this repo by updating the parameters when running the Jenkins app from the fabric8 console.
 
