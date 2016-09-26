@@ -63,6 +63,11 @@ def call(body) {
       def prId = split[6].trim()
       echo "received Pull Request Id: ${prId}"
       flow.addMergeCommentToPullRequest(prId, project)
+
+      waitUntilPullRequestMerged{
+        name = project
+        prId = prId
+      }
     }
   }
 
