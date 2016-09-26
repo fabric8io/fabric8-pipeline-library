@@ -310,7 +310,14 @@ def runSystemTests(){
 
 def createPullRequest(String message, String project){
   def githubToken = getGitHubToken()
-  sh "export GITHUB_TOKEN=${githubToken} && hub pull-request -m \"${message}\" > pr.txt"
+  try {
+    sh "export GITHUB_TOKEN=${githubToken} && hub pull-request -m \"${message}\" > pr.txt"
+  } catch (Exception ex) {
+    if (!ex.getMessage().contains("A pull request already exists for")){
+      throw ex
+    }
+  }
+
   pr = readFile('pr.txt')
   split = pr.split('\\/')
   return split[6].trim()
