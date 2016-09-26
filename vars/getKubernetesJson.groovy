@@ -74,6 +74,7 @@ def call(body) {
                 "group": "quickstarts",
                 "project": "${env.JOB_NAME}",
                 "provider": "fabric8",
+                "expose": "true",
                 "version": "${config.version}"
             },
             "annotations": {
