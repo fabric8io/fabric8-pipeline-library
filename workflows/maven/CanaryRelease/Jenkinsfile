@@ -33,6 +33,7 @@ node {
       .withHostPathMount('/var/run/docker.sock','/var/run/docker.sock')
       .withHostPathMount('/root/.mvnrepository','/var/lib/maven/repository')
       .withEnvVar('DOCKER_CONFIG','/home/jenkins/.docker/')
+      .withEnvVar('KUBERNETES_MASTER','kubernetes.default')
       .withSecret('jenkins-docker-cfg','/home/jenkins/.docker')
       .withSecret('jenkins-maven-settings','/root/.m2')
       .withServiceAccount('jenkins')
