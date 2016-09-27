@@ -60,13 +60,13 @@ def call(body) {
       }
       pr = readFile("${repo}/pr.txt")
       split = pr.split('\\/')
-      def prId = split[6].trim()
-      echo "received Pull Request Id: ${prId}"
-      flow.addMergeCommentToPullRequest(prId, project)
+      def id = split[6].trim()
+      echo "received Pull Request Id: ${id}"
+      flow.addMergeCommentToPullRequest(id, project)
 
       waitUntilPullRequestMerged{
         name = project
-        prId = prId
+        prId = id
       }
     }
   }
