@@ -24,7 +24,9 @@ def call(body) {
         kubernetes.image().withName("${user}/${artifactId}:${config.version}").tag().inRepository("${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}/${user}/${artifactId}").withTag("${config.version}")
 
     } else {
-      sh "mvn io.fabric8:fabric8-maven-plugin:${fabric8MavenPluginVersion}:push -Ddocker.push.registry=${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}"
+      retry(3){
+        sh "mvn io.fabric8:fabric8-maven-plugin:${fabric8MavenPluginVersion}:push -Ddocker.push.registry=${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}"
+      }
     }
 
     if (flow.hasService("content-repository")) {

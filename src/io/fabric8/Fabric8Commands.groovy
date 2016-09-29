@@ -308,19 +308,43 @@ def runSystemTests(){
   sh 'cd systests && mvn clean && mvn integration-test verify'
 }
 
-def createPullRequest(String message, String project){
+def createPullRequest(String message, String project, String branch){
   def githubToken = getGitHubToken()
+  def apiUrl = new URL("https://api.github.com/repos/${project}/pulls")
+  echo "creating PR for ${apiUrl}"
   try {
-    sh "export GITHUB_TOKEN=${githubToken} && hub pull-request -m \"${message}\" > pr.txt"
-  } catch (Exception ex) {
-    if (!ex.getMessage().contains("A pull request already exists for")){
-      throw ex
+    def HttpURLConnection connection = apiUrl.openConnection()
+    if(githubToken.length() > 0)
+    {
+      connection.setRequestProperty("Authorization", "Bearer ${githubToken}")
     }
-  }
+    connection.setRequestMethod("POST")
+    connection.setDoOutput(true)
+    connection.connect()
 
-  pr = readFile('pr.txt')
-  split = pr.split('\\/')
-  return split[6].trim()
+    def body  = """
+    {
+      "title": "${message}",
+      "head": "${branch}",
+      "base": "master"
+    }
+    """
+
+    OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream())
+    writer.write(body);
+    writer.flush();
+
+    // execute the POST request
+    def rs = new JsonSlurper().parse(new InputStreamReader(connection.getInputStream(),"UTF-8"))
+
+    connection.disconnect()
+
+    return rs.number
+
+  } catch (err) {
+     echo "ERROR  ${err}"
+     return
+  }
 }
 
 def addMergeCommentToPullRequest(String pr, String project){
