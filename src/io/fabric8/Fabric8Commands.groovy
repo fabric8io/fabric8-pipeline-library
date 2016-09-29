@@ -489,4 +489,27 @@ def getServiceURL(String serviceName, String namespace = null, String protocol =
   return KubernetesHelper.getServiceURL(kubernetes, serviceName, namespace, protocol, external)
 }
 
+@NonCPS
+def isOpenShiftS2I() {
+    def openshiftYaml = "target/classes/META-INF/fabric8/openshift.yml"
+    try {
+        if (fileExists(openshiftYaml)) {
+            def contents = readFile(openshiftYaml)
+            if (contents != null) {
+                if (contents.contains('kind: "ImageStream"')) {
+                    echo "OpenShift YAML contains an ImageStream"
+                    return true
+                } else {
+                    echo "OpenShift YAML does not contain an ImageStream so not using S2I binary mode"
+                }
+            }
+        } else {
+            echo "Warning OpenShift YAML ${openshiftYaml} does not exist!"            
+        }
+    } catch (e) {
+        error "Failed to load ${openshiftYaml} due to ${e}"
+    }
+    return false;
+}
+
 return this;
