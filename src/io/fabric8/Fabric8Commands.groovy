@@ -339,7 +339,8 @@ def createPullRequest(String message, String project, String branch){
 
     connection.disconnect()
 
-    return rs.number
+    echo "Received PR id:  ${rs.number}"
+    return String.valueOf(rs.number)
 
   } catch (err) {
      echo "ERROR  ${err}"
