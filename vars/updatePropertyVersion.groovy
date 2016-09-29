@@ -47,7 +47,7 @@ def call(body) {
 
         sh "git push origin versionUpdate${uid}"
 
-        rs = flow.createPullRequest("[CD] Update release dependencies","${config.project}")
+        rs = flow.createPullRequest("[CD] Update release dependencies","${config.project}","versionUpdate${uid}")
 
       }
       return rs
