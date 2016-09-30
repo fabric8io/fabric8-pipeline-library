@@ -329,6 +329,7 @@ def createPullRequest(String message, String project, String branch){
       "base": "master"
     }
     """
+    echo "sending body: ${body}\n"
 
     OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream())
     writer.write(body);
@@ -505,7 +506,7 @@ def isOpenShiftS2I() {
                 }
             }
         } else {
-            echo "Warning OpenShift YAML ${openshiftYaml} does not exist!"            
+            echo "Warning OpenShift YAML ${openshiftYaml} does not exist!"
         }
     } catch (e) {
         error "Failed to load ${openshiftYaml} due to ${e}"

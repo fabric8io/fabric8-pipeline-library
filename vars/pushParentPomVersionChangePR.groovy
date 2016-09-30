@@ -10,8 +10,8 @@ def call(body) {
     body()
 
     def flow = new io.fabric8.Fabric8Commands()
-
     def pomLocation = config.parentPomLocation ?: 'pom.xml'
+    def id
 
     for(int i = 0; i < config.projects.size(); i++){
       def project = config.projects[i]
@@ -50,16 +50,13 @@ def call(body) {
           sh "git config --global user.name fabric8-release"
 
           def githubToken = flow.getGitHubToken()
-          def message = "\"Update parent pom version ${config.version}\""
+          def message = "Update parent pom version ${config.version}"
           sh "cd ${repo} && git add ${pomLocation}"
-          sh "cd ${repo} && git commit -m ${message}"
+          sh "cd ${repo} && git commit -m \"${message}\""
           sh "cd ${repo} && git push origin versionUpdate${uid}"
 
-          createPullRequest("${message}","${project}","versionUpdate${uid}")
+          id = flow.createPullRequest("${message}","${project}","versionUpdate${uid}")
       }
-      pr = readFile("${repo}/pr.txt")
-      split = pr.split('\\/')
-      def id = split[6].trim()
       echo "received Pull Request Id: ${id}"
       flow.addMergeCommentToPullRequest(id, project)
 
