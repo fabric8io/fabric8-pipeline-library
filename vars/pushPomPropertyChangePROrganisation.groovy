@@ -48,6 +48,8 @@ def call(body) {
         def pom = updateVersion(xml, config.propertyName, config.version)
 
         if (pom != null) {
+          def id
+
           writeFile file: "${repo}/${pomLocation}", text: pom
 
           sh "cat ${repo}/${pomLocation}"
@@ -66,16 +68,13 @@ def call(body) {
             sh "git config --global user.name fabric8-release"
 
             def githubToken = flow.getGitHubToken()
-            def message = "\"Update pom property ${config.propertyName} to ${config.version}\""
+            def message = "Update pom property ${config.propertyName} to ${config.version}"
             sh "cd ${repo} && git add ${pomLocation}"
-            sh "cd ${repo} && git commit -m ${message}"
+            sh "cd ${repo} && git commit -m \"${message}\""
             sh "cd ${repo} && git push origin versionUpdate${uid}"
 
-            createPullRequest("${message}","${project}","versionUpdate${uid}")
+            id = flow.createPullRequest("${message}","${project}","versionUpdate${uid}")
           }
-          pr = readFile("${repo}/pr.txt")
-          split = pr.split('\\/')
-          def id = split[6].trim()
           echo "received Pull Request Id: ${id}"
           flow.addMergeCommentToPullRequest(id, project)
 

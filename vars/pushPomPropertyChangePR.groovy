@@ -19,6 +19,7 @@ def call(body) {
     def items = project.split('/')
     def org = items[0]
     def repo = items[1]
+    def id
 
     stage "Updating ${project}"
     sh "rm -rf ${repo}"
@@ -52,16 +53,13 @@ def call(body) {
         sh "git config --global user.name fabric8-release"
 
         def githubToken = flow.getGitHubToken()
-        def message = "\"Update pom property ${config.propertyName} to ${config.version}\""
+        def message = "Update pom property ${config.propertyName} to ${config.version}"
         sh "cd ${repo} && git add ${pomLocation}"
-        sh "cd ${repo} && git commit -m ${message}"
+        sh "cd ${repo} && git commit -m \"${message}\""
         sh "cd ${repo} && git push origin versionUpdate${uid}"
 
-        createPullRequest("${message}","${project}","versionUpdate${uid}")
+        id = flow.createPullRequest("${message}","${project}","versionUpdate${uid}")
       }
-      pr = readFile("${repo}/pr.txt")
-      split = pr.split('\\/')
-      def id = split[6].trim()
       echo "received Pull Request Id: ${id}"
       flow.addMergeCommentToPullRequest(id, project)
 
