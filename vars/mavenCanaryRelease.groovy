@@ -12,11 +12,11 @@ def call(body) {
     sh "git checkout -b ${env.JOB_NAME}-${config.version}"
     sh "mvn org.codehaus.mojo:versions-maven-plugin:2.2:set -U -DnewVersion=${config.version}"
     sh "mvn clean"
-    sh "mvn install -U org.apache.maven.plugins:maven-deploy-plugin:2.8.2:deploy io.fabric8:fabric8-maven-plugin:${fabric8MavenPluginVersion}:build"
-
+    sh "mvn package -U io.fabric8:fabric8-maven-plugin:${fabric8MavenPluginVersion}:build"
+    
     def s2iMode = flow.isOpenShiftS2I()
     echo "s2i mode: ${s2iMode}"
-
+    
     if (flow.isSingleNode()){
         echo 'Running on a single node, skipping docker push as not needed'
         Model m = readMavenPom file: 'pom.xml'
@@ -27,7 +27,7 @@ def call(body) {
        if (!s2iMode) {   kubernetes.image().withName("${user}/${artifactId}:${config.version}").tag().inRepository("${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}/${user}/${artifactId}").withTag("${config.version}")
        }
     } else {
-      if (!s2iMode) {
+      if (!s2iMode) {        
         retry(3){
           sh "mvn io.fabric8:fabric8-maven-plugin:${fabric8MavenPluginVersion}:push -Ddocker.push.registry=${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}"
         }
