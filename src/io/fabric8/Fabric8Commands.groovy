@@ -491,7 +491,6 @@ def getServiceURL(String serviceName, String namespace = null, String protocol =
   return KubernetesHelper.getServiceURL(kubernetes, serviceName, namespace, protocol, external)
 }
 
-@NonCPS
 def isOpenShiftS2I() {
     def openshiftYaml = "target/classes/META-INF/fabric8/openshift.yml"
     try {
