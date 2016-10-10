@@ -22,7 +22,6 @@ try {
 }
 
 def canaryVersion = "${versionPrefix}.${env.BUILD_NUMBER}"
-def utils = new io.fabric8.Utils()
 
 node {
   git GIT_URL
