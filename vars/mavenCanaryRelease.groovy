@@ -7,12 +7,10 @@ def call(body) {
     body()
 
     def flow = new io.fabric8.Fabric8Commands()
-    def fabric8MavenPluginVersion = flow.getReleaseVersion "io/fabric8/fabric8-maven-plugin"
 
     sh "git checkout -b ${env.JOB_NAME}-${config.version}"
     sh "mvn org.codehaus.mojo:versions-maven-plugin:2.2:set -U -DnewVersion=${config.version}"
-    sh "mvn clean install"
-    sh "mvn install -U io.fabric8:fabric8-maven-plugin:${fabric8MavenPluginVersion}:build"
+    sh "mvn clean -U install"
     
     def s2iMode = flow.isOpenShiftS2I()
     echo "s2i mode: ${s2iMode}"
@@ -24,12 +22,13 @@ def call(body) {
         def user = groupId[groupId.size()-1].trim()
         def artifactId = m.artifactId
 
-       if (!s2iMode) {   kubernetes.image().withName("${user}/${artifactId}:${config.version}").tag().inRepository("${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}/${user}/${artifactId}").withTag("${config.version}")
+       if (!s2iMode) {   
+         kubernetes.image().withName("${user}/${artifactId}:${config.version}").tag().inRepository("${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}/${user}/${artifactId}").withTag("${config.version}")
        }
     } else {
       if (!s2iMode) {        
         retry(3){
-          sh "mvn io.fabric8:fabric8-maven-plugin:${fabric8MavenPluginVersion}:push -Ddocker.push.registry=${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}"
+          sh "mvn fabric8:push -Ddocker.push.registry=${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}"
         }
       }
     }
