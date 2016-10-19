@@ -265,7 +265,7 @@ Now that we don't store the next release version in the poms we need to figure i
 
 #### Promote Artifacts
 - releases OSS sonartype staging repository so that artifacts are synced with maven central
-- commits generated Helm charts to the fabric8 Help repo
+- commits generated Helm charts to the fabric8 Helm repo
 - if useGitTagForNextVersion is set (true by default) then the next snapshot development version PR is committed
 ```groovy
     String pullRequestId = promoteArtifacts {
