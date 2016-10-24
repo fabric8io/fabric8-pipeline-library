@@ -363,7 +363,7 @@ def addMergeCommentToPullRequest(String pr, String project){
     connection.setDoOutput(true)
     connection.connect()
 
-    def body  = '{"body":"[merge]"}'
+    def body  = '{"body":"[merge] lgtm"}'
 
     OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream())
     writer.write(body);
