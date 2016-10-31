@@ -1,8 +1,12 @@
 #!/usr/bin/groovy
 package io.fabric8;
+import io.fabric8.kubernetes.client.DefaultKubernetesClient
+import io.fabric8.kubernetes.client.KubernetesClient
 
-def environmentNamespace(environment){
-  return "${env.KUBERNETES_NAMESPACE}-${environment}"
+@NonCPS
+def environmentNamespace(environment) {
+  KubernetesClient kubernetes = new DefaultKubernetesClient();
+  return kubernetes.getNamespace() + "-${environment}"
 }
 
 return this;
