@@ -31,9 +31,9 @@
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-# Fabric8 Jenkins Pipeline Library
+# Fabric8 Pipeline Library
 
-This git repository contains a library of reusable [Jenkins Pipeline](https://github.com/jenkinsci/workflow-plugin) scripts that can be used on a project.
+This git repository contains a library of reusable [Jenkins Pipeline](https://github.com/jenkinsci/workflow-plugin) scripts that can be used in your `Jenkinsfile` to help improve your Continuous Delivery pipeline.
 
 <p align="center">
   <a href="http://fabric8.io/guide/cdelivery.html">
@@ -43,24 +43,28 @@ This git repository contains a library of reusable [Jenkins Pipeline](https://gi
 
 The idea is to try promote sharing of scripts across projects where it makes sense.
 
-You can then either
+## How to use this library
 
-* reuse any of the flows as is
-* fork this repository and make your own changes (hopefully submitting a Pull Request back)
-* copy flows from this project into your own projects source code where you can modify it further
+To use the functions in this library just add the following to the top of your `Jenkinsfile`:
+
+```groovy
+@Library('github.com/fabric8io/fabric8-pipeline-library@master')
+```
+
+That will use the master branch of this library. You can if you wish pick a specific [tag](https://github.com/fabric8io/fabric8-pipeline-library/tags) or [commit SHA](https://github.com/fabric8io/fabric8-pipeline-library/commits/master) of this repository too.
+
+### Making changes
+
+Feel free to reuse a version of this library as is. However if you want to make changes, please `fork` this repository and change it in your own fork!
+
+Then just refer to your fork in the `@Library()` annotation as shown above.
+
+If you do make local changes we'd love a `Pull Request` back though! We love contributions and pull requests!
+
 
 ### Requirements
 
-These flows make use of the [Fabric8 DevOps Pipeline Steps](https://github.com/fabric8io/fabric8-jenkins-workflow-steps) and [kubernetes-pipeline-plugin](https://github.com/jenkinsci/kubernetes-pipeline-plugin) which help when working with [Fabric8 DevOps](http://fabric8.io/guide/cdelivery.html) in particular for clean integration with the [Hubot chat bot](https://hubot.github.com/) and human approval of staging, promotion and releasing.
-
-### How it works
-
-With the [Jenkins global library](https://github.com/jenkinsci/workflow-cps-global-lib-plugin#pipeline-shared-libraries) we can take advantage from a shared library of reusable scripts.
-When the fabric8 Jenkins app is run, we use a kubernetes [post start script](https://github.com/fabric8io/jenkins-docker/blob/master/postStart.sh) to populate the Jenkins internal global library with scripts from this repo.  We are then able to easily call the groovy functions from within our Jenkinsfiles.  
-
-_NOTE_ Hopefully we will switch to using Kubernetes initContainers when they're available to help with this.  
-
-These scripts are baked into the fabric8 jenkins docker image during the fabric8 release however you can override this repo by updating the parameters when running the Jenkins app from the fabric8 console.
+These flows make use of the [Fabric8 DevOps Pipeline Steps](https://github.com/fabric8io/fabric8-jenkins-workflow-steps) and [kubernetes-plugin](https://github.com/jenkinsci/kubernetes-plugin) which help when working with [Fabric8 DevOps](http://fabric8.io/guide/cdelivery.html) in particular for clean integration with the [Hubot chat bot](https://hubot.github.com/) and human approval of staging, promotion and releasing.
 
 ### Functions from the Jenkins global library
 
