@@ -1,6 +1,4 @@
 #!/usr/bin/groovy
-import org.apache.maven.model.Model
-
 def call(body) {
     // evaluate the body block, and collect configuration into the object
     def config = [:]
@@ -19,7 +17,7 @@ def call(body) {
 
     if (flow.isSingleNode()){
         echo 'Running on a single node, skipping docker push as not needed'
-        Model m = readMavenPom file: 'pom.xml'
+        def m = readMavenPom file: 'pom.xml'
         def groupId = m.groupId.split( '\\.' )
         def user = groupId[groupId.size()-1].trim()
         def artifactId = m.artifactId
