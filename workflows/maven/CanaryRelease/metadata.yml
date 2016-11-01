@@ -1,5 +1,0 @@
-environments:
-  - Testing
-stages:
-  - 'canary image'
-  - 'integration test'

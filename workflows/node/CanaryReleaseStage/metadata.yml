@@ -1,5 +1,0 @@
-environments:
-  - Staging
-stages:
-  - 'canary release'
-  - 'Rolling upgrade Staging'
