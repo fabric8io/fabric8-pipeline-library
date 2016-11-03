@@ -33,7 +33,7 @@
 
 # Fabric8 Pipeline Library
 
-This git repository contains a library of reusable [Jenkins Pipeline](https://github.com/jenkinsci/workflow-plugin) scripts that can be used in your `Jenkinsfile` to help improve your Continuous Delivery pipeline.
+This git repository contains a library of reusable [Jenkins Pipeline](https://jenkins.io/doc/book/pipeline/) steps and functions that can be used in your `Jenkinsfile` to help improve your Continuous Delivery pipeline.
 
 <p align="center">
   <a href="http://fabric8.io/guide/cdelivery.html">
