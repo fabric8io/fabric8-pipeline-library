@@ -9,4 +9,10 @@ def environmentNamespace(environment) {
   return kubernetes.getNamespace() + "-${environment}"
 }
 
+@NonCPS
+def getNamespace() {
+  KubernetesClient kubernetes = new DefaultKubernetesClient();
+  return kubernetes.getNamespace()
+}
+
 return this;
