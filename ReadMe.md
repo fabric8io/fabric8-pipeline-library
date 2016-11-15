@@ -110,7 +110,7 @@ in the case of an aborted approval
 
 - returns a default OpenShift templates that gets translated into Kubernetes List when applied by kubernetes-workflow apply step and running on Kubernetes
 - returns a service and replication controller JSON using sensible defaults
-- can be used in conjunction with [kubernetesApply]https://github.com/jenkinsci/kubernetes-pipeline-plugin/blob/master/devops-steps/readme.md#applying-kubernetes-configuration)
+- can be used in conjunction with [kubernetesApply](https://github.com/jenkinsci/kubernetes-pipeline-plugin/blob/master/devops-steps/readme.md#applying-kubernetes-configuration)
 ```groovy
     node {
         def rc = getKubernetesJson {
