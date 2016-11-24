@@ -527,6 +527,7 @@ def deleteNamespace(String name) {
   try {
     def namespace = kubernetes.namespaces().withName(name).get();
     if (namespace != null) {
+      echo "Deleting namespace ${name}..."
       kubernetes.namespaces().withName(name).delete();
       echo "Deleted namespace ${name}"
 
