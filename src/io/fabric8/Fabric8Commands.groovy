@@ -2,6 +2,8 @@
 package io.fabric8
 
 import com.cloudbees.groovy.cps.NonCPS
+
+//import com.cloudbees.groovy.cps.NonCPS
 import io.fabric8.kubernetes.client.DefaultKubernetesClient
 import io.fabric8.kubernetes.client.KubernetesClient
 import groovy.json.JsonSlurper
