@@ -7,12 +7,7 @@ def call(body) {
     body()
 
     //stage "tag images"
-    kubernetes.pod('buildpod').withImage('fabric8/builder-openshift-client')
-    .withPrivileged(true)
-    .withHostPathMount('/var/run/docker.sock','/var/run/docker.sock')
-    .withEnvVar('DOCKER_CONFIG','/root/.docker/')
-    .withSecret('jenkins-docker-cfg','/root/.docker')
-    .inside {
+    container(name: 'docker') {
       for(int i = 0; i < config.images.size(); i++){
         image = config.images[i]
         retry (3){

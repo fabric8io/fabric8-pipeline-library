@@ -8,11 +8,7 @@ def call(body) {
 
   def flow = new io.fabric8.Fabric8Commands()
 
-  kubernetes.pod('buildpod').withImage('fabric8/builder-clients:latest')
-  .withSecret('remote-openshift-token','/root/.oc/')
-  .withPrivileged(true)
-  .inside {
-
+  container(name: 'clients') {
     sh "oc login ${config.url} --token=\$(cat /root/.oc/token) --insecure-skip-tls-verify=true"
     try{
       sh 'oc delete project fabric8-test'

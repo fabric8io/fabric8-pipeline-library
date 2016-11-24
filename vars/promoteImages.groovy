@@ -6,12 +6,7 @@ def call(body) {
     body.delegate = config
     body()
 
-    kubernetes.pod('buildpod').withImage('fabric8/builder-openshift-client')
-    .withPrivileged(true)
-    .withHostPathMount('/var/run/docker.sock','/var/run/docker.sock')
-    .withEnvVar('DOCKER_CONFIG','/root/.docker/')
-    .withSecret('jenkins-docker-cfg','/root/.docker')
-    .inside {
+    container(name: 'docker') {
 
       for(int i = 0; i < config.images.size(); i++){
 

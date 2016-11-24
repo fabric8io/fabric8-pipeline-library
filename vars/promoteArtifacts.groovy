@@ -14,13 +14,7 @@ def call(body) {
     // use hash to avoid incompatible chars
     //unstash name:"staged-${config.project}-${version}".hashCode().toString()
 
-    kubernetes.pod('buildpod').withImage('fabric8/maven-builder:1.1')
-    .withPrivileged(true)
-    .withSecret('jenkins-maven-settings','/root/.m2')
-    .withSecret('jenkins-ssh-config','/root/.ssh')
-    .withSecret('jenkins-git-ssh','/root/.ssh-git')
-    .inside {
-
+    container(name: 'maven') {
       sh 'chmod 600 /root/.ssh-git/ssh-key'
       sh 'chmod 600 /root/.ssh-git/ssh-key.pub'
       sh 'chmod 700 /root/.ssh-git'
