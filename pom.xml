@@ -174,7 +174,7 @@
               </includes>
             </source>
             <source>
-              <directory>${project.basedir}/var</directory>
+              <directory>${project.basedir}/vars</directory>
               <includes>
                 <include>**/*.groovy</include>
               </includes>

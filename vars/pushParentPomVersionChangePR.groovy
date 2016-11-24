@@ -1,4 +1,5 @@
 #!/usr/bin/groovy
+import com.cloudbees.groovy.cps.NonCPS
 import groovy.xml.*
 import groovy.xml.dom.*
 

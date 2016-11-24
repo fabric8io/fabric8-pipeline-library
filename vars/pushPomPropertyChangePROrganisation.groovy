@@ -1,4 +1,5 @@
 #!/usr/bin/groovy
+import com.cloudbees.groovy.cps.NonCPS
 import groovy.xml.DOMBuilder
 import groovy.xml.XmlUtil
 import groovy.xml.dom.DOMCategory
