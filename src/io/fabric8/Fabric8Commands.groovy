@@ -1,5 +1,7 @@
 #!/usr/bin/groovy
 package io.fabric8
+
+import com.cloudbees.groovy.cps.NonCPS
 import io.fabric8.kubernetes.client.DefaultKubernetesClient
 import io.fabric8.kubernetes.client.KubernetesClient
 import groovy.json.JsonSlurper
@@ -511,6 +513,35 @@ def isOpenShiftS2I() {
         error "Failed to load ${openshiftYaml} due to ${e}"
     }
     return false;
+}
+
+/**
+ * Deletes the given namespace if it exists
+ *
+ * @param name the name of the namespace
+ * @return true if the delete was successful
+ */
+@NonCPS
+def deleteNamespace(String name) {
+  KubernetesClient kubernetes = new DefaultKubernetesClient();
+  try {
+    def namespace = kubernetes.namespaces().withName(name).get();
+    if (namespace != null) {
+      kubernetes.namespaces().withName(name).delete();
+      echo "Deleted namespace ${name}"
+
+      // TODO should we wait for the namespace to really go away???
+      namespace = kubernetes.namespaces().withName(name).get();
+      if (namespace != null) {
+        echo "Namespace ${name} still exists!"
+      }
+      return true
+    }
+    return false
+  } catch (e) {
+    // ignore errors
+    return false
+  }
 }
 
 return this;
