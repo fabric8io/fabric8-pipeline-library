@@ -3,7 +3,7 @@ package io.fabric8
 
 import com.cloudbees.groovy.cps.NonCPS
 
-//import com.cloudbees.groovy.cps.NonCPS
+import com.cloudbees.groovy.cps.NonCPS
 import io.fabric8.kubernetes.client.DefaultKubernetesClient
 import io.fabric8.kubernetes.client.KubernetesClient
 import groovy.json.JsonSlurper
@@ -501,7 +501,7 @@ def isOpenShiftS2I() {
         if (fileExists(openshiftYaml)) {
             def contents = readFile(openshiftYaml)
             if (contents != null) {
-                if (contents.contains('kind: "ImageStream"')) {
+                if (contents.contains('kind: "ImageStream"') || contents.contains('kind: ImageStream') || contents.contains('kind: \'ImageStream\'')) {
                     echo "OpenShift YAML contains an ImageStream"
                     return true
                 } else {
