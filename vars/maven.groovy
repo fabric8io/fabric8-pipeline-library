@@ -1,6 +1,6 @@
 #!/usr/bin/groovy
 
-def call(parameters, body) {
+def call(Map parameters = [:], body) {
 
     def mavenImage = parameters.get('mavenImage', 'fabric8/maven-builder:2.2.297')
     def profiles = parameters.get('profiles', 'base')
