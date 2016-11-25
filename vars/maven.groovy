@@ -7,7 +7,7 @@ def call(Map parameters = [:], body) {
 
     echo "Creating maven pod template with image: ${mavenImage} and profiles: ${profiles}."
     def label = "buildpod.${env.JOB_NAME}.${env.BUILD_NUMBER}".replace('-', '_').replace('/', '_')
-    podTemplate(label: label, inhertiFrom: "${profiles}", containers: [
+    podTemplate(label: label, inheritFrom: "${profiles}", containers: [
             [name: 'maven', image: "${mavenImage}", command: 'cat', ttyEnabled: true, envVars: [
                     [key: 'MAVEN_OPTS', value: '-Duser.home=/root/']]]
     ]) {
