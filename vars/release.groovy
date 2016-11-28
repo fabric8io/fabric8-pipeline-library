@@ -17,8 +17,6 @@ def call(Map parameters = [:], body) {
             volumes: [
                     [$class: 'SecretVolume', mountPath: '/root/.gnupg', secretName: 'jenkins-release-gpg']
             ]) {
-        node(label) {
             body()
-        }
     }
 }
