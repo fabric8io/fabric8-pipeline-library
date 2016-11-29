@@ -36,6 +36,8 @@
         - [Clients Node](#clients-node)
         - [Release Node](#release-node)
       - [Mixing and Matching](#mixing-and-matching)        
+      - [Creating and using your own templates](#creating-and-using-your-own-templates)
+        - [Using the Jenkins Administration Console](#using the jenkins administration console)
                    
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -552,5 +554,25 @@ In the example above we can add release capabilities too, by adding the releaseT
                         }            
                     }
                 }
+            }
+    
+### Creating and using your own templates
+
+If the existing selection of templates is limiting you can also create your own templates.
+Templates can be created either by using the Jenkins administration console or by using the groovy.
+        
+#### Using the Jenkins Administration Console
+
+In the console choose `Manage Jenkins` -> `Configure System` and scroll down until you find the section `Cloud` -> `Kubernetes`. 
+There you can click to `Add Pod Template` to create your own using the wizzard.
+            
+Then you can just instantiate the template by creating a node that references the label to the template:
+            
+            node('my-custom-template') {
+            }
+     
+Note: You can use this template to mix and match too. For example you can combine your custom template with an existing one:
+     
+            mavenNode(inheritFrom: 'my-custom-template') {
             }
      
