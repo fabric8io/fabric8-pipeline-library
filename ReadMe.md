@@ -29,6 +29,14 @@
       - [Git Tag](#git-tag)
       - [Deploy Remote OpenShift](#deploy-remote-openshift)
       - [Deploy Remote Kubernetes](#deploy-remote-kubernetes)
+  - [Understanding how it works](#understanding-how-it-works)
+      - [Templates vs Nodes](#templates-vs-nodes)
+        - [Maven Node](#maven-node)
+        - [Docker Node](#docker-node)
+        - [Clients Node](#clients-node)
+        - [Release Node](#release-node)
+      - [Mixing and Matching](#mixing-and-matching)        
+                   
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -368,3 +376,181 @@ __NOTE__ in order for images to be found by the the remote OpenShift instance it
       }
     }
 ```
+
+
+## Understanding how it works
+
+Most of the functions provided by this library are meant to run inside a Kubernetes or Openshift pod. Those pods are managed by the [kubernetes plugin](https://github.com/jenkinsci/kubernetes-plugin).
+This library abstracts the pipeline capabilities of [kubernetes plugin](https://github.com/jenkinsci/kubernetes-plugin) so that it makes it easier to use. So for example when you need to use a pod with maven capabilities
+instead of defining something like:
+
+    podTemplate(label: 'maven-node', containers: [
+        containerTemplate(name: 'maven', image: 'maven:3.3.9-jdk-8-alpine', ttyEnabled: true, command: 'cat')
+      ],
+      volumes: [secretVolume(secretName: 'shared-secrets', mountPath: '/etc/shared-secrets')]) {
+      
+        node('maven-node') {
+            container(name: 'maven') {
+                ...
+            }
+        }
+      }
+
+You can just use the mavenTemplate provided by this library:
+
+    mavenTemplate(label: 'mylabel') {
+        node('mylabel') {
+            container(name: 'maven') {
+              ...
+            }
+        }
+    }
+    
+or for ease of use you can directly reference the mavenNode:
+    
+    mavenNode {
+        container(name: 'maven') {
+            ...
+        }
+    }
+
+### Template vs Node
+
+A template defines how the jenkins slave pod will look like, but the pod is not created until a node is requested.
+When a node is requested the matching template will be selected and pod from the template will be created.
+
+The library provides shortcut function both to nodes and templates. In most cases you will just need to use the node.
+The only exception is when you need to mix and match (see [mixing and mathcing](#mixing-and-matching)).
+ 
+
+The provided node / template pairs are the following:
+
+* **maven**     Provides maven capabilities.
+* **docker**    Provides access to the docker client and socket.
+* **release**   Mounts release related secrets *(e.g. gpg keys, ssh keys etc)*.
+* **clients**   Provides access to the kubernetes and openshift binaries.
+
+#### Maven Node
+
+Provides maven capabilities by adding a container with the maven image. 
+The container mounts the following volumes:
+
+* Secret `jenkins-maven-settings` Add your maven configuration here.
+* PersistentVolumeClaim `jenkins-mvn-local-repo` The maven local repository to use.
+
+The maven node and template support limited customization through the following properties:
+
+* **mavenImage** Select the maven docker image to use.
+
+Example:
+
+    mavenNode(mavenImage: 'maven:3.3.9-jdk-7') {
+        container(name: 'maven') {
+            sh 'mvn clean install'
+        }
+    }
+    
+#### Docker Node
+
+Provides docker capabilities by adding a container with the docker binary. 
+The container mounts the following volumes:
+
+* HostPathVolume `/var/run/docker.sock` The docker socket. 
+
+Host path mounts are not allowed everywhere, so use with caution.
+Also note that the mount will be mounted to all containers in the pod.
+This means that if we add a maven container to the pod, it will have docker capabilities.
+
+The docker node and template support limited customization through the following properties:
+
+* **dockerImage** Select the docker image to use.
+
+Example:
+
+    mavenNode(dockerImage: 'docker:1.11.2') {
+        container(name: 'docker') {
+            sh 'docker build -t myorg/myimage .'
+        }
+    }
+   
+#### Clients Node
+
+Provides access to the `kubectl` and `oc` binaries by adding a container to the pod that provides them.
+The container is configured exactly as the docker container provided by the dockerTemplate.
+
+Example:
+
+    clientsNode(clientsImage: 'fabric8/builder-clients:latest') {
+        container(name: 'clients') {
+            sh 'kubectl create -f ./target/classes/META-INF/kubernetes/kubernetes.yml'
+        }
+    }
+    
+#### Release Node
+
+Provides docker capabilities by enriching the jenkins slave pod with the proper environment variables and volumes.
+
+* Secret `jenkins-release-gpg` Add your maven configuration here.
+ 
+Also the following environment variables will be available to all containers:
+                          
+* SONATYPE_USERNAME 
+* SONATYPE_PASSWORD
+* GPG_PASSPHRASE
+* NEXUS_USERNAME
+* NEXUS_PASSWORD
+
+These variables will obtain their values from jenkins container (they will be copied).
+
+Example:
+
+    releaseTemplate {
+        mavenNode {
+        container(name: 'docker') {
+            sh 'docker build -t myorg/myimage .'
+        }
+    }
+        
+### Mixing and matching
+        
+There are cases where we might need a more complex setup that may require
+more than a single template. (e.g. a maven container that can run docker builds).
+
+For this case you can combine add the docker template and the maven template together:
+
+    dockerTemplate {
+        mavenTemplate(label: 'maven-and-docker') {
+            node('maven-and-docker') {
+                 container(name: 'maven') {
+                    sh 'mvn clean package fabric8:build fabric8:push'
+                 }            
+            }
+        }
+    }
+
+The above is equivalent to: 
+   
+    dockerTemplate {
+        mavenNode(label: 'maven-and-docker') {
+            container(name: 'maven') {
+                sh 'mvn clean package fabric8:build fabric8:push'
+            }            
+        }
+    }
+                        
+In the example above we can add release capabilities too, by adding the releaseTemplate:
+
+        
+            dockerTemplate {
+                releaseTemplate {
+                    mavenNode(label: 'maven-and-docker') {
+                        container(name: 'maven') {
+                            sh """
+                                mvn release:clean release:prepare
+                                mvn clean release:perform 
+                            """
+                        }            
+                    }
+                }
+            }
+     
