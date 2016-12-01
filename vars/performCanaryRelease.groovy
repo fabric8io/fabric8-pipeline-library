@@ -18,7 +18,7 @@ def call(body) {
       def flow = new io.fabric8.Fabric8Commands()
       def utils = new io.fabric8.Utils()
       def namespace = utils.getNamespace()
-      echo 'got namespace ' + namespace
+      echo 'namespace: ' + namespace
       def newImageName = "${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}/${namespace}/${env.JOB_NAME}:${newVersion}"
 
       env.setProperty('VERSION',newVersion)

@@ -3,8 +3,9 @@ package io.fabric8
 
 import com.cloudbees.groovy.cps.NonCPS
 import io.fabric8.kubernetes.client.DefaultKubernetesClient
-import io.fabric8.kubernetes.client.KubernetesClient
 import groovy.json.JsonSlurper
+import io.fabric8.openshift.client.OpenShiftClient
+import io.fabric8.kubernetes.client.KubernetesClient
 
 def getProjectVersion(){
   def file = readFile('pom.xml')
@@ -546,5 +547,12 @@ def deleteNamespace(String name) {
     return false
   }
 }
+
+@NonCPS
+def isOpenShift() {
+  KubernetesClient kubernetes = new DefaultKubernetesClient()
+  return kubernetes.isAdaptable(OpenShiftClient.class)
+}
+
 
 return this
