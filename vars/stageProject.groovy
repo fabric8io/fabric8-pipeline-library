@@ -17,10 +17,10 @@ def call(body) {
     sh 'chmod 600 /root/.ssh-git/ssh-key'
     sh 'chmod 600 /root/.ssh-git/ssh-key.pub'
     sh 'chmod 700 /root/.ssh-git'
-    sh 'chmod 600 /root/.gnupg/pubring.gpg'
-    sh 'chmod 600 /root/.gnupg/secring.gpg'
-    sh 'chmod 600 /root/.gnupg/trustdb.gpg'
-    sh 'chmod 700 /root/.gnupg'
+    sh 'chmod 600 /home/jenkins/.gnupg/pubring.gpg'
+    sh 'chmod 600 /home/jenkins/.gnupg/secring.gpg'
+    sh 'chmod 600 /home/jenkins/.gnupg/trustdb.gpg'
+    sh 'chmod 700 /home/jenkins/.gnupg'
 
     sh "git remote set-url origin git@github.com:${config.project}.git"
 
