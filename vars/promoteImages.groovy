@@ -13,10 +13,10 @@ def call(body) {
         image = config.images[i]
 
         sh "docker pull ${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}/fabric8/${image}:${config.tag}"
-        sh "docker tag -f ${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}/${config.org}/${image}:${config.tag} ${config.toRegistry}/${config.org}/${image}:${config.tag}"
+        sh "docker tag ${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}/${config.org}/${image}:${config.tag} ${config.toRegistry}/${config.org}/${image}:${config.tag}"
 
         retry (3){
-          sh "docker push -f ${config.toRegistry}/${config.org}/${image}:${config.tag}"
+          sh "docker push ${config.toRegistry}/${config.org}/${image}:${config.tag}"
         }
 
             // NOT YET IMPLEMENTED - WE NEED TO SWITCH TO OPENSHIFT BINARY BUILDER SO OC SHOULD PROBABLY DO THE IMAGE TAGGING
