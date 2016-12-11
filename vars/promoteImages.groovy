@@ -6,6 +6,14 @@ def call(body) {
     body.delegate = config
     body()
 
+    if (!config.org) {
+        error 'Docker Organisation config missing'
+    }
+
+    if (!config.toRegistry) {
+        error 'Promote To Docker Registry config missing'
+    }
+
     container(name: 'docker') {
 
       for(int i = 0; i < config.images.size(); i++){
