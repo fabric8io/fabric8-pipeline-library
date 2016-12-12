@@ -64,16 +64,26 @@ def call(body) {
     }
   }
 
-  @NonCPS
+  //@NonCPS
   def updateParentVersion(xml, newVersion) {
     def index = xml.indexOf('<project')
+    echo '1'
     def header = xml.take(index)
+    echo '2'
     def xmlDom = DOMBuilder.newInstance().parseText(xml)
+    echo '3'
     def root = xmlDom.documentElement
+    echo '4'
     use (DOMCategory) {
+      echo '5'
+      echo "${root}"
+      echo '5a'
+      echo "${root.parent}"
+      echo '5b'
       root.parent.version*.setTextContent(newVersion)
+      echo '6'
       def newXml = XmlUtil.serialize(root)
-
+      echo '7'
       // need to fix this, we get errors above then next time round if this is left in
       return header + newXml.minus('<?xml version="1.0" encoding="UTF-8"?>')
     }

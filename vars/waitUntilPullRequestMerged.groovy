@@ -1,4 +1,5 @@
 #!/usr/bin/groovy
+import com.cloudbees.groovy.cps.NonCPS
 import groovy.json.JsonSlurper;
 
 def call(body) {
@@ -22,11 +23,11 @@ def call(body) {
       echo "https://api.github.com/repos/${config.name}/pulls/${id}"
 
       def apiUrl = new URL("https://api.github.com/repos/${config.name}/pulls/${id}")
-      JsonSlurper rs = restGetURL{
+
+      def rs = restGetURL{
         authString = githubToken
         url = apiUrl
       }
-
       branchName = rs.head.ref
       def sha = rs.head.sha
       echo "checking status of commit ${sha}"
@@ -39,12 +40,15 @@ def call(body) {
 
       echo "${config.name} Pull request ${id} state ${rs.state}"
 
-      if (rs.state == 'failure' && !notified){
+        def values = config.name.split('/')
+        def prj = values[1]
+
+        if (rs.state == 'failure' && !notified){
         def message ="""
 Pull request was not automatically merged.  Please fix and update Pull Request to continue with release...
 ```
   git clone git@github.com:${config.name}.git
-  cd ${config.name}
+  cd ${prj}
   git fetch origin pull/${id}/head:fixPR${id}
   git checkout fixPR${id}
 
