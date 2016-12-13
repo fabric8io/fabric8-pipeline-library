@@ -4,7 +4,7 @@ def call(Map parameters = [:], body) {
     def defaultLabel = "go.${env.JOB_NAME}.${env.BUILD_NUMBER}".replace('-', '_').replace('/', '_')
     def label = parameters.get('label', defaultLabel)
 
-    def goImage = parameters.get('goImage', 'fabric8/go-builder:1.0.0')
+    def goImage = parameters.get('goImage', 'fabric8/go-builder:1.0.1')
     def inheritFrom = parameters.get('inheritFrom', 'base')
 
     dockerTemplate {
