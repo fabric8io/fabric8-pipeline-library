@@ -9,7 +9,8 @@ def call(Map parameters = [:], body) {
 
     dockerTemplate {
         podTemplate(label: label, serviceAccount: 'jenkins', inheritFrom: "${inheritFrom}",
-                containers: [[name: 'go', image: "${goImage}", command: 'cat', ttyEnabled: true]]) {
+                containers: [[name: 'go', image: "${goImage}", command: 'cat', ttyEnabled: true, envVars: [
+                        [key: 'GOPATH', value: '/home/jenkins/go']]]]) {
             node(label) {
                 body()
             }
