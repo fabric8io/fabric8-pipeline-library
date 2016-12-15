@@ -10,6 +10,7 @@ def call(body) {
     def ghOrg =  config.githubOrganisation
     def dockerOrg = config.dockerOrganisation
     def prj = config.project
+    def version
 
     if (!ghOrg){
         error 'no github organisation defined'
@@ -31,7 +32,7 @@ def call(body) {
         sh "git config user.email fabric8-admin@googlegroups.com"
         sh "git config user.name fabric8-release"
         sh "git remote set-url origin git@github.com:${ghOrg}/${prj}.git"
-        def version
+
         container(name: 'go') {
             stage ('build binary'){
                 sh 'chmod 600 /root/.ssh-git/ssh-key'
@@ -67,5 +68,5 @@ def call(body) {
             }
         }
     }
-
+    return version
   }
