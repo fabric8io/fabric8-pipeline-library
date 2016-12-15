@@ -55,7 +55,7 @@ def call(body) {
 
           sh "cat ${repo}/${pomLocation}"
 
-          container(name: 'maven') {
+          container(name: 'clients') {
 
             sh 'chmod 600 /root/.ssh-git/ssh-key'
             sh 'chmod 600 /root/.ssh-git/ssh-key.pub'

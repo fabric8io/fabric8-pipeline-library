@@ -6,13 +6,15 @@ def call(Map parameters = [:], body) {
     def label = parameters.get('label', defaultLabel)
 
     def mavenImage = parameters.get('mavenImage', 'fabric8/maven-builder:2.2.297')
+    def clientsImage = parameters.get('clientsImage', 'fabric8/builder-clients:latest')
     def inheritFrom = parameters.get('inheritFrom', 'base')
 
     podTemplate(label: label, inheritFrom: "${inheritFrom}",
             containers: [
                     [name: 'maven', image: "${mavenImage}", command: 'cat', ttyEnabled: true,
                         envVars: [
-                                    [key: 'MAVEN_OPTS', value: '-Duser.home=/root/']]]],
+                                    [key: 'MAVEN_OPTS', value: '-Duser.home=/root/']]],
+                    [name: 'clients', image: "${clientsImage}", command: 'cat', ttyEnabled: true]],
             volumes: [secretVolume(secretName: 'jenkins-maven-settings', mountPath: '/root/.m2'),
                       persistentVolumeClaim(claimName: 'jenkins-mvn-local-repo', mountPath: '/root/.mvnrepo'),
                       secretVolume(secretName: 'jenkins-docker-cfg', mountPath: '/home/jenkins/.docker'),
