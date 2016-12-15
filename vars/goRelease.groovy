@@ -46,7 +46,9 @@ def call(body) {
                 sh "gobump -f version/VERSION patch"
                 sh "git commit -am 'Version bump'"
                 version = readFile('version/VERSION').trim()
-
+                if (!version){
+                    error 'no version found'
+                }
                 sh "git push origin master"
 
                 def token = new io.fabric8.Fabric8Commands().getGitHubToken()
