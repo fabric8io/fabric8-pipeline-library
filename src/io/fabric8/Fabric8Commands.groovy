@@ -39,7 +39,7 @@ def isArtifactAvailableInRepo(String repo, String groupId, String artifactId, St
   artifactId = removeTrailingSlash(artifactId)
 
   def url = new URL("${repo}/${groupId}/${artifactId}/${version}/${artifactId}-${version}.${ext}")
-  def HttpURLConnection connection = url.openConnection()
+  HttpURLConnection connection = url.openConnection()
 
   connection.setRequestMethod("GET")
   connection.setDoInput(true)
@@ -58,7 +58,7 @@ def isArtifactAvailableInRepo(String repo, String groupId, String artifactId, St
 
 def removeTrailingSlash (String myString){
   if (myString.endsWith("/")) {
-    return myString.substring(0, myString.length() - 1);
+    return myString.substring(0, myString.length() - 1)
   }
   return myString
 }
@@ -129,8 +129,6 @@ def setupWorkspaceForRelease(String project, Boolean useGitTagForNextVersion, St
     deleteRemoteBranch("release-v${releaseVersion}")
   } catch (err){
   }
-
-  //sh "git commit -a -m '[CD] released v${releaseVersion}'"
 }
 
 // if no previous tag found default 1.0.0 is used, else assume version is in the form major.minor or major.minor.micro version
@@ -215,11 +213,14 @@ def stageSonartypeRepo () {
   try {
     sh "mvn clean -B"
     sh "mvn -V -B -e -U install org.sonatype.plugins:nexus-staging-maven-plugin:1.6.7:deploy -P release -DnexusUrl=https://oss.sonatype.org -DserverId=oss-sonatype-staging -Ddocker.push.registry=${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}"
-    step([$class: 'ArtifactArchiver', artifacts: '**/target/*.jar', fingerprint: true])
+
+    // lets not archive artifacts until we if we just use nexus or a content repo
+    //step([$class: 'ArtifactArchiver', artifacts: '**/target/*.jar', fingerprint: true])
 
   } catch (err) {
     hubot room: 'release', message: "Release failed when building and deploying to Nexus ${err}"
     currentBuild.result = 'FAILURE'
+    error "ERROR Release failed when building and deploying to Nexus ${err}"
   }
   // the sonartype staging repo id gets written to a file in the workspace
   return getRepoIds()
@@ -233,7 +234,7 @@ def releaseSonartypeRepo(String repoId){
   } catch (err) {
     sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-drop -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoId} -Ddescription=\"Error during release: ${err}\" -DstagingProgressTimeoutMinutes=60"
     currentBuild.result = 'FAILURE'
-    return
+    error "ERROR releasing sonartype repo ${repoId}: ${err}"
   }
 }
 
@@ -248,8 +249,7 @@ def helm(){
     sh "mvn io.fabric8:fabric8-maven-plugin:${pluginVersion}:helm"
     sh "mvn io.fabric8:fabric8-maven-plugin:${pluginVersion}:helm-push"
   } catch (err) {
-    echo "ERROR with helm push ${err}"
-    return
+    error "ERROR with helm push ${err}"
   }
 }
 
@@ -315,7 +315,7 @@ def createPullRequest(String message, String project, String branch){
   def apiUrl = new URL("https://api.github.com/repos/${project}/pulls")
   echo "creating PR for ${apiUrl}"
   try {
-    def HttpURLConnection connection = apiUrl.openConnection()
+    HttpURLConnection connection = apiUrl.openConnection()
     if(githubToken.length() > 0)
     {
       connection.setRequestProperty("Authorization", "Bearer ${githubToken}")
@@ -334,8 +334,8 @@ def createPullRequest(String message, String project, String branch){
     echo "sending body: ${body}\n"
 
     OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream())
-    writer.write(body);
-    writer.flush();
+    writer.write(body)
+    writer.flush()
 
     // execute the POST request
     def rs = new JsonSlurper().parse(new InputStreamReader(connection.getInputStream(),"UTF-8"))
@@ -343,11 +343,10 @@ def createPullRequest(String message, String project, String branch){
     connection.disconnect()
 
     echo "Received PR id:  ${rs.number}"
-    return String.valueOf(rs.number)
+    return rs.number +''
 
   } catch (err) {
-     echo "ERROR  ${err}"
-     return
+    error "ERROR  ${err}"
   }
 }
 
@@ -368,16 +367,15 @@ def addMergeCommentToPullRequest(String pr, String project){
     def body  = '{"body":"[merge] lgtm"}'
 
     OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream())
-    writer.write(body);
-    writer.flush();
+    writer.write(body)
+    writer.flush()
 
     // execute the POST request
     new InputStreamReader(connection.getInputStream())
 
     connection.disconnect()
   } catch (err) {
-     echo "ERROR  ${err}"
-     return
+    error "ERROR  ${err}"
   }
 }
 
@@ -385,8 +383,8 @@ def drop(String pr, String project){
   def githubToken = getGitHubToken()
   def apiUrl = new URL("https://api.github.com/repos/${project}/pulls/${pr}")
   def branch
-  def HttpURLConnection connection
-  def OutputStreamWriter writer
+  HttpURLConnection connection
+  OutputStreamWriter writer
   echo "closing PR ${apiUrl}"
 
   try {
@@ -407,8 +405,8 @@ def drop(String pr, String project){
     '''
 
     writer = new OutputStreamWriter(connection.getOutputStream())
-    writer.write(body);
-    writer.flush();
+    writer.write(body)
+    writer.flush()
 
     // execute the POST request
     def rs = new JsonSlurper().parse(new InputStreamReader(connection.getInputStream(),"UTF-8"))
@@ -418,8 +416,7 @@ def drop(String pr, String project){
     branchName = rs.head.ref
 
   } catch (err) {
-     echo "ERROR  ${err}"
-     return
+    error "ERROR  ${err}"
   }
 
   try {
@@ -434,8 +431,8 @@ def drop(String pr, String project){
     connection.connect()
 
     writer = new OutputStreamWriter(connection.getOutputStream())
-    writer.write(body);
-    writer.flush();
+    writer.write(body)
+    writer.flush()
 
     // execute the POST request
     new InputStreamReader(connection.getInputStream())
@@ -443,8 +440,7 @@ def drop(String pr, String project){
     connection.disconnect()
 
   } catch (err) {
-     echo "ERROR  ${err}"
-     return
+     error "ERROR  ${err}"
   }
 }
 
@@ -463,7 +459,7 @@ def getGitHubToken(){
 
 @NonCPS
 def isSingleNode() {
-  KubernetesClient kubernetes = new DefaultKubernetesClient();
+  KubernetesClient kubernetes = new DefaultKubernetesClient()
   if (kubernetes.nodes().list().getItems().size() == 1){
     return true
   } else {
@@ -473,9 +469,9 @@ def isSingleNode() {
 
 @NonCPS
 def hasService(String name) {
-  KubernetesClient kubernetes = new DefaultKubernetesClient();
+  KubernetesClient kubernetes = new DefaultKubernetesClient()
   try {
-    def service = kubernetes.services().withName(name).get();
+    def service = kubernetes.services().withName(name).get()
     if (service != null) {
       return service.metadata != null
     }
@@ -512,7 +508,7 @@ def isOpenShiftS2I() {
     } catch (e) {
         error "Failed to load ${openshiftYaml} due to ${e}"
     }
-    return false;
+    return false
 }
 
 /**
@@ -523,16 +519,16 @@ def isOpenShiftS2I() {
  */
 @NonCPS
 def deleteNamespace(String name) {
-  KubernetesClient kubernetes = new DefaultKubernetesClient();
+  KubernetesClient kubernetes = new DefaultKubernetesClient()
   try {
-    def namespace = kubernetes.namespaces().withName(name).get();
+    def namespace = kubernetes.namespaces().withName(name).get()
     if (namespace != null) {
       echo "Deleting namespace ${name}..."
-      kubernetes.namespaces().withName(name).delete();
+      kubernetes.namespaces().withName(name).delete()
       echo "Deleted namespace ${name}"
 
       // TODO should we wait for the namespace to really go away???
-      namespace = kubernetes.namespaces().withName(name).get();
+      namespace = kubernetes.namespaces().withName(name).get()
       if (namespace != null) {
         echo "Namespace ${name} still exists!"
       }
@@ -545,4 +541,4 @@ def deleteNamespace(String name) {
   }
 }
 
-return this;
+return this

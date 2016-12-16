@@ -40,11 +40,7 @@ def call(body) {
 
       sh "cat ${repo}/${pomLocation}"
 
-      kubernetes.pod('buildpod').withImage('fabric8/maven-builder:latest')
-              .withPrivileged(true)
-              .withSecret('jenkins-git-ssh', '/root/.ssh-git')
-              .withSecret('jenkins-ssh-config', '/root/.ssh')
-              .inside {
+      container(name: 'clients') {
 
         sh 'chmod 600 /root/.ssh-git/ssh-key'
         sh 'chmod 600 /root/.ssh-git/ssh-key.pub'

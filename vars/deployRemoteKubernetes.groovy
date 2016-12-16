@@ -6,10 +6,7 @@ def call(body) {
   body.delegate = config
   body()
 
-  kubernetes.pod('buildpod').withImage('fabric8/builder-clients:latest')
-  .withSecret('remote-kubernetes-token','/root/.kc/')
-  .withPrivileged(true)
-  .inside {
+  container(name: 'clients') {
 
     sh 'kubectl config set-credentials kube --username=\$(cat /root/.kc/user) --password=\$(cat /root/.kc/password)'
     sh "kubectl config set-cluster kube --insecure-skip-tls-verify=true --server=${config.url}"

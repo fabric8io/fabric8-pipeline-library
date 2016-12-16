@@ -12,24 +12,15 @@ def call(body) {
   def extraStageImages = config.extraImagesToStage ?: []
   def extraSetVersionArgs = config.setVersionExtraArgs ?: ""
 
-  kubernetes.pod('buildpod').withImage('fabric8/maven-builder:latest')
-  .withPrivileged(true)
-  .withHostPathMount('/var/run/docker.sock','/var/run/docker.sock')
-  .withEnvVar('DOCKER_CONFIG','/root/.docker/')
-  .withSecret('jenkins-maven-settings','/root/.m2')
-  .withSecret('jenkins-ssh-config','/root/.ssh')
-  .withSecret('jenkins-git-ssh','/root/.ssh-git')
-  .withSecret('jenkins-release-gpg','/root/.gnupg')
-  .withSecret('jenkins-docker-cfg','/root/.docker')
-  .inside {
+  container(name: 'maven') {
 
     sh 'chmod 600 /root/.ssh-git/ssh-key'
     sh 'chmod 600 /root/.ssh-git/ssh-key.pub'
     sh 'chmod 700 /root/.ssh-git'
-    sh 'chmod 600 /root/.gnupg/pubring.gpg'
-    sh 'chmod 600 /root/.gnupg/secring.gpg'
-    sh 'chmod 600 /root/.gnupg/trustdb.gpg'
-    sh 'chmod 700 /root/.gnupg'
+    sh 'chmod 600 /home/jenkins/.gnupg/pubring.gpg'
+    sh 'chmod 600 /home/jenkins/.gnupg/secring.gpg'
+    sh 'chmod 600 /home/jenkins/.gnupg/trustdb.gpg'
+    sh 'chmod 700 /home/jenkins/.gnupg'
 
     sh "git remote set-url origin git@github.com:${config.project}.git"
 

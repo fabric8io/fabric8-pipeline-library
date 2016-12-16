@@ -17,7 +17,6 @@ def call(body) {
     for(int i = 0; i < config.projects.size(); i++){
       def project = config.projects[i]
       def items = project.split( '/' )
-      def org = items[0]
       def repo = items[1]
 
       stage "Updating ${project}"
@@ -37,11 +36,7 @@ def call(body) {
 
       sh "cat ${repo}/${pomLocation}"
 
-      kubernetes.pod('buildpod').withImage('fabric8/maven-builder:latest')
-        .withPrivileged(true)
-        .withSecret('jenkins-git-ssh','/root/.ssh-git')
-        .withSecret('jenkins-ssh-config','/root/.ssh')
-        .inside {
+        container(name: 'clients') {
 
           sh 'chmod 600 /root/.ssh-git/ssh-key'
           sh 'chmod 600 /root/.ssh-git/ssh-key.pub'
@@ -50,7 +45,6 @@ def call(body) {
           sh "git config --global user.email fabric8-admin@googlegroups.com"
           sh "git config --global user.name fabric8-release"
 
-          def githubToken = flow.getGitHubToken()
           def message = "Update parent pom version ${config.version}"
           sh "cd ${repo} && git add ${pomLocation}"
           sh "cd ${repo} && git commit -m \"${message}\""
@@ -68,17 +62,30 @@ def call(body) {
     }
   }
 
-  @NonCPS
-  def updateParentVersion(xml, newVersion) {
-    def index = xml.indexOf('<project')
-    def header = xml.take(index)
-    def xmlDom = DOMBuilder.newInstance().parseText(xml)
-    def root = xmlDom.documentElement
-    use (DOMCategory) {
-      root.parent.version*.setTextContent(newVersion)
-      def newXml = XmlUtil.serialize(root)
-
-      // need to fix this, we get errors above then next time round if this is left in
-      return header + newXml.minus('<?xml version="1.0" encoding="UTF-8"?>')
+@NonCPS
+def updateParentVersion(xml, newVersion) {
+  def index = xml.indexOf('<project')
+  def header = xml.take(index)
+  def xmlDom = DOMBuilder.newInstance().parseText(xml)
+  def root = xmlDom.documentElement
+  use (DOMCategory) {
+    def parents = root.getElementsByTagName("parent")
+    if (parents.length == 0) {
+      echo "No element found called parent!"
+      return xml
     }
+    def parent = parents.item(0)
+    echo "now about to access the versions on the parent ${parent}"
+
+    def versions = parent.getElementsByTagName("version")
+    if (versions.length == 0) {
+      echo "No element found called version!"
+      return xml
+    }
+    def version = versions.item(0)
+    version.setTextContent(newVersion)
+    def newXml = XmlUtil.serialize(root)
+    // we get errors above then next time round if this is left in
+    return header + newXml.minus('<?xml version="1.0" encoding="UTF-8"?>')
   }
+}
