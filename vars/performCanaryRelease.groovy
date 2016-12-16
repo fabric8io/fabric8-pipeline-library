@@ -7,7 +7,7 @@ def call(body) {
     body()
 
 
-    container('client') {
+    container('clients') {
       def newVersion = ''
       if (config.version == '') {
           newVersion = getNewVersion {}
