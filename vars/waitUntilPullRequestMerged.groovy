@@ -65,8 +65,14 @@ Pull request was not automatically merged.  Please fix and update Pull Request t
     rs.state == 'success'
   }
   try {
-    // clean up
-    sh "git push origin --delete ${branchName}"
+      // clean up
+      container(name: 'clients') {
+
+          sh 'chmod 600 /root/.ssh-git/ssh-key'
+          sh 'chmod 600 /root/.ssh-git/ssh-key.pub'
+          sh 'chmod 700 /root/.ssh-git'
+          sh "git push origin --delete ${branchName}"
+      }
   } catch (err) {
     echo "not able to delete repo: ${err}"
   }
