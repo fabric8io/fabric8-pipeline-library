@@ -498,10 +498,10 @@ def getServiceURL(String serviceName, String namespace = null, String protocol =
 }
 
 def isOpenShiftS2I() {
-    def openshiftYaml = "target/classes/META-INF/fabric8/openshift.yml"
+  def openshiftYaml = findFiles(glob: '**/openshift.yml')
     try {
-        if (fileExists(openshiftYaml)) {
-            def contents = readFile(openshiftYaml)
+        if (openshiftYaml) {
+            def contents = readFile(openshiftYaml[0].path)
             if (contents != null) {
                 if (contents.contains('kind: "ImageStream"') || contents.contains('kind: ImageStream') || contents.contains('kind: \'ImageStream\'')) {
                     echo "OpenShift YAML contains an ImageStream"
@@ -514,7 +514,7 @@ def isOpenShiftS2I() {
             echo "Warning OpenShift YAML ${openshiftYaml} does not exist!"
         }
     } catch (e) {
-        error "Failed to load ${openshiftYaml} due to ${e}"
+        error "Failed to load ${openshiftYaml[0]} due to ${e}"
     }
     return false
 }
