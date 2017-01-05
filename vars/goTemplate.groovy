@@ -5,7 +5,7 @@ def call(Map parameters = [:], body) {
     def label = parameters.get('label', defaultLabel)
 
     def goImage = parameters.get('goImage', 'fabric8/go-builder:1.0.8')
-    def clientsImage = parameters.get('clientsImage', 'fabric8/builder-clients:latest')
+    def clientsImage = parameters.get('clientsImage', 'fabric8/builder-clients:0.1')
     def inheritFrom = parameters.get('inheritFrom', 'base')
 
         podTemplate(label: label, serviceAccount: 'jenkins', inheritFrom: "${inheritFrom}",
