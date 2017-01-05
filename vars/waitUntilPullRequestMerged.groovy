@@ -59,7 +59,11 @@ git push origin fixPR${id}:${branchName}
 ```
 """
 
-      hubot room: 'release', message: message
+       hubot room: 'release', message: message
+
+            if (!requestResolve()){
+                return
+            }
       notified = true
     }
     rs.state == 'success'
@@ -75,4 +79,25 @@ git push origin fixPR${id}:${branchName}
   } catch (err) {
     echo "not able to delete repo: ${err}"
   }
+}
+
+
+def requestResolve(){
+    def proceedMessage = '''
+Would you like do resolve the conflict?  If so please reply with the proceed command.
+
+Alternatively you can skip this conflict.  This is highly discouraged but maybe necessary if we have a problem quickstart for example.
+To do this chose the abort option below, note this particular action will not abort the release and only skip this conflict.
+'''
+
+    hubotApprove message: proceedMessage, room: config.room
+
+    def resolveConflict = true
+    try {
+        input id: 'Proceed', message: "\n${config.proceedMessage}"
+    } catch (err) {
+        resolveConflict = false
+        echo 'Skipping conflict'
+    }
+    return resolveConflict
 }
