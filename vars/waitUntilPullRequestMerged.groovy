@@ -61,7 +61,8 @@ git push origin fixPR${id}:${branchName}
 
        hubot room: 'release', message: message
             def shouldWeWait = requestResolve()
-            if ('false'.equals(shouldWeWait)){
+
+            if (!shouldWeWait){
                 return true
             }
       notified = true
@@ -94,9 +95,9 @@ To do this chose the abort option below, note this particular action will not ab
 
     try {
         input id: 'Proceed', message: "\n${proceedMessage}"
-        return 'false'
+        return true
     } catch (err) {
         echo 'Skipping conflict'
-        return 'false'
+        return false
     }
 }
