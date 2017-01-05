@@ -89,9 +89,14 @@ def call(body) {
                     }
                     pr = readFile("${repo}/pr.txt")
                     split = pr.split('\\/')
-                    def prId = split[6].trim()
-                    println "received Pull Request Id: ${prId}"
-                    flow.addMergeCommentToPullRequest(prId, project)
+                    def id = split[6].trim()
+                    println "received Pull Request Id: ${id}"
+                    flow.addMergeCommentToPullRequest(id, project)
+
+                    waitUntilPullRequestMerged{
+                        name = project
+                        prId = id
+                    }
                 }
             } else {
                 println "Ignoring project ${project} as it has no pom.xml"
