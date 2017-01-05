@@ -47,15 +47,15 @@ def call(body) {
         def message ="""
 Pull request was not automatically merged.  Please fix and update Pull Request to continue with release...
 ```
-  git clone git@github.com:${config.name}.git
-  cd ${prj}
-  git fetch origin pull/${id}/head:fixPR${id}
-  git checkout fixPR${id}
+git clone git@github.com:${config.name}.git
+cd ${prj}
+git fetch origin pull/${id}/head:fixPR${id}
+git checkout fixPR${id}
 
   [resolve issue]
 
-  git commit -a -m 'resolved merge issues caused by release dependency updates'
-  git push origin fixPR${id}:${branchName}
+git commit -a -m 'resolved merge issues caused by release dependency updates'
+git push origin fixPR${id}:${branchName}
 ```
 """
 
@@ -66,13 +66,12 @@ Pull request was not automatically merged.  Please fix and update Pull Request t
   }
   try {
       // clean up
-      container(name: 'clients') {
-
-          sh 'chmod 600 /root/.ssh-git/ssh-key'
-          sh 'chmod 600 /root/.ssh-git/ssh-key.pub'
-          sh 'chmod 700 /root/.ssh-git'
-          sh "git push origin --delete ${branchName}"
+      deleteGitHubBranch{
+          authString = githubToken
+          branch = branchName
+          project - prj
       }
+
   } catch (err) {
     echo "not able to delete repo: ${err}"
   }
