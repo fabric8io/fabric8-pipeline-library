@@ -62,7 +62,7 @@ git push origin fixPR${id}:${branchName}
        hubot room: 'release', message: message
             def shouldWeWait = requestResolve()
             if ('false'.equals(shouldWeWait)){
-                return
+                return true
             }
       notified = true
     }
