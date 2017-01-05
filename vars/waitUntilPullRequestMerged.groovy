@@ -90,11 +90,11 @@ Alternatively you can skip this conflict.  This is highly discouraged but maybe 
 To do this chose the abort option below, note this particular action will not abort the release and only skip this conflict.
 '''
 
-    hubotApprove message: proceedMessage, room: config.room
+    hubotApprove message: proceedMessage, room: null
 
     def resolveConflict = true
     try {
-        input id: 'Proceed', message: "\n${config.proceedMessage}"
+        input id: 'Proceed', message: "\n${proceedMessage}"
     } catch (err) {
         resolveConflict = false
         echo 'Skipping conflict'

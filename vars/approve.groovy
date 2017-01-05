@@ -17,10 +17,10 @@ Would you like to promote version ${config.version} to the Production namespace?
     def id = approveRequestedEvent(app: "${env.JOB_NAME}", environment: config.environment)
 
     try {
-      input id: 'Proceed', message: "\n${config.proceedMessage}"
+        input id: 'Proceed', message: "\n${proceedMessage}"
     } catch (err) {
-      approveReceivedEvent(id: id, approved: false)
-      throw err
+        approveReceivedEvent(id: id, approved: false)
+        throw err
     }
     approveReceivedEvent(id: id, approved: true)
-  }
+}
