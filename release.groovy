@@ -32,7 +32,7 @@ def tagDownstreamRepos() {
 
 def getJenkinsVersion() {
     def m = readMavenPom file: 'pom.xml'
-    def v = m.properties['fabric8-devops.version']
+    def v = m.properties['fabric8.devops.version']
     return v
 }
 
