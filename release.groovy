@@ -21,7 +21,7 @@ def tagDownstreamRepos() {
         def uid = UUID.randomUUID().toString()
         sh "git checkout -b versionUpdate${uid}"
 
-        sh "find -type f -name 'Jenkinsfile' | xargs sed -i -r 's/library@([0-9][0-9]{0,2}.[0-9][0-9]{0,2}(.[0-9][0-9]{0,2})|master)/library@${newVersion}/g'"
+        sh "find -type f -name 'Jenkinsfile' | xargs sed -i -r 's/library@([0-9][0-9]{0,2}.[0-9][0-9]{0,2}(.[0-9][0-9]{0,2})|master)/library@v${newVersion}/g'"
 
         sh "git commit -a -m 'Updated Jenkinsfiles with new library version ${newVersion}'"
 
