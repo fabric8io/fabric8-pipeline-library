@@ -13,7 +13,6 @@ def call(body) {
     def requestMemory = config.resourceRequestMemory ?: '0'
     def limitCPU = config.resourceLimitMemory ?: '0'
     def limitMemory = config.resourceLimitMemory ?: '0'
-
     def yaml
 
 def list = """
@@ -93,6 +92,7 @@ def deployment = """
             requests:
               cpu: ${limitCPU}
               memory: ${limitMemory}
+        terminationGracePeriodSeconds: 2
 """
 
 def deploymentConfig = """
@@ -127,7 +127,7 @@ def deploymentConfig = """
             valueFrom:
               fieldRef:
                 fieldPath: metadata.namespace
-          image: ${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}/${env.KUBERNETES_NAMESPACE}/${env.JOB_NAME}:${config.version}
+          image: ${env.DOCKER_REGISTRY_SERVICE_HOST}:${env.DOCKER_REGISTRY_SERVICE_PORT}/${env.KUBERNETES_NAMESPACE}/${env.JOB_NAME}:${config.version}
           imagePullPolicy: IfNotPresent
           name: ${env.JOB_NAME}
           ports:
@@ -140,6 +140,7 @@ def deploymentConfig = """
             requests:
               cpu: ${limitCPU}
               memory: ${limitMemory}
+        terminationGracePeriodSeconds: 2
     triggers:
     - type: ConfigChange
 """
