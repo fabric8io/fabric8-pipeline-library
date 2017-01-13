@@ -4,6 +4,7 @@ package io.fabric8
 import com.cloudbees.groovy.cps.NonCPS
 import io.fabric8.kubernetes.client.DefaultKubernetesClient
 import groovy.json.JsonSlurper
+import io.fabric8.openshift.client.DefaultOpenShiftClient
 import io.fabric8.openshift.client.OpenShiftClient
 import io.fabric8.kubernetes.client.KubernetesClient
 
@@ -550,9 +551,7 @@ def deleteNamespace(String name) {
 
 @NonCPS
 def isOpenShift() {
-  KubernetesClient kubernetes = new DefaultKubernetesClient()
-  return kubernetes.isAdaptable(OpenShiftClient.class)
+  return new DefaultOpenShiftClient().isAdaptable(OpenShiftClient.class)
 }
-
 
 return this
