@@ -1,5 +1,6 @@
 #!/usr/bin/groovy
 import io.fabric8.Fabric8Commands
+import io.fabric8.Utils
 
 def call(body) {
     // evaluate the body block, and collect configuration into the object
@@ -28,7 +29,8 @@ def call(body) {
 }
 
 def dockerBuild(version){
-    def utils = new io.fabric8.Utils()
+    def utils = new Utils()
+    def flow = new Fabric8Commands()
     def namespace = utils.getNamespace()
     def newImageName = "${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}/${namespace}/${env.JOB_NAME}:${version}"
 
