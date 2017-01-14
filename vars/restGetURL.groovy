@@ -1,4 +1,5 @@
 #!/usr/bin/groovy
+import com.cloudbees.groovy.cps.NonCPS
 import groovy.json.JsonSlurperClassic
 
 def call(body) {
@@ -8,20 +9,25 @@ def call(body) {
   body.delegate = config
   body()
   retry(3){
-    HttpURLConnection connection = config.url.openConnection()
-    if(config.authString.length() > 0)
-    {
-      connection.setRequestProperty("Authorization", "Bearer ${config.authString}")
-    }
-    connection.setRequestMethod("GET")
-    connection.setDoInput(true)
-    JsonSlurperClassic pr = null
-    try {
-      connection.connect()
-      pr = new JsonSlurperClassic().parse(new InputStreamReader(connection.getInputStream(),"UTF-8"))
-    } finally {
-      connection.disconnect()
-    }
-    return pr
+    return getResult(config.url, config.authString)
   }
+}
+
+@NonCPS
+def getResult(url, authString){
+  HttpURLConnection connection = url.openConnection()
+  if(authString.length() > 0)
+  {
+    connection.setRequestProperty("Authorization", "Bearer ${authString}")
+  }
+  connection.setRequestMethod("GET")
+  connection.setDoInput(true)
+  def rs = null
+  try {
+    connection.connect()
+    rs = new JsonSlurperClassic().parse(new InputStreamReader(connection.getInputStream(),"UTF-8"))
+  } finally {
+    connection.disconnect()
+  }
+  return rs
 }
