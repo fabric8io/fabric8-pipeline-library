@@ -10,7 +10,7 @@ def call(Map parameters = [:], body) {
     def flow = new io.fabric8.Fabric8Commands()
 
     if (flow.isOpenShift()) {
-        echo 'is openshift so dont mount the docker socket'
+        echo 'Runnning on openshift so using S2I binary source and Docker strategy'
         podTemplate(label: label, serviceAccount: 'jenkins', inheritFrom: "${inheritFrom}",
                 containers: [[name: 'clients', image: "${clientsImage}", command: 'cat', ttyEnabled: true, envVars: [[key: 'DOCKER_CONFIG', value: '/home/jenkins/.docker/']]]],
                 volumes: [
@@ -19,7 +19,7 @@ def call(Map parameters = [:], body) {
             body()
         }
     } else {
-        echo 'is not openshift so mounting docker socket'
+        echo 'Mounting docker socket to build docker images'
         podTemplate(label: label, serviceAccount: 'jenkins', inheritFrom: "${inheritFrom}",
                 containers: [[name: 'clients', image: "${clientsImage}", command: 'cat', privileged: true, ttyEnabled: true, envVars: [[key: 'DOCKER_CONFIG', value: '/home/jenkins/.docker/']]]],
                 volumes: [

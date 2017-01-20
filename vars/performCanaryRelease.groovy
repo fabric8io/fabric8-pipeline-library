@@ -44,30 +44,35 @@ def dockerBuild(version){
 
 def s2iBuild(version){
 
-    def is = getImageStream()
-    def bc = getBuildConfig(version)
+    def utils = new Utils()
+    def ns = utils.namespace
+    def is = getImageStream(ns)
+    def bc = getBuildConfig(version, ns)
 
-    kubernetesApply(file: is, environment: 'default')
-    kubernetesApply(file: bc, environment: 'default')
-    sh "oc start-build ${env.JOB_NAME}-s2i --from-dir ../${env.JOB_NAME} --follow"
+    kubernetesApply(file: is, environment: ns)
+    kubernetesApply(file: bc, environment: ns)
+    sh "oc start-build ${env.JOB_NAME}-s2i --from-dir ../${env.JOB_NAME} --follow -n ${ns}"
+    //sh "oc tag ${ns}/${env.JOB_NAME}:${version} demo-staging/${env.JOB_NAME}:${version}"
 
 }
 
-def getImageStream(){
+def getImageStream(ns){
     return """
 apiVersion: v1
 kind: ImageStream
 metadata:
   name: ${env.JOB_NAME}
+  namespace: ${ns}
 """
 }
 
-def getBuildConfig(version){
+def getBuildConfig(version, ns){
     return """
 apiVersion: v1
 kind: BuildConfig
 metadata:
   name: ${env.JOB_NAME}-s2i
+  namespace: ${ns}
 spec:
   output:
     to:
