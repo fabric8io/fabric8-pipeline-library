@@ -1,4 +1,7 @@
 #!/usr/bin/groovy
+import io.fabric8.Utils
+import io.fabric8.Fabric8Commands
+
 def call(body) {
     // evaluate the body block, and collect configuration into the object
     def config = [:]
@@ -6,7 +9,8 @@ def call(body) {
     body.delegate = config
     body()
 
-    def flow = new io.fabric8.Fabric8Commands()
+    def flow = new Fabric8Commands()
+    def utils = new Utils()
 
     def expose = config.exposeApp ?: 'true'
     def requestCPU = config.resourceRequestCPU ?: '0'
@@ -15,7 +19,18 @@ def call(body) {
     def limitMemory = config.resourceLimitMemory ?: '0'
     def yaml
 
-def list = """
+    def isSha = ''
+    if (flow.isOpenShift()){
+        isSha = utils.getImageStreamSha(env.JOB_NAME)
+    }
+
+    def fabric8Registry = ''
+    if (env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST){
+        fabric8Registry = env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST+':'+env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT+'/'
+    }
+
+    def sha
+    def list = """
 ---
 apiVersion: v1
 kind: List
@@ -79,7 +94,7 @@ def deployment = """
             valueFrom:
               fieldRef:
                 fieldPath: metadata.namespace
-          image: ${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}/${env.KUBERNETES_NAMESPACE}/${env.JOB_NAME}:${config.version}
+          image: ${fabric8Registry}${env.KUBERNETES_NAMESPACE}/${env.JOB_NAME}:${config.version}
           imagePullPolicy: IfNotPresent
           name: ${env.JOB_NAME}
           ports:
@@ -127,7 +142,7 @@ def deploymentConfig = """
             valueFrom:
               fieldRef:
                 fieldPath: metadata.namespace
-          image: ${env.DOCKER_REGISTRY_SERVICE_HOST}:${env.DOCKER_REGISTRY_SERVICE_PORT}/${env.KUBERNETES_NAMESPACE}/${env.JOB_NAME}:${config.version}
+          image: ${env.JOB_NAME}:${config.version}
           imagePullPolicy: IfNotPresent
           name: ${env.JOB_NAME}
           ports:
@@ -143,11 +158,32 @@ def deploymentConfig = """
         terminationGracePeriodSeconds: 2
     triggers:
     - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - ${env.JOB_NAME}
+        from:
+          kind: ImageStreamTag
+          name: ${env.JOB_NAME}:${config.version}
+      type: ImageChange
 """
 
+    def is = """
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    name: ${env.JOB_NAME}
+  spec:
+    tags:
+    - from:
+        kind: ImageStreamImage
+        name: ${env.JOB_NAME}@${isSha}
+        namespace: ${utils.getNamespace()}
+      name: ${config.version}
+"""
 
   if (flow.isOpenShift()){
-    yaml = list + service + deploymentConfig
+    yaml = list + service + is + deploymentConfig
   } else {
     yaml = list + service + deployment
   }
