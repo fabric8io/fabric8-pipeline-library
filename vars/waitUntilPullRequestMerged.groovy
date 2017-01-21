@@ -74,7 +74,7 @@ git push origin fixPR${id}:${branchName}
       deleteGitHubBranch{
           authString = githubToken
           branch = branchName
-          project - prj
+          project = prj
       }
 
   } catch (err) {
