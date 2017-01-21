@@ -32,6 +32,8 @@ def getImageStreamSha(imageStreamName) {
   return findTagSha(oc, imageStreamName, getNamespace())
 }
 
+// returns the tag sha from an imagestream
+// original code came from the fabric8-maven-plugin
 def findTagSha(OpenShiftClient client, String imageStreamName, String namespace) {
   ImageStream currentImageStream = null
   for (int i = 0; i < 15; i++) {
