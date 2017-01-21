@@ -28,14 +28,16 @@ def getNamespace() {
 
 @NonCPS
 def getImageStreamSha(imageStreamName) {
+  echo '1'
   OpenShiftClient oc = new DefaultOpenShiftClient()
   return findTagSha(oc, imageStreamName, getNamespace())
 }
 
 // returns the tag sha from an imagestream
 // original code came from the fabric8-maven-plugin
+@NonCPS
 def findTagSha(OpenShiftClient client, String imageStreamName, String namespace) {
-  ImageStream currentImageStream = null
+  def currentImageStream = null
   for (int i = 0; i < 15; i++) {
     if (i > 0) {
       echo("Retrying to find tag on ImageStream ${imageStreamName}")
@@ -49,25 +51,24 @@ def findTagSha(OpenShiftClient client, String imageStreamName, String namespace)
     if (currentImageStream == null) {
       continue
     }
-    ImageStreamStatus status = currentImageStream.getStatus()
+    def status = currentImageStream.getStatus()
     if (status == null) {
       continue
     }
-    List<NamedTagEventList> tags = status.getTags()
+    def tags = status.getTags()
     if (tags == null || tags.isEmpty()) {
       continue
     }
     // latest tag is the first
     TAG_EVENT_LIST:
-    for (NamedTagEventList list : tags) {
-      List<TagEvent> items = list.getItems()
+    for (def list : tags) {
+      def items = list.getItems()
       if (items == null) {
         continue TAG_EVENT_LIST
       }
-
       // latest item is the first
-      for (TagEvent item : items) {
-        String image = item.getImage()
+      for (def item : items) {
+        def image = item.getImage()
         if (image != null && image != '') {
           echo("Found tag on ImageStream " + imageStreamName + " tag: " + image)
           return image
