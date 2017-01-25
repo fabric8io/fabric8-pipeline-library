@@ -6,7 +6,7 @@ def call(Map parameters = [:], body) {
     def label = parameters.get('label', defaultLabel)
 
     def nodejsImage = parameters.get('nodejsImage', 'fabric8/nodejs-builder:0.0.1')
-    def clientsImage = parameters.get('clientsImage', 'fabric8/builder-clients:0.1')
+    def clientsImage = parameters.get('clientsImage', 'fabric8/builder-clients:0.2')
     def inheritFrom = parameters.get('inheritFrom', 'base')
 
     def flow = new io.fabric8.Fabric8Commands()
