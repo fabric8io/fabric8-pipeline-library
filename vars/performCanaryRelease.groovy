@@ -49,10 +49,10 @@ def s2iBuild(version){
     def is = getImageStream(ns)
     def bc = getBuildConfig(version, ns)
 
+    sh "oc delete is ${env.JOB_NAME} -n ${ns}"
     kubernetesApply(file: is, environment: ns)
     kubernetesApply(file: bc, environment: ns)
     sh "oc start-build ${env.JOB_NAME}-s2i --from-dir ../${env.JOB_NAME} --follow -n ${ns}"
-    //sh "oc tag ${ns}/${env.JOB_NAME}:${version} demo-staging/${env.JOB_NAME}:${version}"
 
 }
 
