@@ -117,7 +117,26 @@ in the case of an aborted approval
       pullRequestId = '1234'
     }
 ```
+#### Get Deployment Resources
+
+- returns a default OpenShift or Kubernetes YAML that can be used by kubernetes-workflow apply step
+- returns a service, deployment / deployment config YAML using sensible defaults
+- can be used in conjunction with [kubernetesApply](https://github.com/jenkinsci/kubernetes-pipeline-plugin/blob/master/devops-steps/readme.md#applying-kubernetes-configuration)
+```groovy
+    node {
+        def resources = geDeploymemtResources {
+          port = 8080
+          label = 'node'
+          icon = 'https://cdn.rawgit.com/fabric8io/fabric8/dc05040/website/src/images/logos/nodejs.svg'
+          version = '0.0.1'
+        }
+
+        kubernetesApply(file: resources, environment: 'my-cool-app-staging', registry: 'myexternalregistry.io:5000')
+    }
+```
 #### Get Kubernetes JSON
+
+__WARNING this function is deprecated.  Please change to use getDeploymentResources{}__
 
 - returns a default OpenShift templates that gets translated into Kubernetes List when applied by kubernetes-workflow apply step and running on Kubernetes
 - returns a service and replication controller JSON using sensible defaults

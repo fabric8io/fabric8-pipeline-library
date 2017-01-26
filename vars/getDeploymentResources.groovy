@@ -9,12 +9,6 @@ def call(body) {
     body.delegate = config
     body()
 
-    echo ''
-    echo '*******************************************************************************************'
-    echo '*** WARNING this function is deprecated.  Please change to use getDeploymentResources{} ***'
-    echo '*******************************************************************************************'
-    echo ''
-
     def flow = new Fabric8Commands()
     def utils = new Utils()
 
