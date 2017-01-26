@@ -9,12 +9,6 @@ def call(body) {
     body.delegate = config
     body()
 
-    echo ''
-    echo '*******************************************************************************************'
-    echo '*** WARNING this function is deprecated.  Please change to use getDeploymentResources{} ***'
-    echo '*******************************************************************************************'
-    echo ''
-
     def flow = new Fabric8Commands()
     def utils = new Utils()
 
@@ -113,6 +107,20 @@ def deployment = """
             requests:
               cpu: ${limitCPU}
               memory: ${limitMemory}
+          readinessProbe:
+            httpGet:
+              path: "/"
+              port: ${config.port}
+            initialDelaySeconds: 1
+            timeoutSeconds: 5
+            failureThreshold: 5
+          livenessProbe:
+            httpGet:
+              path: "/"
+              port: ${config.port}
+            initialDelaySeconds: 180
+            timeoutSeconds: 5
+            failureThreshold: 5
         terminationGracePeriodSeconds: 2
 """
 
@@ -161,6 +169,20 @@ def deploymentConfig = """
             requests:
               cpu: ${limitCPU}
               memory: ${limitMemory}
+          readinessProbe:
+            httpGet:
+              path: "/"
+              port: ${config.port}
+            initialDelaySeconds: 1
+            timeoutSeconds: 5
+            failureThreshold: 5
+          livenessProbe:
+            httpGet:
+              path: "/"
+              port: ${config.port}
+            initialDelaySeconds: 180
+            timeoutSeconds: 5
+            failureThreshold: 5
         terminationGracePeriodSeconds: 2
     triggers:
     - type: ConfigChange
