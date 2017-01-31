@@ -29,7 +29,7 @@ def call(Map parameters = [:], body) {
                 containers: [
                         [name: 'nodejs', image: "${nodejsImage}", command: 'cat', ttyEnabled: true],
                         [name: 'clients', image: "${clientsImage}", command: 'cat', ttyEnabled: true, privileged: true]],
-                volumes: [secretVolume(secretName: 'jenkins-docker-cfg', mountPath: '/root/.docker'),
+                volumes: [secretVolume(secretName: 'jenkins-docker-cfg', mountPath: '/home/jenkins/.docker'),
                           secretVolume(secretName: 'jenkins-release-gpg', mountPath: '/home/jenkins/.gnupg'),
                           secretVolume(secretName: 'jenkins-hub-api-token', mountPath: '/home/jenkins/.apitoken'),
                           secretVolume(secretName: 'jenkins-ssh-config', mountPath: '/root/.ssh'),
