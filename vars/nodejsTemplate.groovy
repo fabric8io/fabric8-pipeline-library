@@ -6,7 +6,7 @@ def call(Map parameters = [:], body) {
     def label = parameters.get('label', defaultLabel)
 
     def nodejsImage = parameters.get('nodejsImage', 'fabric8/nodejs-builder:0.0.2')
-    def clientsImage = parameters.get('clientsImage', 'fabric8/builder-clients:0.2')
+    def clientsImage = parameters.get('clientsImage', 'fabric8/builder-clients:0.1')
     def inheritFrom = parameters.get('inheritFrom', 'base')
     def flow = new io.fabric8.Fabric8Commands()
 
@@ -28,7 +28,8 @@ def call(Map parameters = [:], body) {
         podTemplate(label: label, inheritFrom: "${inheritFrom}",
                 containers: [
                         [name: 'nodejs', image: "${nodejsImage}", command: 'cat', ttyEnabled: true],
-                        [name: 'clients', image: "${clientsImage}", command: 'cat', ttyEnabled: true, privileged: true]],
+                        [name: 'clients', image: "${clientsImage}", command: 'cat', ttyEnabled: true, privileged: true,
+                envVars: [key: 'DOCKER_CONFIG', value: '/home/jenkins/.docker/']]],
                 volumes: [secretVolume(secretName: 'jenkins-docker-cfg', mountPath: '/home/jenkins/.docker'),
                           secretVolume(secretName: 'jenkins-release-gpg', mountPath: '/home/jenkins/.gnupg'),
                           secretVolume(secretName: 'jenkins-hub-api-token', mountPath: '/home/jenkins/.apitoken'),
