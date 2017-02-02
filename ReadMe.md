@@ -38,7 +38,7 @@
       - [Mixing and Matching](#mixing-and-matching)        
       - [Creating and using your own templates](#creating-and-using-your-own-templates)
         - [Using the Jenkins Administration Console](#using the jenkins administration console)
-                   
+
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -55,6 +55,8 @@ This git repository contains a library of reusable [Jenkins Pipeline](https://je
 The idea is to try promote sharing of scripts across projects where it makes sense.
 
 ## How to use this library
+
+This library is intended to be used with fabric8's Jenkins image that is deployed as part of the [fabric8 platform](https://fabric8.io).
 
 To use the functions in this library just add the following to the top of your `Jenkinsfile`:
 
@@ -409,7 +411,7 @@ instead of defining something like:
         containerTemplate(name: 'maven', image: 'maven:3.3.9-jdk-8-alpine', ttyEnabled: true, command: 'cat')
       ],
       volumes: [secretVolume(secretName: 'shared-secrets', mountPath: '/etc/shared-secrets')]) {
-      
+
         node('maven-node') {
             container(name: 'maven') {
                 ...
@@ -426,9 +428,9 @@ You can just use the mavenTemplate provided by this library:
             }
         }
     }
-    
+
 or for ease of use you can directly reference the mavenNode:
-    
+
     mavenNode {
         container(name: 'maven') {
             ...
@@ -442,7 +444,7 @@ When a node is requested the matching template will be selected and pod from the
 
 The library provides shortcut function both to nodes and templates. In most cases you will just need to use the node.
 The only exception is when you need to mix and match (see [mixing and mathcing](#mixing-and-matching)).
- 
+
 
 The provided node / template pairs are the following:
 
@@ -453,7 +455,7 @@ The provided node / template pairs are the following:
 
 #### Maven Node
 
-Provides maven capabilities by adding a container with the maven image. 
+Provides maven capabilities by adding a container with the maven image.
 The container mounts the following volumes:
 
 * Secret `jenkins-maven-settings` Add your maven configuration here.
@@ -470,13 +472,13 @@ Example:
             sh 'mvn clean install'
         }
     }
-    
+
 #### Docker Node
 
-Provides docker capabilities by adding a container with the docker binary. 
+Provides docker capabilities by adding a container with the docker binary.
 The container mounts the following volumes:
 
-* HostPathVolume `/var/run/docker.sock` The docker socket. 
+* HostPathVolume `/var/run/docker.sock` The docker socket.
 
 Host path mounts are not allowed everywhere, so use with caution.
 Also note that the mount will be mounted to all containers in the pod.
@@ -493,7 +495,7 @@ Example:
             sh 'docker build -t myorg/myimage .'
         }
     }
-   
+
 #### Clients Node
 
 Provides access to the `kubectl` and `oc` binaries by adding a container to the pod that provides them.
@@ -506,16 +508,16 @@ Example:
             sh 'kubectl create -f ./target/classes/META-INF/kubernetes/kubernetes.yml'
         }
     }
-    
+
 #### Release Node
 
 Provides docker capabilities by enriching the jenkins slave pod with the proper environment variables and volumes.
 
 * Secret `jenkins-release-gpg` Add your maven configuration here.
- 
+
 Also the following environment variables will be available to all containers:
-                          
-* SONATYPE_USERNAME 
+
+* SONATYPE_USERNAME
 * SONATYPE_PASSWORD
 * GPG_PASSPHRASE
 * NEXUS_USERNAME
@@ -531,9 +533,9 @@ Example:
             sh 'docker build -t myorg/myimage .'
         }
     }
-        
+
 ### Mixing and matching
-        
+
 There are cases where we might need a more complex setup that may require
 more than a single template. (e.g. a maven container that can run docker builds).
 
@@ -549,8 +551,8 @@ For this case you can combine add the docker template and the maven template tog
         }
     }
 
-The above is equivalent to: 
-   
+The above is equivalent to:
+
     dockerTemplate {
         mavenNode(label: 'maven-and-docker') {
             container(name: 'maven') {
@@ -558,40 +560,39 @@ The above is equivalent to:
             }            
         }
     }
-                        
+
 In the example above we can add release capabilities too, by adding the releaseTemplate:
 
-        
+
             dockerTemplate {
                 releaseTemplate {
                     mavenNode(label: 'maven-and-docker') {
                         container(name: 'maven') {
                             sh """
                                 mvn release:clean release:prepare
-                                mvn clean release:perform 
+                                mvn clean release:perform
                             """
                         }            
                     }
                 }
             }
-    
+
 ### Creating and using your own templates
 
 If the existing selection of templates is limiting you can also create your own templates.
 Templates can be created either by using the Jenkins administration console or by using the groovy.
-        
+
 #### Using the Jenkins Administration Console
 
-In the console choose `Manage Jenkins` -> `Configure System` and scroll down until you find the section `Cloud` -> `Kubernetes`. 
+In the console choose `Manage Jenkins` -> `Configure System` and scroll down until you find the section `Cloud` -> `Kubernetes`.
 There you can click to `Add Pod Template` to create your own using the wizzard.
-            
+
 Then you can just instantiate the template by creating a node that references the label to the template:
-            
+
             node('my-custom-template') {
             }
-     
+
 Note: You can use this template to mix and match too. For example you can combine your custom template with an existing one:
-     
+
             mavenNode(inheritFrom: 'my-custom-template') {
             }
-     
