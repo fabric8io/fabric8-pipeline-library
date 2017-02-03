@@ -20,9 +20,9 @@ def call(Map parameters = [:], body) {
                          secretVolume(secretName: 'jenkins-ssh-config', mountPath: '/root/.ssh'),
                          secretVolume(secretName: 'jenkins-git-ssh', mountPath: '/root/.ssh-git')
                         ]) {
-            node(label) {
-                body()
-            }
+
+            body()
+
         }
 
 }
