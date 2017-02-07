@@ -6,10 +6,12 @@ def call(Map parameters = [:], body) {
     def label = parameters.get('label', defaultLabel)
 
     def clientsImage = parameters.get('clientsImage', 'fabric8/builder-clients:0.5')
+    def mavenImage = parameters.get('mavenImage', 'fabric8/maven-builder:2.2.297')
     def inheritFrom = parameters.get('inheritFrom', 'base')
     podTemplate(label: label, serviceAccount: 'jenkins', inheritFrom: "${inheritFrom}",
             containers: [
-                    [name: 'clients', image: "${clientsImage}", command: 'cat', ttyEnabled: true]
+                    [name: 'clients', image: "${clientsImage}", command: 'cat', ttyEnabled: true],
+                    [name: 'maven', image: "${mavenImage}", command: 'cat', ttyEnabled: true]
             ],
             volumes: [
                     secretVolume(secretName: 'gke-service-account', mountPath: '/root/home/.gke')
