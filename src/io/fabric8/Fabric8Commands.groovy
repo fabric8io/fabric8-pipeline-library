@@ -554,4 +554,17 @@ def isOpenShift() {
   return new DefaultOpenShiftClient().isAdaptable(OpenShiftClient.class)
 }
 
+/**
+ * Define a SonarQube analysis step
+ */
+
+def sonarQubeAnalyis(){
+  if (hasService("sonarqube")) {
+    def scannerHome = tool 'SonarQube Scanner 2.8';
+    withSonarQubeEnv('sonarqube') {
+      sh "${scannerHome}/bin/sonar-scanner"
+    }
+  }
+}
+
 return this
