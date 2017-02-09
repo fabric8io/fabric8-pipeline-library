@@ -10,11 +10,15 @@ def call(Map parameters = [:], body) {
     def inheritFrom = parameters.get('inheritFrom', 'base')
     podTemplate(label: label, serviceAccount: 'jenkins', inheritFrom: "${inheritFrom}",
             containers: [
-                    [name: 'clients', image: "${clientsImage}", command: 'cat', ttyEnabled: true,
-                    envVars: [[key: 'TERM', value: 'dumb']]],
-                    [name: 'maven', image: "${mavenImage}", command: 'cat', ttyEnabled: true]
+                    [name   : 'clients', image: "${clientsImage}", command: 'cat', ttyEnabled: true,
+                     envVars: [[key: 'TERM', value: 'dumb']]],
+                    [name   : 'maven', image: "${mavenImage}", command: 'cat', ttyEnabled: true,
+                     envVars: [
+                             [key: 'MAVEN_OPTS', value: '-Duser.home=/root/']]]
             ],
             volumes: [
+                    secretVolume(secretName: 'jenkins-maven-settings', mountPath: '/root/.m2'),
+                    persistentVolumeClaim(claimName: 'jenkins-mvn-local-repo', mountPath: '/root/.mvnrepository'),
                     secretVolume(secretName: 'gke-service-account', mountPath: '/root/home/.gke')
             ]) {
         body()
