@@ -1,4 +1,6 @@
 #!/usr/bin/groovy
+import com.cloudbees.groovy.cps.NonCPS
+import io.fabric8.Fabric8Commands
 
 def call(body) {
     // evaluate the body block, and collect configuration into the object
@@ -7,16 +9,13 @@ def call(body) {
     body.delegate = config
     body()
 
-    def flow = new io.fabric8.Fabric8Commands()
     def version
     container(name: 'maven') {
 
         // update any versions that we want to override
-        for (v in config.pomVersionToUpdate) {
-            flow.searchAndReplaceMavenVersionProperty(v.key, v.value)
-        }
+        overwriteDeps(config.pomVersionToUpdate)
 
-        sh "mvn clean -e -U install -Ddocker.push.registry=${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}"
+        sh "mvn clean -e -U install -Duser.home=/root/ -Ddocker.push.registry=${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}"
 
         def m = readMavenPom file: 'pom.xml'
         version = m.version
@@ -34,3 +33,12 @@ def call(body) {
 
     return version
 }
+
+@NonCPS
+def overwriteDeps(versions){
+    def flow = new Fabric8Commands()
+    for (v in versions) {
+        flow.searchAndReplaceMavenVersionPropertyNoCommit(v.key, v.value)
+    }
+}
+

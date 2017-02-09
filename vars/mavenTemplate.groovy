@@ -6,7 +6,7 @@ def call(Map parameters = [:], body) {
     def label = parameters.get('label', defaultLabel)
 
     def mavenImage = parameters.get('mavenImage', 'fabric8/maven-builder:2.2.297')
-    def clientsImage = parameters.get('clientsImage', 'fabric8/builder-clients:0.1')
+    def clientsImage = parameters.get('clientsImage', 'fabric8/builder-clients:0.6')
     def inheritFrom = parameters.get('inheritFrom', 'base')
 
     def flow = new io.fabric8.Fabric8Commands()
