@@ -91,7 +91,7 @@ EOF
 
             def rs = sh(returnStdout: true, script: "kubectl -n default logs ${podName} --tail=1").trim()
 
-            if (rs != null || rs.equals('SYSTEM TESTS FAILED')) {
+            if (rs != null && rs.equals('SYSTEM TESTS FAILED')) {
                 failed = true
                 def logs = sh(returnStdout: true, script: "kubectl -n default logs ${podName} --tail=40").trim()
                 msg = getFailedMessage(clusterName, logs, consoleURL)
