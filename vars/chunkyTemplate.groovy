@@ -2,11 +2,10 @@
 
 def call(Map parameters = [:], body) {
 
-    def defaultLabel = "maven.${env.JOB_NAME}.${env.BUILD_NUMBER}".replace('-', '_').replace('/', '_')
+    def defaultLabel = "chunky.${env.JOB_NAME}.${env.BUILD_NUMBER}".replace('-', '_').replace('/', '_')
     def label = parameters.get('label', defaultLabel)
 
-    def mavenImage = parameters.get('mavenImage', 'fabric8/maven-builder:2.2.297')
-    def clientsImage = parameters.get('clientsImage', 'fabric8/builder-clients:0.6')
+    def chunkyImage = parameters.get('chunkyImage', 'fabric8/chunky-builder:0.0.1')
     def inheritFrom = parameters.get('inheritFrom', 'base')
 
     def flow = new io.fabric8.Fabric8Commands()
@@ -14,7 +13,7 @@ def call(Map parameters = [:], body) {
     if (flow.isOpenShift()) {
         podTemplate(label: label, inheritFrom: "${inheritFrom}",
                 containers: [
-                        [name: 'maven', image: "${mavenImage}", command: 'cat', ttyEnabled: true,
+                        [name: 'chunky', image: "${chunkyImage}", command: 'cat', ttyEnabled: true,
                          envVars: [
                                  [key: 'MAVEN_OPTS', value: '-Duser.home=/root/']]]],
                 volumes: [secretVolume(secretName: 'jenkins-maven-settings', mountPath: '/root/.m2'),
@@ -31,7 +30,7 @@ def call(Map parameters = [:], body) {
     } else {
         podTemplate(label: label, inheritFrom: "${inheritFrom}",
                 containers: [
-                        [name: 'maven', image: "${mavenImage}", command: 'cat', ttyEnabled: true,
+                        [name: 'chunky', image: "${chunkyImage}", command: 'cat', ttyEnabled: true,
                          envVars: [
                                  [key: 'MAVEN_OPTS', value: '-Duser.home=/root/']]]],
                 volumes: [secretVolume(secretName: 'jenkins-maven-settings', mountPath: '/root/.m2'),
