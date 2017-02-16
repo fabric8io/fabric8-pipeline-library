@@ -14,6 +14,7 @@ def call(body) {
   def flow = new io.fabric8.Fabric8Commands()
 
   def pomLocation = config.parentPomLocation ?: 'pom.xml'
+  def containerName = config.parentPomLocation ?: 'clients'
 
   for (int i = 0; i < config.projects.size(); i++) {
     def project = config.projects[i]
@@ -40,7 +41,7 @@ def call(body) {
 
       sh "cat ${repo}/${pomLocation}"
 
-      container(name: 'clients') {
+      container(name: containerName) {
 
         sh 'chmod 600 /root/.ssh-git/ssh-key'
         sh 'chmod 600 /root/.ssh-git/ssh-key.pub'
@@ -49,7 +50,6 @@ def call(body) {
         sh "git config --global user.email fabric8-admin@googlegroups.com"
         sh "git config --global user.name fabric8-release"
 
-        def githubToken = flow.getGitHubToken()
         def message = "Update pom property ${config.propertyName} to ${config.version}"
         sh "cd ${repo} && git add ${pomLocation}"
         sh "cd ${repo} && git commit -m \"${message}\""
