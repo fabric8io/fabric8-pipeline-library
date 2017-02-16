@@ -478,16 +478,12 @@ def isSingleNode() {
 @NonCPS
 def hasService(String name) {
   KubernetesClient kubernetes = new DefaultKubernetesClient()
-  try {
-    def service = kubernetes.services().withName(name).get()
-    if (service != null) {
-      return service.metadata != null
-    }
-    return false
-  } catch (e) {
-    // ignore errors
-    return false
+
+  def service = kubernetes.services().withName(name).get()
+  if (service != null) {
+    return service.metadata != null
   }
+  return false
 }
 
 @NonCPS
