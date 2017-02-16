@@ -38,8 +38,9 @@ def call(body) {
     def profiles = config.profiles ?: null
 
     def gitRepoUrl = "git@github.com:${project}.git"
+    def containerName = config.containerName ?: 'maven'
 
-    container(name: 'maven') {
+    container(name: containerName) {
 
         checkout scm: [$class          : 'GitSCM',
                        useRemoteConfigs: [[url: gitRepoUrl]],

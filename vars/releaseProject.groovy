@@ -10,12 +10,14 @@ def call(body) {
     def releaseVersion = config.stagedProject[1]
     def promoteDockerImages = config.imagesToPromoteToDockerHub ?: []
     def tagDockerImages = config.extraImagesToTag ?: []
+    def container = config.containerName ?: 'maven'
 
     String pullRequestId = promoteArtifacts {
       projectStagingDetails = config.stagedProject
       project = projectName
       useGitTagForNextVersion = config.useGitTagForNextVersion
       helmPush = config.helmPush
+      containerName = container
     }
 
     if (promoteDockerImages.size() > 0){

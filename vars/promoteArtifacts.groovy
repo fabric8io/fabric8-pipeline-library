@@ -9,12 +9,9 @@ def call(body) {
     def name = config.projectStagingDetails[0]
     def version = config.projectStagingDetails[1]
     def repoIds = config.projectStagingDetails[2]
+    def containerName = config.containerName ?: 'maven'
 
-    // lets avoide the stash / unstash for now as we're not using helm ATM
-    // use hash to avoid incompatible chars
-    //unstash name:"staged-${config.project}-${version}".hashCode().toString()
-
-    container(name: 'maven') {
+    container(name: containerName) {
       sh 'chmod 600 /root/.ssh-git/ssh-key'
       sh 'chmod 600 /root/.ssh-git/ssh-key.pub'
       sh 'chmod 700 /root/.ssh-git'
