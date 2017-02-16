@@ -13,6 +13,7 @@ def call(body) {
       name = config.projects[i][0]
       version = config.projects[i][1]
       repoIds = config.projects[i][2]
+      containerName = config.containerName ?: 'clients'
 
 
       withEnv(["PATH+MAVEN=${tool 'maven-3.3.1'}/bin"]) {
@@ -20,7 +21,7 @@ def call(body) {
           echo "About to drop release repo id ${repoIds[j]}"
           flow.dropStagingRepo(repoIds[j])
         }
-        flow.deleteRemoteBranch("release-v${version}")
+        flow.deleteRemoteBranch("release-v${version}", containerName)
       }
     }
   }

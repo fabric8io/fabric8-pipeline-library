@@ -131,16 +131,11 @@ def setupWorkspaceForRelease(String project, Boolean useGitTagForNextVersion, St
     sh "git branch -D release-v${releaseVersion}"
     sh "git checkout -b release-v${releaseVersion}"
   }
-
-  try {
-    deleteRemoteBranch("release-v${releaseVersion}")
-  } catch (err){
-  }
 }
 
 // if no previous tag found default 1.0.0 is used, else assume version is in the form major.minor or major.minor.micro version
 def getNewVersionFromTag(pomVersion = null){
-  def version = '0.0.1'
+  def version = '1.0.0'
 
   // Set known prerelease prefixes, needed for the proper sort order
   // in the next command
@@ -451,8 +446,8 @@ def drop(String pr, String project){
   }
 }
 
-def deleteRemoteBranch(String branchName){
-  container(name: 'clients') {
+def deleteRemoteBranch(String branchName, containerName){
+  container(name: containerName) {
     sh 'chmod 600 /root/.ssh-git/ssh-key'
     sh 'chmod 600 /root/.ssh-git/ssh-key.pub'
     sh 'chmod 700 /root/.ssh-git'
