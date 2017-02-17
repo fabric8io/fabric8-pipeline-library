@@ -8,7 +8,7 @@ def call(Map parameters = [:], body) {
     
     podTemplate(label: label, inheritFrom: "${inheritFrom}",
             containers: [
-                    [name: 'kubeproxy', image: "${kubectlProxyImage}", args: 'proxy', ttyEnabled: true]]) {
+                    [name: 'kubeproxy', image: "${kubectlProxyImage}", command: '/bin/sh -c', args: 'proxy', ttyEnabled: true]]) {
           body(
           )
       }

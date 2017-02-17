@@ -14,7 +14,7 @@ def call(Map parameters = [:], body) {
     if (flow.isOpenShift()) {
         podTemplate(label: label, inheritFrom: "${inheritFrom}",
                 containers: [
-                        [name: 'maven', image: "${mavenImage}", command: 'cat', ttyEnabled: true,
+                        [name: 'maven', image: "${mavenImage}", command: '/bin/sh -c', args: 'cat', ttyEnabled: true,
                          envVars: [
                                  [key: 'MAVEN_OPTS', value: '-Duser.home=/root/']]]],
                 volumes: [secretVolume(secretName: 'jenkins-maven-settings', mountPath: '/root/.m2'),
@@ -31,7 +31,7 @@ def call(Map parameters = [:], body) {
     } else {
         podTemplate(label: label, inheritFrom: "${inheritFrom}",
                 containers: [
-                        [name: 'maven', image: "${mavenImage}", command: 'cat', ttyEnabled: true,
+                        [name: 'maven', image: "${mavenImage}", command: '/bin/sh -c', args: 'cat', ttyEnabled: true,
                          envVars: [
                                  [key: 'MAVEN_OPTS', value: '-Duser.home=/root/']]]],
                 volumes: [secretVolume(secretName: 'jenkins-maven-settings', mountPath: '/root/.m2'),
