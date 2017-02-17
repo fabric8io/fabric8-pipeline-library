@@ -12,12 +12,8 @@ def call(Map parameters = [:], body) {
 
         podTemplate(label: label, inheritFrom: "${inheritFrom}",
                 containers: [
-                        [name: 'nodejs', image: "${nodejsImage}", command: 'cat', ttyEnabled: true]]
-        ) {
-
-            body(
-
-            )
+                        [name: 'nodejs', image: "${nodejsImage}", command: '/bin/sh -c', args: 'cat', ttyEnabled: true]]) {
+            body()
         }
 
 

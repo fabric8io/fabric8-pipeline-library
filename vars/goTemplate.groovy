@@ -9,7 +9,7 @@ def call(Map parameters = [:], body) {
     def inheritFrom = parameters.get('inheritFrom', 'base')
 
         podTemplate(label: label, serviceAccount: 'jenkins', inheritFrom: "${inheritFrom}",
-                containers: [[name: 'go', image: "${goImage}", command: 'cat', ttyEnabled: true,
+                containers: [[name: 'go', image: "${goImage}", command: '/bin/sh -c', args: 'cat', ttyEnabled: true,
                 envVars: [
                         [key: 'GOPATH', value: '/home/jenkins/go']
                 ]],
