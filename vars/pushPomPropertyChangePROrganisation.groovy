@@ -15,6 +15,8 @@ def call(body) {
 
   def pomLocation = config.parentPomLocation ?: 'pom.xml'
   def organisation = config.organisation
+  def containerName = config.containerName ?: 'clients'
+
   if (organisation == null || organisation.isEmpty()) {
     println "Missing parameter: organisation"
   } else {
@@ -55,7 +57,7 @@ def call(body) {
 
           sh "cat ${repo}/${pomLocation}"
 
-          container(name: 'clients') {
+          container(name: containerName) {
 
             sh 'chmod 600 /root/.ssh-git/ssh-key'
             sh 'chmod 600 /root/.ssh-git/ssh-key.pub'

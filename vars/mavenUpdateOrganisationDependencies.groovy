@@ -16,6 +16,7 @@ def call(body) {
 
     def organisation = config.organisation
     def pomLocation = 'pom.xml'
+    def containerName = config.containerName ?: 'clients'
 
     def flow = new Fabric8Commands()
 
@@ -69,7 +70,7 @@ def call(body) {
 
                     //sh "cat ${repo}/${pomLocation}"
 
-                    container(name: 'clients') {
+                    container(name: containerName) {
 
                         sh 'chmod 600 /root/.ssh-git/ssh-key'
                         sh 'chmod 600 /root/.ssh-git/ssh-key.pub'

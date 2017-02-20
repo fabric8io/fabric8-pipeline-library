@@ -14,7 +14,7 @@ def call(body) {
   def flow = new io.fabric8.Fabric8Commands()
 
   def pomLocation = config.parentPomLocation ?: 'pom.xml'
-  def containerName = config.parentPomLocation ?: 'clients'
+  def containerName = config.containerName ?: 'clients'
 
   for (int i = 0; i < config.projects.size(); i++) {
     def project = config.projects[i]
