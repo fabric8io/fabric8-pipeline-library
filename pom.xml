@@ -212,6 +212,10 @@
       <groupId>io.fabric8</groupId>
       <artifactId>openshift-client</artifactId>
     </dependency>
+    <dependency>
+      <groupId>io.fabric8</groupId>
+      <artifactId>kubernetes-api</artifactId>
+    </dependency>
 
     <!-- I think this is the version jenkins piplines uses? -->
     <dependency>
