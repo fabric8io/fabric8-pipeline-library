@@ -21,6 +21,10 @@ def call(body) {
         }
     }
 
+    //try sonarQube
+    sonarQubeScanner(body);
+
+
     def s2iMode = flow.isOpenShiftS2I()
     echo "s2i mode: ${s2iMode}"
 
