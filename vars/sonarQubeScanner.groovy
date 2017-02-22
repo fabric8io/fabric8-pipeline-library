@@ -6,6 +6,7 @@ def call(body) {
     body()
     def serviceName = config.serviceName ?: "sonarqube";
     def port = config.servicePort ?: "9000";
+    def scannerVersion = config.scannerVersion ?: "2.8"
 
 
     def flow = new io.fabric8.Fabric8Commands()
@@ -17,19 +18,11 @@ def call(body) {
             def tmpDir = pwd(tmp: true)
 
             //work in tmpDir - as sonar scanner will download files from the server
-            echo "current dir = "
-            sh 'pwd'
             dir (tmpDir) {
-                echo "should have changed to tmpdir"
-
-                sh 'pwd'
 
                 def localScanner = "scanner-cli.jar"
-                def sonnarOutput = "sonnar-out.txt"
 
-
-
-                def scannerURL = "http://central.maven.org/maven2/org/sonarsource/scanner/cli/sonar-scanner-cli/2.8/sonar-scanner-cli-2.8.jar"
+                def scannerURL = "http://central.maven.org/maven2/org/sonarsource/scanner/cli/sonar-scanner-cli/${scannerVersion}/sonar-scanner-cli-${scannerVersion}.jar"
 
                 echo "downloading scanner-cli"
 
@@ -37,9 +30,7 @@ def call(body) {
 
                 echo("executing sonar scanner ")
 
-                sh "java -jar ${localScanner}  -Dsonar.host.url=http://${serviceName}:${port}  -Dsonar.projectKey=${env.JOB_NAME} -Dsonar.sources=${srcDirectory} > ${sonnarOutput}"
-                def output = readFile(sonnarOutput);
-                echo "Sonnar scanning result: ${output}"
+                sh "java -jar ${localScanner}  -Dsonar.host.url=http://${serviceName}:${port}  -Dsonar.projectKey=${env.JOB_NAME} -Dsonar.sources=${srcDirectory}"
             }
 
         }catch (err){
