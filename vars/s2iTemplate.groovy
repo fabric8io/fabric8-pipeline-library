@@ -12,7 +12,8 @@ def call(Map parameters = [:], body) {
 
         podTemplate(label: label, inheritFrom: "${inheritFrom}",
                 containers: [
-                        [name: 's2i', image: "${s2iImage}", command: '/bin/sh -c', args: 'cat', ttyEnabled: true]],
+                        [name: 's2i', image: "${s2iImage}", command: '/bin/sh -c', args: 'cat', ttyEnabled: true,
+                         envVars: [[key: 'DOCKER_CONFIG', value: '/home/jenkins/.docker/']]]],
                 volumes: [
                         secretVolume(secretName: 'jenkins-docker-cfg', mountPath: '/home/jenkins/.docker'),
                         hostPathVolume(hostPath: '/var/run/docker.sock', mountPath: '/var/run/docker.sock')]) {
