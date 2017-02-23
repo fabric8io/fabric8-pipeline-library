@@ -18,6 +18,7 @@ def call(Map parameters = [:], body) {
                         secretVolume(secretName: 'jenkins-docker-cfg', mountPath: '/home/jenkins/.docker'),
                         hostPathVolume(hostPath: '/var/run/docker.sock', mountPath: '/var/run/docker.sock'),
                         secretVolume(secretName: 'jenkins-ssh-config', mountPath: '/root/.ssh'),
+                        secretVolume(secretName: 'jenkins-hub-api-token', mountPath: '/home/jenkins/.apitoken'),
                         secretVolume(secretName: 'jenkins-git-ssh', mountPath: '/root/.ssh-git')]) {
             body()
         }
