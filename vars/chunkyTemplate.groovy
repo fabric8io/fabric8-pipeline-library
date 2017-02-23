@@ -1,5 +1,5 @@
 #!/usr/bin/groovy
-
+import io.fabric8.Fabric8Commands
 def call(Map parameters = [:], body) {
 
     def defaultLabel = "chunky.${env.JOB_NAME}.${env.BUILD_NUMBER}".replace('-', '_').replace('/', '_')
@@ -8,10 +8,11 @@ def call(Map parameters = [:], body) {
     def chunkyImage = parameters.get('chunkyImage', 'fabric8/chunky-builder:0.0.1')
     def inheritFrom = parameters.get('inheritFrom', 'base')
 
-    def flow = new io.fabric8.Fabric8Commands()
+    def flow = new Fabric8Commands()
+    def cloud = flow.getCloudConfig()
 
     if (flow.isOpenShift()) {
-        podTemplate(label: label, inheritFrom: "${inheritFrom}",
+        podTemplate(cloud: cloud, label: label, inheritFrom: "${inheritFrom}",
                 containers: [
                         [name: 'chunky', image: "${chunkyImage}", command: '/bin/sh -c', args: 'cat', ttyEnabled: true,
                          envVars: [
@@ -28,7 +29,7 @@ def call(Map parameters = [:], body) {
             )
         }
     } else {
-        podTemplate(label: label, inheritFrom: "${inheritFrom}",
+        podTemplate(cloud: cloud, label: label, inheritFrom: "${inheritFrom}",
                 containers: [
                         [name: 'chunky', image: "${chunkyImage}", command: '/bin/sh -c', args: 'cat', ttyEnabled: true,
                          envVars: [

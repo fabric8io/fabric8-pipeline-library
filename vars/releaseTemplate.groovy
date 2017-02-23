@@ -1,4 +1,5 @@
 #!/usr/bin/groovy
+import io.fabric8.Fabric8Commands
 def call(Map parameters = [:], body) {
 
     def defaultLabel = "release.${env.JOB_NAME}.${env.BUILD_NUMBER}".replace('-', '_').replace('/', '_')
@@ -8,8 +9,10 @@ def call(Map parameters = [:], body) {
     def clientsImage = parameters.get('clientsImage', 'fabric8/builder-clients:0.6')
     def dockerImage = parameters.get('dockerImage', 'docker:1.11')
     def inheritFrom = parameters.get('inheritFrom', 'base')
+    def flow = new Fabric8Commands()
+    def cloud = flow.getCloudConfig()
 
-    podTemplate(label: label, inheritFrom: "${inheritFrom}",
+    podTemplate(cloud: cloud, label: label, inheritFrom: "${inheritFrom}",
             containers: [
                     [name: 'maven', image: "${mavenImage}", command: 'cat', ttyEnabled: true,
                      envVars: [[key: 'MAVEN_OPTS', value: '-Duser.home=/root/']]],

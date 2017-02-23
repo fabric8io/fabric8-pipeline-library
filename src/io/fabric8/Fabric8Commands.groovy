@@ -8,6 +8,7 @@ import io.fabric8.openshift.client.DefaultOpenShiftClient
 import io.fabric8.openshift.client.OpenShiftClient
 import io.fabric8.kubernetes.client.KubernetesClient
 import io.fabric8.kubernetes.api.KubernetesHelper
+import jenkins.model.Jenkins
 
 def getProjectVersion(){
   def file = readFile('pom.xml')
@@ -551,4 +552,10 @@ def isOpenShift() {
   return new DefaultOpenShiftClient().isAdaptable(OpenShiftClient.class)
 }
 
+
+@NonCPS
+def getCloudConfig(){
+  def openshiftCloudConfig = Jenkins.getInstance().getCloud('openshift')
+  return (openshiftCloudConfig) ? 'openshift' : 'kubernetes'
+}
 return this
