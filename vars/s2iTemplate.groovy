@@ -5,7 +5,7 @@ def call(Map parameters = [:], body) {
     def defaultLabel = "s2iImage.${env.JOB_NAME}.${env.BUILD_NUMBER}".replace('-', '_').replace('/', '_')
     def label = parameters.get('label', defaultLabel)
 
-    def s2iImage = parameters.get('s2iImage', 'fabric8/s2-builder:0.0.1')
+    def s2iImage = parameters.get('s2iImage', 'fabric8/s2i-builder:0.0.1')
 
     def inheritFrom = parameters.get('inheritFrom', 'base')
 
