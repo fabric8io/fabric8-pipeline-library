@@ -12,8 +12,8 @@ def call(Map parameters = [:], body) {
 
         podTemplate(cloud: cloud, label: label, inheritFrom: "${inheritFrom}",
                 containers: [
-                        [name: 'jnlp', image: 'jenkinsci/jnlp-slave:2.62', args: '${computer.jnlpmac} ${computer.name}'],
-                        [name: 'nodejs', image: "${nodejsImage}", command: '/bin/sh -c', args: 'cat', ttyEnabled: true]]) {
+                        [name: 'jnlp', image: 'jenkinsci/jnlp-slave:2.62', args: '${computer.jnlpmac} ${computer.name}',  workingDir: '/home/jenkins/'],
+                        [name: 'nodejs', image: "${nodejsImage}", command: '/bin/sh -c', args: 'cat', ttyEnabled: true,  workingDir: '/home/jenkins/']]) {
             body()
         }
 

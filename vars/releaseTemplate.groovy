@@ -14,14 +14,14 @@ def call(Map parameters = [:], body) {
 
     podTemplate(cloud: cloud, label: label, inheritFrom: "${inheritFrom}",
             containers: [
-                    [name: 'jnlp', image: 'jenkinsci/jnlp-slave:2.62', args: '${computer.jnlpmac} ${computer.name}'],
+                    [name: 'jnlp', image: 'jenkinsci/jnlp-slave:2.62', args: '${computer.jnlpmac} ${computer.name}',  workingDir: '/home/jenkins/'],
                     [name: 'maven', image: "${mavenImage}", command: 'cat', ttyEnabled: true,
                      envVars: [[key: 'MAVEN_OPTS', value: '-Duser.home=/root/']]],
 
-                    [name   : 'clients', image: "${clientsImage}", command: 'cat', ttyEnabled: true,
+                    [name   : 'clients', image: "${clientsImage}", command: 'cat', ttyEnabled: true,  workingDir: '/home/jenkins/',
                      envVars: [[key: 'TERM', value: 'dumb']]],
 
-                    [name: 'docker', image: "${dockerImage}", command: 'cat', ttyEnabled: true,
+                    [name: 'docker', image: "${dockerImage}", command: 'cat', ttyEnabled: true,  workingDir: '/home/jenkins/',
                      envVars: [[key: 'DOCKER_CONFIG', value: '/home/jenkins/.docker/']]]
             ],
             volumes: [secretVolume(secretName: 'jenkins-maven-settings', mountPath: '/root/.m2'),

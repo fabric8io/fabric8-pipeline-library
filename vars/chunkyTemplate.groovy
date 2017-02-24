@@ -14,8 +14,8 @@ def call(Map parameters = [:], body) {
     if (flow.isOpenShift()) {
         podTemplate(cloud: cloud, label: label, inheritFrom: "${inheritFrom}",
                 containers: [
-                        [name: 'jnlp', image: 'jenkinsci/jnlp-slave:2.62', args: '${computer.jnlpmac} ${computer.name}'],
-                        [name: 'chunky', image: "${chunkyImage}", command: '/bin/sh -c', args: 'cat', ttyEnabled: true,
+                        [name: 'jnlp', image: 'jenkinsci/jnlp-slave:2.62', args: '${computer.jnlpmac} ${computer.name}',  workingDir: '/home/jenkins/'],
+                        [name: 'chunky', image: "${chunkyImage}", command: '/bin/sh -c', args: 'cat', ttyEnabled: true,  workingDir: '/home/jenkins/',
                          envVars: [
                                  [key: 'MAVEN_OPTS', value: '-Duser.home=/root/']]]],
                 volumes: [secretVolume(secretName: 'jenkins-maven-settings', mountPath: '/root/.m2'),
