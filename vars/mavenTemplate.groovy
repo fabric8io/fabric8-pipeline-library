@@ -1,4 +1,5 @@
 #!/usr/bin/groovy
+import io.fabric8.Fabric8Commands
 
 def call(Map parameters = [:], body) {
 
@@ -9,10 +10,11 @@ def call(Map parameters = [:], body) {
     def clientsImage = parameters.get('clientsImage', 'fabric8/builder-clients:0.6')
     def inheritFrom = parameters.get('inheritFrom', 'base')
 
-    def flow = new io.fabric8.Fabric8Commands()
+    def flow = new Fabric8Commands()
+    def cloud = flow.getCloudConfig()
 
     if (flow.isOpenShift()) {
-        podTemplate(label: label, inheritFrom: "${inheritFrom}",
+        podTemplate(cloud: cloud, label: label, inheritFrom: "${inheritFrom}",
                 containers: [
                         [name: 'maven', image: "${mavenImage}", command: '/bin/sh -c', args: 'cat', ttyEnabled: true,
                          envVars: [
@@ -29,7 +31,7 @@ def call(Map parameters = [:], body) {
             )
         }
     } else {
-        podTemplate(label: label, inheritFrom: "${inheritFrom}",
+        podTemplate(cloud: cloud, label: label, inheritFrom: "${inheritFrom}",
                 containers: [
                         [name: 'maven', image: "${mavenImage}", command: '/bin/sh -c', args: 'cat', ttyEnabled: true,
                          envVars: [

@@ -1,4 +1,5 @@
 #!/usr/bin/groovy
+import io.fabric8.Fabric8Commands
 def call(Map parameters = [:], body) {
 
     def defaultLabel = "docker.${env.JOB_NAME}.${env.BUILD_NUMBER}".replace('-', '_').replace('/', '_')
@@ -6,8 +7,10 @@ def call(Map parameters = [:], body) {
 
     def dockerImage = parameters.get('dockerImage', 'docker:1.11')
     def inheritFrom = parameters.get('inheritFrom', 'base')
+    def flow = new Fabric8Commands()
+    def cloud = flow.getCloudConfig()
 
-      podTemplate(label: label, serviceAccount: 'jenkins', inheritFrom: "${inheritFrom}",
+      podTemplate(cloud: cloud, label: label, serviceAccount: 'jenkins', inheritFrom: "${inheritFrom}",
             containers: [[name: 'docker', image: "${dockerImage}", command: '/bin/sh -c', args: 'cat', ttyEnabled: true,
                           envVars: [[key: 'DOCKER_CONFIG', value: '/home/jenkins/.docker/']]]],
             volumes: [
