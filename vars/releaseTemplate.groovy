@@ -1,6 +1,7 @@
 #!/usr/bin/groovy
 import io.fabric8.Fabric8Commands
 def call(Map parameters = [:], body) {
+    def flow = new Fabric8Commands()
 
     def defaultLabel = "release.${env.JOB_NAME}.${env.BUILD_NUMBER}".replace('-', '_').replace('/', '_')
     def label = parameters.get('label', defaultLabel)
@@ -9,19 +10,19 @@ def call(Map parameters = [:], body) {
     def clientsImage = parameters.get('clientsImage', 'fabric8/builder-clients:0.6')
     def dockerImage = parameters.get('dockerImage', 'docker:1.11')
     def inheritFrom = parameters.get('inheritFrom', 'base')
-    def flow = new Fabric8Commands()
+    def jnlpImage = (flow.isOpenShift()) ? 'fabric8/jenkins-slave-base-centos7:0.0.1' : 'jenkinsci/jnlp-slave:2.62'
     def cloud = flow.getCloudConfig()
 
     podTemplate(cloud: cloud, label: label, inheritFrom: "${inheritFrom}",
             containers: [
-                    [name: 'jnlp', image: 'jenkinsci/jnlp-slave:2.62', args: '${computer.jnlpmac} ${computer.name}'],
+                    //[name: 'jnlp', image: "${jnlpImage}", args: '${computer.jnlpmac} ${computer.name}',  workingDir: '/home/jenkins/'],
                     [name: 'maven', image: "${mavenImage}", command: 'cat', ttyEnabled: true,
                      envVars: [[key: 'MAVEN_OPTS', value: '-Duser.home=/root/']]],
 
-                    [name   : 'clients', image: "${clientsImage}", command: 'cat', ttyEnabled: true,
+                    [name   : 'clients', image: "${clientsImage}", command: 'cat', ttyEnabled: true,  workingDir: '/home/jenkins/',
                      envVars: [[key: 'TERM', value: 'dumb']]],
 
-                    [name: 'docker', image: "${dockerImage}", command: 'cat', ttyEnabled: true,
+                    [name: 'docker', image: "${dockerImage}", command: 'cat', ttyEnabled: true,  workingDir: '/home/jenkins/',
                      envVars: [[key: 'DOCKER_CONFIG', value: '/home/jenkins/.docker/']]]
             ],
             volumes: [secretVolume(secretName: 'jenkins-maven-settings', mountPath: '/root/.m2'),
