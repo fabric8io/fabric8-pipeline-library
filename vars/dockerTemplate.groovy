@@ -11,7 +11,9 @@ def call(Map parameters = [:], body) {
     def cloud = flow.getCloudConfig()
 
       podTemplate(cloud: cloud, label: label, serviceAccount: 'jenkins', inheritFrom: "${inheritFrom}",
-            containers: [[name: 'docker', image: "${dockerImage}", command: '/bin/sh -c', args: 'cat', ttyEnabled: true,
+            containers: [
+                    [name: 'jnlp', image: 'jenkinsci/jnlp-slave:2.62', args: '${computer.jnlpmac} ${computer.name}'],
+                    [name: 'docker', image: "${dockerImage}", command: '/bin/sh -c', args: 'cat', ttyEnabled: true,
                           envVars: [[key: 'DOCKER_CONFIG', value: '/home/jenkins/.docker/']]]],
             volumes: [
                               secretVolume(secretName: 'jenkins-docker-cfg', mountPath: '/home/jenkins/.docker'),
