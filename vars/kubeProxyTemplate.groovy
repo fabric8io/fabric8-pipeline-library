@@ -13,7 +13,7 @@ def call(Map parameters = [:], body) {
 
     podTemplate(cloud: cloud, label: label, inheritFrom: "${inheritFrom}",
             containers: [
-                    [name: 'jnlp', image: "${jnlpImage}", args: '${computer.jnlpmac} ${computer.name}',  workingDir: '/home/jenkins/'],
+                    //[name: 'jnlp', image: "${jnlpImage}", args: '${computer.jnlpmac} ${computer.name}',  workingDir: '/home/jenkins/'],
                     [name: 'kubeproxy', image: "${kubectlProxyImage}", command: '/bin/sh -c', args: 'proxy', ttyEnabled: true,  workingDir: '/home/jenkins/']]) {
           body(
           )

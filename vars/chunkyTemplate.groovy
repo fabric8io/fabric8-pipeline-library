@@ -33,7 +33,7 @@ def call(Map parameters = [:], body) {
     } else {
         podTemplate(cloud: cloud, label: label, inheritFrom: "${inheritFrom}",
                 containers: [
-                        [name: 'jnlp', image: "${jnlpImage}", args: '${computer.jnlpmac} ${computer.name}',  workingDir: '/home/jenkins/'],
+                        //[name: 'jnlp', image: "${jnlpImage}", args: '${computer.jnlpmac} ${computer.name}',  workingDir: '/home/jenkins/'],
                         [name: 'chunky', image: "${chunkyImage}", command: '/bin/sh -c', args: 'cat', ttyEnabled: true,
                          envVars: [
                                  [key: 'MAVEN_OPTS', value: '-Duser.home=/root/']]]],

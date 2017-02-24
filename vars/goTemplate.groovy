@@ -13,7 +13,7 @@ def call(Map parameters = [:], body) {
 
         podTemplate(label: label, serviceAccount: 'jenkins', inheritFrom: "${inheritFrom}",
                 containers: [
-                        [name: 'jnlp', image: "${jnlpImage}", args: '${computer.jnlpmac} ${computer.name}',  workingDir: '/home/jenkins/'],
+                        //[name: 'jnlp', image: "${jnlpImage}", args: '${computer.jnlpmac} ${computer.name}',  workingDir: '/home/jenkins/'],
                         [name: 'go', image: "${goImage}", command: '/bin/sh -c', args: 'cat', ttyEnabled: true,  workingDir: '/home/jenkins/',
                 envVars: [
                         [key: 'GOPATH', value: '/home/jenkins/go']
