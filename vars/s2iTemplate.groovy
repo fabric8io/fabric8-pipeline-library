@@ -17,7 +17,7 @@ def call(Map parameters = [:], body) {
 
         podTemplate(cloud: cloud, label: label, inheritFrom: "${inheritFrom}",
                 containers: [
-                        [name: 'jnlp', image: "${jnlpImage}", args: '${computer.jnlpmac} ${computer.name}', workingDir: '/home/jenkins/'],
+
                         [name: 's2i', image: "${s2iImage}", command: '/bin/sh -c', args: 'cat', ttyEnabled: true,  workingDir: '/home/jenkins/',
                          envVars: [[key: 'DOCKER_CONFIG', value: '/home/jenkins/.docker/']]]],
                 volumes: [
