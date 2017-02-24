@@ -8,10 +8,11 @@ def call(Map parameters = [:], body) {
     def s2iImage = parameters.get('s2iImage', 'fabric8/s2i-builder:0.0.2')
 
     def inheritFrom = parameters.get('inheritFrom', 'base')
+    def cloud = flow.getCloudConfig()
 
-
-        podTemplate(label: label, inheritFrom: "${inheritFrom}",
+        podTemplate(cloud: cloud, label: label, inheritFrom: "${inheritFrom}",
                 containers: [
+                        [name: 'jnlp', image: 'jenkinsci/jnlp-slave:2.62', args: '${computer.jnlpmac} ${computer.name}'],
                         [name: 's2i', image: "${s2iImage}", command: '/bin/sh -c', args: 'cat', ttyEnabled: true,
                          envVars: [[key: 'DOCKER_CONFIG', value: '/home/jenkins/.docker/']]]],
                 volumes: [
