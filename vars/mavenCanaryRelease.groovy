@@ -46,7 +46,8 @@ def call(body) {
 
     if (flow.hasService("content-repository")) {
       try {
-        sh 'mvn site site:deploy'
+        //sh 'mvn site site:deploy'
+        echo 'mvn site disabled'
       } catch (err) {
         // lets carry on as maven site isn't critical
         echo 'unable to generate maven site'
