@@ -4,10 +4,18 @@ def call(body) {
     def config = [:]
     body.delegate = config
     body()
-    def generateResults = config.generateResults ?: true
-    def testDirectory = config.testDirectory ?: "**/target/failsafe-reports/TEST-*.xml";
-    if (generateResults) {
-        step([$class: 'JUnitResultArchiver', testResults: "${testDirectory}"])
+    def archiveTestResults = config.archiveTestResults ?: true
+
+    if (archiveTestResults) {
+        def surefire = new File ("target/surefire-reports")
+        if (surefire.exists() && surefire.isDirectory()) {
+            step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/TEST-*.xml'])
+        }
+
+        def failsafe = new File ("target/failsafe-reports")
+        if (failsafe.exists() && failsafe.isDirectory()) {
+            step([$class: 'JUnitResultArchiver', testResults: '**/target/failsafe-reports/TEST-*.xml'])
+        }
     }
 
 }
