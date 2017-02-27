@@ -4,6 +4,7 @@ package io.fabric8
 import com.cloudbees.groovy.cps.NonCPS
 import io.fabric8.kubernetes.client.DefaultKubernetesClient
 import io.fabric8.kubernetes.client.KubernetesClient
+import io.fabric8.openshift.api.model.Build
 import io.fabric8.openshift.api.model.ImageStream
 import io.fabric8.openshift.api.model.ImageStreamStatus
 import io.fabric8.openshift.api.model.NamedTagEventList
@@ -83,4 +84,16 @@ def findTagSha(OpenShiftClient client, String imageStreamName, String namespace)
     error ("Could not find a tag in the ImageStream " + imageStreamName)
   }
 }
+
+@NonCPS
+def addAnnotationToBuild(buildName, annotation, value) {
+  def flow = new Fabric8Commands()
+  if (flow.isOpenShift()) {
+    OpenShiftClient oClient = new DefaultOpenShiftClient();
+    oClient.builds().withName(buildName).edit().editMetadata().addToAnnotations(annotation, value).endMetadata().done()
+  } else {
+    echo "No running on openshift so skip adding annotation ${annotation}: value"
+  }
+}
+
 return this
