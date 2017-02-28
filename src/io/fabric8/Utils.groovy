@@ -89,6 +89,7 @@ def findTagSha(OpenShiftClient client, String imageStreamName, String namespace)
 def addAnnotationToBuild(buildName, annotation, value) {
   def flow = new Fabric8Commands()
   if (flow.isOpenShift()) {
+    echo "Adding annotation '${annotation}: ${value}' to Build ${buildName}"
     OpenShiftClient oClient = new DefaultOpenShiftClient();
     oClient.builds().withName(buildName).edit().editMetadata().addToAnnotations(annotation, value).endMetadata().done()
   } else {
