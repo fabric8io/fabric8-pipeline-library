@@ -14,10 +14,10 @@ def call(Map parameters = [:], body) {
     podTemplate(cloud: cloud, label: label, serviceAccount: 'jenkins', inheritFrom: "${inheritFrom}",
             containers: [
                     [name   : 'clients', image: "${clientsImage}", command: '/bin/sh -c', args: 'cat', ttyEnabled: true,  workingDir: '/home/jenkins/',
-                     envVars: [[key: 'TERM', value: 'dumb']]]
+                     envVars: [[key: 'TERM', value: 'dumb'],[key: 'KUBECONFIG', value: '/root/home/.oc/cd.conf']]]
             ],
             volumes: [
-                    secretVolume(secretName: 'remote-openshift-token', mountPath: '/root/home/.oc')
+                    secretVolume(secretName: 'remote-openshift-config', mountPath: '/root/home/.oc')
             ]) {
         body()
     }
