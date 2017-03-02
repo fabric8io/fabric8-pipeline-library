@@ -14,7 +14,7 @@ def call(Map parameters = [:], body) {
     def cloud = flow.getCloudConfig()
 
     if (flow.isOpenShift()) {
-        podTemplate(cloud: cloud, label: label, inheritFrom: "${inheritFrom}",
+        podTemplate(cloud: cloud, label: label, inheritFrom: "${inheritFrom}", serviceAccount: 'jenkins',
                 containers: [
                         [name: 'jnlp', image: "${jnlpImage}", args: '${computer.jnlpmac} ${computer.name}', workingDir: '/home/jenkins/'],
                         [name: 'maven', image: "${mavenImage}", command: '/bin/sh -c', args: 'cat', ttyEnabled: true, workingDir: '/home/jenkins/',
