@@ -97,4 +97,17 @@ def addAnnotationToBuild(buildName, annotation, value) {
   }
 }
 
+def isCI(){
+  if (env.BRANCH_NAME.startsWith('PR-')) {
+    return true
+  }
+  return false
+}
+
+def isCD(){
+  if (env.BRANCH_NAME.equals('master')) {
+    return true
+  }
+  return false
+}
 return this

@@ -13,7 +13,7 @@ def call(body) {
         for ( v in config.pomVersionToUpdate ) {
             flow.searchAndReplaceMavenVersionProperty(v.key, v.value)
         }
-
+        stage 'Build + Unit test'
         sh "mvn clean -e -U deploy"
 
         def s2iMode = flow.isOpenShiftS2I()
@@ -21,6 +21,7 @@ def call(body) {
         def m = readMavenPom file: 'pom.xml'
         def version = m.version
 
+        stage 'Push snapshot image to registry'
         if (!s2iMode){
             if (flow.isSingleNode()){
                 echo 'Running on a single node, skipping docker push as not needed'
