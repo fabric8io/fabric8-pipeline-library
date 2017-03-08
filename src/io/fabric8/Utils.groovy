@@ -110,4 +110,18 @@ def isCD(){
   }
   return false
 }
+
+def getLatestVersionFromTag(){
+  sh "git config versionsort.prereleaseSuffix -RC"
+  sh "git config versionsort.prereleaseSuffix -M"
+
+  // if the repo has no tags this command will fail
+  def version = sh(script: 'git tag --sort version:refname | tail -1', returnStdout: true).toString().trim()
+
+  if (version == null || version.size() == 0){
+    error 'no release tag found'
+  }
+  return version.startsWith("v") ? version.substring(1) : version
+}
+
 return this
