@@ -98,14 +98,38 @@ def addAnnotationToBuild(buildName, annotation, value) {
 }
 
 def isCI(){
-  if (env.BRANCH_NAME.startsWith('PR-')) {
-    return true
+
+  // if we are running a branch plugin generated job check the env var
+  if (env.BRANCH_NAME){
+    if (env.BRANCH_NAME.startsWith('PR-')) {
+      return true
+    }
+    return false
   }
-  return false
+
+  // otherwise if we aren't running on master then this is a CI build
+  def branch = sh(script: 'git symbolic-ref --short -q HEAD', returnStdout: true).toString().trim()
+
+  if (branch.equals('master')) {
+    return false
+  }
+  return true
 }
 
 def isCD(){
-  if (env.BRANCH_NAME.equals('master')) {
+
+  // if we are running a branch plugin generated job check the env var
+  if (env.BRANCH_NAME){
+    if (env.BRANCH_NAME.equals('master')) {
+      return true
+    }
+    return false
+  }
+
+  // otherwise if we are running on master then this is a CD build
+  def branch = sh(script: 'git symbolic-ref --short -q HEAD', returnStdout: true).toString().trim()
+
+  if (branch.equals('master')) {
     return true
   }
   return false
