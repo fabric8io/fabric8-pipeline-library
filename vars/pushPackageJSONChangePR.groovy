@@ -1,4 +1,10 @@
 #!/usr/bin/groovy
+import java.util.LinkedHashMap
+
+import com.cloudbees.groovy.cps.NonCPS
+import groovy.json.JsonSlurperClassic
+
+
 def call(body) {
     // evaluate the body block, and collect configuration into the object
     def config = [:]
@@ -25,36 +31,57 @@ def call(body) {
         def uid = UUID.randomUUID().toString()
         sh "cd ${repo} && git checkout -b versionUpdate${uid}"
 
-        updateVersion(config.propertyName, config.version)
+        def json = readFile file: "${repo}/${packageJSON}"
+        if (shouldWeUpdate(json, config.propertyName, config.version)) {
+            // use SED to avoid formatting issues when using JSONBuilder
+            updateVersion("${repo}/${packageJSON}", config.propertyName, config.version)
 
-        container(name: containerName) {
+            container(name: containerName) {
 
-            sh 'chmod 600 /root/.ssh-git/ssh-key'
-            sh 'chmod 600 /root/.ssh-git/ssh-key.pub'
-            sh 'chmod 700 /root/.ssh-git'
+                sh 'chmod 600 /root/.ssh-git/ssh-key'
+                sh 'chmod 600 /root/.ssh-git/ssh-key.pub'
+                sh 'chmod 700 /root/.ssh-git'
 
-            sh "git config --global user.email fabric8-admin@googlegroups.com"
-            sh "git config --global user.name fabric8-release"
+                sh "git config --global user.email fabric8-admin@googlegroups.com"
+                sh "git config --global user.name fabric8-release"
 
-            def message = "Update package.json ${config.propertyName} to ${config.version}"
-            sh "cd ${repo} && git add ${packageJSON}"
-            sh "cd ${repo} && git commit -m \"${message}\""
-            sh "cd ${repo} && git push origin versionUpdate${uid}"
+                def message = "Update package.json ${config.propertyName} to ${config.version}"
+                sh "cd ${repo} && git add ${packageJSON}"
 
-            id = flow.createPullRequest("${message}", "${project}", "versionUpdate${uid}")
-        }
+                sh "cd ${repo} && git commit -m \"${message}\""
 
-        waitUntilPullRequestMerged {
-            name = project
-            prId = id
+                sh "cd ${repo} && git push origin versionUpdate${uid}"
+
+                id = flow.createPullRequest("${message}", "${project}", "versionUpdate${uid}")
+            }
+
+            waitUntilPullRequestMerged {
+                name = project
+                prId = id
+            }
+
+        } else {
+            echo "Skippping ${project} as ${config.propertyName} already on version ${config.version}"
         }
 
     }
 }
 
-def updateVersion(p, v) {
-
-    sh "sed -i -r 's/\"${p}\": \"[0-9][0-9]{0,2}.[0-9][0-9]{0,2}(.[0-9][0-9]{0,2})?(.[0-9][0-9]{0,2})?\"/\"${p}\": \"${v}\"/g' package.json"
-
+def updateVersion(f, p, v) {
+    sh "sed -i -r 's/\"${p}\": \"[0-9][0-9]{0,2}.[0-9][0-9]{0,2}(.[0-9][0-9]{0,2})?(.[0-9][0-9]{0,2})?\"/\"${p}\": \"${v}\"/g' ${f}"
 }
 
+@NonCPS
+def shouldWeUpdate(json, p, v) {
+    LinkedHashMap rs = new JsonSlurperClassic().parseText(json)
+
+    if (rs.dependencies[p] == null) {
+        error "no property ${p} found in package.json"
+    }
+
+    if (rs.dependencies[p].value == null || rs.dependencies[p].value.toString() != v) {
+        return true
+    } else {
+        return false
+    }
+}
