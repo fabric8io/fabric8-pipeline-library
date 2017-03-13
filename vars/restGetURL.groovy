@@ -16,7 +16,7 @@ def call(body) {
 @NonCPS
 def getResult(url, authString){
   HttpURLConnection connection = url.openConnection()
-  if(authString.length() > 0)
+  if(authString != null && authString.length() > 0)
   {
     connection.setRequestProperty("Authorization", "Bearer ${authString}")
   }
