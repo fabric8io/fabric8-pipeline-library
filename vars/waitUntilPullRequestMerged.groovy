@@ -28,6 +28,12 @@ def call(body) {
         authString = githubToken
         url = apiUrl
       }
+
+      if (rs.merged == true){
+          echo "PR ${id} merged"
+          return true
+      }
+
       branchName = rs.head.ref
       def sha = rs.head.sha
       echo "checking status of commit ${sha}"
