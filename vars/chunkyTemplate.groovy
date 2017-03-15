@@ -6,7 +6,7 @@ def call(Map parameters = [:], body) {
     def defaultLabel = "chunky.${env.JOB_NAME}.${env.BUILD_NUMBER}".replace('-', '_').replace('/', '_')
     def label = parameters.get('label', defaultLabel)
 
-    def chunkyImage = parameters.get('chunkyImage', 'fabric8/chunky-builder:0.0.1')
+    def chunkyImage = parameters.get('chunkyImage', 'fabric8/chunky-builder:0.0.2')
     def inheritFrom = parameters.get('inheritFrom', 'base')
     def jnlpImage = (flow.isOpenShift()) ? 'fabric8/jenkins-slave-base-centos7:0.0.1' : 'jenkinsci/jnlp-slave:2.62'
 
