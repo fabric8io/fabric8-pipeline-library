@@ -108,7 +108,7 @@ def isCI(){
   }
 
   // otherwise if we aren't running on master then this is a CI build
-  def branch = sh(script: 'git symbolic-ref --short -q HEAD', returnStdout: true).toString().trim()
+  def branch = sh(script: 'git symbolic-ref --short HEAD', returnStdout: true).toString().trim()
 
   if (branch.equals('master')) {
     return false
@@ -127,7 +127,7 @@ def isCD(){
   }
 
   // otherwise if we are running on master then this is a CD build
-  def branch = sh(script: 'git symbolic-ref --short -q HEAD', returnStdout: true).toString().trim()
+  def branch = sh(script: 'git symbolic-ref --short HEAD', returnStdout: true).toString().trim()
 
   if (branch.equals('master')) {
     return true
@@ -136,8 +136,9 @@ def isCD(){
 }
 
 def getLatestVersionFromTag(){
-  sh "git config versionsort.prereleaseSuffix -RC"
-  sh "git config versionsort.prereleaseSuffix -M"
+  sh 'git fetch --tags'
+  sh 'git config versionsort.prereleaseSuffix -RC'
+  sh 'git config versionsort.prereleaseSuffix -M'
 
   // if the repo has no tags this command will fail
   def version = sh(script: 'git tag --sort version:refname | tail -1', returnStdout: true).toString().trim()
@@ -146,6 +147,14 @@ def getLatestVersionFromTag(){
     error 'no release tag found'
   }
   return version.startsWith("v") ? version.substring(1) : version
+}
+
+def getBranch(){
+  if (env.BRANCH_NAME){
+    return env.BRANCH_NAME
+  } else {
+    return sh(script: 'git symbolic-ref --short HEAD', returnStdout: true).toString().trim()
+  }
 }
 
 return this

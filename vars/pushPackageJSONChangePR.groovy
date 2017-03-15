@@ -45,7 +45,7 @@ def call(body) {
                 sh "git config --global user.email fabric8-admin@googlegroups.com"
                 sh "git config --global user.name fabric8-release"
 
-                def message = "Update package.json ${config.propertyName} to ${config.version}"
+                def message = "fix: update package.json ${config.propertyName} to ${config.version}"
                 sh "cd ${repo} && git add ${packageJSON}"
 
                 sh "cd ${repo} && git commit -m \"${message}\""
