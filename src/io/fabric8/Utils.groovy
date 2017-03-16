@@ -93,7 +93,7 @@ def addAnnotationToBuild(buildName, annotation, value) {
     OpenShiftClient oClient = new DefaultOpenShiftClient();
     oClient.builds().withName(buildName).edit().editMetadata().addToAnnotations(annotation, value).endMetadata().done()
   } else {
-    echo "No running on openshift so skip adding annotation ${annotation}: value"
+    echo "Not running on openshift so skip adding annotation ${annotation}: value"
   }
 }
 
@@ -154,6 +154,33 @@ def getBranch(){
     return env.BRANCH_NAME
   } else {
     return sh(script: 'git symbolic-ref --short HEAD', returnStdout: true).toString().trim()
+  }
+}
+
+@NonCPS
+def isValidBuildName(buildName){
+  def flow = new Fabric8Commands()
+  if (flow.isOpenShift()) {
+    echo "Looking for matching Build ${buildName}"
+    OpenShiftClient oClient = new DefaultOpenShiftClient();
+    def build = oClient.builds().withName(buildName).get()
+    if (build){
+      return true
+    }
+    return false
+  } else {
+    error "Not running on openshift so cannot lookup build names"
+  }
+}
+
+@NonCPS
+def getValidOpenShiftBuildName(){
+  def buildName = env.JOB_NAME + '-' + env.BUILD_NUMBER
+  buildName = buildName.substring(buildName.lastIndexOf("/") + 1).toLowerCase()
+  if (isValidBuildName(buildName)){
+    return buildName
+  } else {
+    error "No matching openshift build with name ${buildName} found"
   }
 }
 

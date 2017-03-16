@@ -405,11 +405,11 @@ __NOTE__ in order for images to be found by the the remote OpenShift instance it
 Add an annotation to an openshift build
 
 ```groovy
-    @Library('github.com/rawlingsj/fabric8-pipeline-library@master')
+    @Library('github.com/fabric8io/fabric8-pipeline-library@master')
     def dummy
     node{
         def utils = new io.fabric8.Utils()
-        def buildName = env.JOB_NAME + '-' + env.BUILD_NUMBER
+        def buildName = utils.getValidOpenShiftBuildName()
         utils.addAnnotationToBuild(buildName, 'fabric8.io/foo', 'bar')
     }
 ```
