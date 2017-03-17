@@ -113,6 +113,11 @@ def isCI(){
   if (branch.equals('master')) {
     return false
   }
+  def flow = new Fabric8Commands()
+  if (flow.isOpenShift()) {
+    def buildName = getValidOpenShiftBuildName()
+    addAnnotationToBuild(buildName, 'fabric8.io/pipeline.type', 'ci')
+  }
   return true
 }
 
@@ -130,6 +135,11 @@ def isCD(){
   def branch = sh(script: 'git symbolic-ref --short HEAD', returnStdout: true).toString().trim()
 
   if (branch.equals('master')) {
+    def flow = new Fabric8Commands()
+    if (flow.isOpenShift()) {
+      def buildName = getValidOpenShiftBuildName()
+      addAnnotationToBuild(buildName, 'fabric8.io/pipeline.type', 'cd')
+    }
     return true
   }
   return false
