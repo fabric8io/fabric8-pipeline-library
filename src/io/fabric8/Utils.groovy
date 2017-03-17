@@ -142,8 +142,9 @@ def isCD(){
 def addPipelineAnnotationToBuild(t){
     def flow = new Fabric8Commands()
     if (flow.isOpenShift()) {
-      def buildName = getValidOpenShiftBuildName()
-      addAnnotationToBuild(buildName, 'fabric8.io/pipeline.type', t)
+      // avoid annotating builds until we use the new helper methods to get the build name
+      //def buildName = getValidOpenShiftBuildName()
+      //addAnnotationToBuild(buildName, 'fabric8.io/pipeline.type', t)
     }
 }
 
