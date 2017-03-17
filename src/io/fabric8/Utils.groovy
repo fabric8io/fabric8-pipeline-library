@@ -102,6 +102,7 @@ def isCI(){
   // if we are running a branch plugin generated job check the env var
   if (env.BRANCH_NAME){
     if (env.BRANCH_NAME.startsWith('PR-')) {
+      addPipelineAnnotationToBuild('ci')
       return true
     }
     return false
@@ -113,11 +114,7 @@ def isCI(){
   if (branch.equals('master')) {
     return false
   }
-  def flow = new Fabric8Commands()
-  if (flow.isOpenShift()) {
-    def buildName = getValidOpenShiftBuildName()
-    addAnnotationToBuild(buildName, 'fabric8.io/pipeline.type', 'ci')
-  }
+  addPipelineAnnotationToBuild('ci')
   return true
 }
 
@@ -126,6 +123,7 @@ def isCD(){
   // if we are running a branch plugin generated job check the env var
   if (env.BRANCH_NAME){
     if (env.BRANCH_NAME.equals('master')) {
+      addPipelineAnnotationToBuild('cd')
       return true
     }
     return false
@@ -135,14 +133,18 @@ def isCD(){
   def branch = sh(script: 'git symbolic-ref --short HEAD', returnStdout: true).toString().trim()
 
   if (branch.equals('master')) {
-    def flow = new Fabric8Commands()
-    if (flow.isOpenShift()) {
-      def buildName = getValidOpenShiftBuildName()
-      addAnnotationToBuild(buildName, 'fabric8.io/pipeline.type', 'cd')
-    }
+    addPipelineAnnotationToBuild('cd')
     return true
   }
   return false
+}
+
+def addPipelineAnnotationToBuild(t){
+    def flow = new Fabric8Commands()
+    if (flow.isOpenShift()) {
+      def buildName = getValidOpenShiftBuildName()
+      addAnnotationToBuild(buildName, 'fabric8.io/pipeline.type', t)
+    }
 }
 
 def getLatestVersionFromTag(){
