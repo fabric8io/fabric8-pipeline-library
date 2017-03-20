@@ -16,8 +16,10 @@ def call(body) {
 
     if (skipVersionPrefix){
         sh "git tag -fa ${config.releaseVersion} -m 'Release version ${config.releaseVersion}'"
+        sh "git push origin ${config.releaseVersion}"
     } else {
         sh "git tag -fa v${config.releaseVersion} -m 'Release version ${config.releaseVersion}'"
+        sh "git push origin v${config.releaseVersion}"
     }
-    sh "git push origin v${config.releaseVersion}"
+    
 }
