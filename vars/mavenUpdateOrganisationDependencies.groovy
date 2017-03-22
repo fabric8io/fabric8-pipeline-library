@@ -15,6 +15,7 @@ def call(body) {
     body()
 
     def organisation = config.organisation
+    def repoNames = config.repos
     def pomLocation = 'pom.xml'
     def containerName = config.containerName ?: 'clients'
 
@@ -29,9 +30,15 @@ def call(body) {
     if (replaceVersions.size() > 0) {
         println "Now updating all projects within organisation: ${organisation}"
 
-        def repos = getRepos(organisation)
+        def repos;
+        if (repoNames?.trim()){
+            repos = repoNames.split(',')
+        }else {
+           repos = getRepos(organisation)
+        }
 
         for (repo in repos) {
+            repo = repo.toString().trim()
             def project = "${organisation}/${repo}"
 
             // lets check if the repo has a pom.xml
