@@ -34,6 +34,11 @@ def call(body) {
           return true
       }
 
+      if (rs.state == 'closed'){
+          echo "PR ${id} closed"
+          return true
+      }
+
       branchName = rs.head.ref
       def sha = rs.head.sha
       echo "checking status of commit ${sha}"
