@@ -34,7 +34,7 @@ def call(body) {
         def json = readFile file: "${repo}/${packageJSON}"
         if (shouldWeUpdate(json, config.propertyName, config.version)) {
             // use SED to avoid formatting issues when using JSONBuilder
-            updateVersion("${repo}/${packageJSON}", config.propertyName, config.version)
+            flow.updatePackageJSONVersion("${repo}/${packageJSON}", config.propertyName, config.version)
 
             container(name: containerName) {
 
@@ -66,10 +66,6 @@ def call(body) {
         }
 
     }
-}
-
-def updateVersion(f, p, v) {
-    sh "sed -i -r 's/\"${p}\": \"[0-9][0-9]{0,2}.[0-9][0-9]{0,2}(.[0-9][0-9]{0,2})?(.[0-9][0-9]{0,2})?\"/\"${p}\": \"${v}\"/g' ${f}"
 }
 
 @NonCPS

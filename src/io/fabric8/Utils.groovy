@@ -197,4 +197,16 @@ def getValidOpenShiftBuildName(){
   }
 }
 
+def replacePackageVersions(packageLocation, replaceVersions){
+  for(int i = 0; i < replaceVersions.size(); i++){
+
+    def pair = replaceVersions[i]
+    def property = pair[0]
+    def version = pair[1]
+
+    sh "sed -i -r 's/\"${property}\": \"[0-9][0-9]{0,2}.[0-9][0-9]{0,2}(.[0-9][0-9]{0,2})?(.[0-9][0-9]{0,2})?(-development)?\"/\"${property}\": \"${version}\"/g' ${packageLocation}"
+        
+  }
+}
+
 return this
