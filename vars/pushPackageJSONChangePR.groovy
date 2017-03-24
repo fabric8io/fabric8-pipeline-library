@@ -55,10 +55,11 @@ def call(body) {
                 id = flow.createPullRequest("${message}", "${project}", "versionUpdate${uid}")
             }
 
-            waitUntilPullRequestMerged {
-                name = project
-                prId = id
-            }
+            // I dont think we need to wait at the moment, lets just raise all teh PRs
+            // waitUntilPullRequestMerged {
+            //     name = project
+            //     prId = id
+            // }
 
         } else {
             echo "Skippping ${project} as ${config.propertyName} already on version ${config.version}"
