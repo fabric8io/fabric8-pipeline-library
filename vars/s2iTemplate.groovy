@@ -5,7 +5,7 @@ def call(Map parameters = [:], body) {
 
     def flow = new Fabric8Commands()
 
-    def defaultLabel = "s2iImage.${env.JOB_NAME}.${env.BUILD_NUMBER}".replace('-', '_').replace('/', '_')
+    def defaultLabel = buildId('s2i')
     def label = parameters.get('label', defaultLabel)
 
     def s2iImage = parameters.get('s2iImage', 'fabric8/s2i-builder:0.0.2')

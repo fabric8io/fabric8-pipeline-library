@@ -3,7 +3,9 @@ import io.fabric8.Fabric8Commands
 
 def call(Map parameters = [:], body) {
     def flow = new Fabric8Commands()
-    def defaultLabel = "kubeproxyImage.${env.JOB_NAME}.${env.BUILD_NUMBER}".replace('-', '_').replace('/', '_')
+
+    def defaultLabel = buildId('kubeProxy')
+
     def label = parameters.get('label', defaultLabel)
     def inheritFrom = parameters.get('inheritFrom', 'base')
     def jnlpImage = (flow.isOpenShift()) ? 'fabric8/jenkins-slave-base-centos7:0.0.1' : 'jenkinsci/jnlp-slave:2.62'
