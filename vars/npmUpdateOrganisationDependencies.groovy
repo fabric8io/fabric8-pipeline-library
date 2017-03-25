@@ -47,50 +47,67 @@ def call(body) {
             }
 
             if (hasPackage) {
-                stage "Updating ${project}"
-                sh "rm -rf ${repo}"
-                sh "git clone https://github.com/${project}.git"
-                dir(repo){
-                    sh "git remote set-url origin git@github.com:${project}.git"
-
-                    def uid = UUID.randomUUID().toString()
-                    sh "git checkout -b versionUpdate${uid}"
-                    utils.replacePackageVersions("${packageLocation}", replaceVersions)
-
-                    def gitStatus = sh(script: "git status", returnStdout: true).toString().trim()
-                    
-                    if (gitStatus != null && !gitStatus.contains('nothing to commit')){
-
-                        container(name: containerName) {
-
-                            sh 'chmod 600 /root/.ssh-git/ssh-key'
-                            sh 'chmod 600 /root/.ssh-git/ssh-key.pub'
-                            sh 'chmod 700 /root/.ssh-git'
-
-                            sh "git config --global user.email fabric8-admin@googlegroups.com"
-                            sh "git config --global user.name fabric8-release"
-
-                            def message = "fix(version): update property versions"
-                            sh "git add ${packageLocation}"
-                            
-                            sh "git commit -m \"${message}\""
-
-                            sh "git push origin versionUpdate${uid}"
-
-                            id = flow.createPullRequest("${message}", "${project}", "versionUpdate${uid}")
-                            
-                        }
-
-                        // lets not wait for version update PRs to merge yet as it's a manual merge ATM'
-                        // waitUntilPullRequestMerged{
-                        //     name = project
-                        //     prId = id
-                        // }
-                    } else {
-                        echo "No changes found skipping"
-                    }
+                // skip if there's a version update PR already open'
+                def hasOpenPR
+                container(name: containerName) {
+                    hasOpenPR = utils.hasOpenPR(project)
                 }
-                
+                if (hasOpenPR){
+                    echo "Found an open version update PR so skipping ${project}"
+                } else {
+                    stage "Updating ${project}"
+                    sh "rm -rf ${repo}"
+                    sh "git clone https://github.com/${project}.git"
+                    dir(repo){
+                        sh "git remote set-url origin git@github.com:${project}.git"
+
+                        def uid = UUID.randomUUID().toString()
+                        sh "git checkout -b versionUpdate${uid}"
+                        utils.replacePackageVersions("${packageLocation}", replaceVersions)
+
+                        def gitStatus = sh(script: "git status", returnStdout: true).toString().trim()
+                        
+                        if (gitStatus != null && !gitStatus.contains('nothing to commit')){
+
+                            container(name: containerName) {
+
+                                sh 'chmod 600 /root/.ssh-git/ssh-key'
+                                sh 'chmod 600 /root/.ssh-git/ssh-key.pub'
+                                sh 'chmod 700 /root/.ssh-git'
+
+                                sh "git config --global user.email fabric8-admin@googlegroups.com"
+                                sh "git config --global user.name fabric8-release"
+
+                                def message = "fix(version): update property versions"
+                                sh "git add ${packageLocation}"
+                                
+                                sh "git commit -m \"${message}\""
+
+                                try {
+                                    sh "git push origin versionUpdate${uid}"
+                                    id = flow.createPullRequest("${message}", "${project}", "versionUpdate${uid}")
+                                
+                                } catch (err){
+                                    def msg =  """
+                                    Skipping NPM version update for ${project}
+
+                                    ERROR: ${err}
+                                    """
+                                    hubot room: 'release', message: msg
+                                    echo "${msg}"
+                                }
+                            }
+
+                            // lets not wait for version update PRs to merge yet as it's a manual merge ATM'
+                            // waitUntilPullRequestMerged{
+                            //     name = project
+                            //     prId = id
+                            // }
+                        } else {
+                            echo "No changes found skipping"
+                        }
+                    }   
+                }
             } else {
                 println "Ignoring project ${project} as it has no package.json"
             }
@@ -113,7 +130,7 @@ def loadPackagePropertyVersions(String json) {
 
 @NonCPS
 def getRepos(String organisation){
-    repoApi = new URL("https://api.github.com/orgs/${organisation}/repos?per_page=100")
+    repoApi = new URL("https://api.github.com/orgs/${organisation}/repos?per_page=500")
     repos = new JsonSlurperClassic().parse(repoApi.newReader())
 
     def list = []
