@@ -28,8 +28,8 @@ def call(body) {
 
         def repos
         if (repoNames?.trim()){
-            repos = repoNames.split(',')
-        }else {
+            repos = splitRepoNames(repoNames)
+        } else {
            repos = getRepos(organisation)
         }
 
@@ -142,3 +142,14 @@ def getRepos(String organisation){
     return list
 }
 
+@NonCPS
+def splitRepoNames(repoNames){
+    def repos = repoNames.split(',')
+    def list = []
+    for (name in repos){
+        echo "project to process ${name}"
+        list << name
+    }
+    repos = null
+    return list
+}
