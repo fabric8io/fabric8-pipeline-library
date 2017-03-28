@@ -20,6 +20,7 @@ def call(Map parameters = [:], body) {
                          envVars: [[key: 'TERM', value: 'dumb'],[key: 'KUBECONFIG', value: '/root/home/.oc/cd.conf']]]
                 ],
                 volumes: [
+                        secretVolume(secretName: 'jenkins-hub-api-token', mountPath: '/home/jenkins/.apitoken'),
                         secretVolume(secretName: openshiftConfigSecretName, mountPath: '/root/home/.oc')
                 ]) {
             body()
@@ -31,6 +32,7 @@ def call(Map parameters = [:], body) {
                          envVars: [[key: 'TERM', value: 'dumb'],[key: 'KUBECONFIG', value: '/root/home/.oc/cd.conf']]]
                 ],
                 volumes: [
+                        secretVolume(secretName: 'jenkins-hub-api-token', mountPath: '/home/jenkins/.apitoken'),
                         secretVolume(secretName: openshiftConfigSecretName, mountPath: '/root/home/.oc')
                 ]) {
             body()

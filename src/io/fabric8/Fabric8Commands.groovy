@@ -9,11 +9,23 @@ import io.fabric8.openshift.client.OpenShiftClient
 import io.fabric8.kubernetes.client.KubernetesClient
 import io.fabric8.kubernetes.api.KubernetesHelper
 import jenkins.model.Jenkins
+import java.util.regex.Pattern
+import java.net.URL;
+import java.net.URLConnection;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 
+def swizzleImageName(text, match, replace) {
+  return Pattern.compile("image: ${match}:(.*)").matcher(text).replaceFirst("image: ${replace}")
+}
+
+def getReleaseVersionFromMavenMetadata(url){
+  def cmd = "curl -L ${url} | grep '<latest' | cut -f2 -d'>'|cut -f1 -d'<'"
+  return sh(script: cmd, returnStdout: true).toString().trim()
+}
 
 def updatePackageJSONVersion(f, p, v) {
     sh "sed -i -r 's/\"${p}\": \"[0-9][0-9]{0,2}.[0-9][0-9]{0,2}(.[0-9][0-9]{0,2})?(.[0-9][0-9]{0,2})?(-development)?\"/\"${p}\": \"${v}\"/g' ${f}"
-    
 }
 
 def getProjectVersion(){
@@ -360,6 +372,35 @@ def createPullRequest(String message, String project, String branch){
   }
 }
 
+def addCommentToPullRequest(comment, pr, project){
+  def githubToken = getGitHubToken()
+  def apiUrl = new URL("https://api.github.com/repos/${project}/issues/${pr}/comments")
+  echo "adding ${comment} to ${apiUrl}"
+  try {
+    def HttpURLConnection connection = apiUrl.openConnection()
+    if(githubToken.length() > 0)
+    {
+      connection.setRequestProperty("Authorization", "Bearer ${githubToken}")
+    }
+    connection.setRequestMethod("POST")
+    connection.setDoOutput(true)
+    connection.connect()
+
+    def body  = "{\"body\":\"${comment}\"}"
+
+    OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream())
+    writer.write(body)
+    writer.flush()
+
+    // execute the POST request
+    new InputStreamReader(connection.getInputStream())
+
+    connection.disconnect()
+  } catch (err) {
+    error "ERROR  ${err}"
+  }
+}
+
 def addMergeCommentToPullRequest(String pr, String project){
   def githubToken = getGitHubToken()
   def apiUrl = new URL("https://api.github.com/repos/${project}/issues/${pr}/comments")
@@ -374,7 +415,7 @@ def addMergeCommentToPullRequest(String pr, String project){
     connection.setDoOutput(true)
     connection.connect()
 
-    def body  = '{"body":"[merge] lgtm"}'
+    def body  = '{"body":"[merge]"}'
 
     OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream())
     writer.write(body)
@@ -388,6 +429,22 @@ def addMergeCommentToPullRequest(String pr, String project){
     error "ERROR  ${err}"
   }
 }
+
+def getUrlAsString(urlString){
+
+  def url = new URL(urlString)
+  def scan
+  def response
+
+  try {
+    scan = new Scanner(url.openStream(), "UTF-8")
+    response = scan.useDelimiter("\\A").next()
+  } finally {
+    scan.close()
+  }
+  return response
+}
+
 
 def drop(String pr, String project){
   def githubToken = getGitHubToken()
