@@ -16,7 +16,7 @@ def call(body) {
 
     def packageJSON = config.parentPaLocation ?: 'package.json'
     def containerName = config.containerName ?: 'clients'
-    def autoMerge = config.autoMerge ?: 'false'
+    def autoMerge = config.autoMerge ?: false
 
     for (int i = 0; i < config.projects.size(); i++) {
         def project = config.projects[i]
