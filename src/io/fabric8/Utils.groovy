@@ -199,20 +199,26 @@ def getValidOpenShiftBuildName(){
   }
 }
 
+def replacePackageVersion(packageLocation, pair){
+
+  def property = pair[0]
+  def version = pair[1]
+
+  sh "sed -i -r 's/\"${property}\": \"[0-9][0-9]{0,2}.[0-9][0-9]{0,2}(.[0-9][0-9]{0,2})?(.[0-9][0-9]{0,2})?(-development)?\"/\"${property}\": \"${version}\"/g' ${packageLocation}"
+
+}
+
 def replacePackageVersions(packageLocation, replaceVersions){
   for(int i = 0; i < replaceVersions.size(); i++){
-
-    def pair = replaceVersions[i]
-    def property = pair[0]
-    def version = pair[1]
-
-    sh "sed -i -r 's/\"${property}\": \"[0-9][0-9]{0,2}.[0-9][0-9]{0,2}(.[0-9][0-9]{0,2})?(.[0-9][0-9]{0,2})?(-development)?\"/\"${property}\": \"${version}\"/g' ${packageLocation}"
-        
+    replacePackageVersion(packageLocation, replaceVersions[i])
   }
 }
 
 
-def hasOpenPR(project){
+def getExistingPR(project, pair){
+    def property = pair[0]
+    def version = pair[1]
+
     def flow = new Fabric8Commands()
     def githubToken = flow.getGitHubToken()
     def apiUrl = new URL("https://api.github.com/repos/${project}/pulls")
@@ -227,7 +233,7 @@ def hasOpenPR(project){
     for(int i = 0; i < rs.size(); i++){
       def pr = rs[i]
       
-      if (pr.state == 'open' && pr.title == 'fix(version): update property versions'){
+      if (pr.state == 'open' && pr.title == "fix(version): update ${property} to ${version}"){
           return true
       }
     }
