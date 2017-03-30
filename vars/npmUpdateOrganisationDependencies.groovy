@@ -17,57 +17,63 @@ def call(body) {
     def containerName = config.containerName ?: 'clients'
     def localPackageJSON = readFile file: packageLocation
     def replaceVersions = loadPackagePropertyVersions(localPackageJSON)
+    def newPRID
 
     def flow = new Fabric8Commands()
     def utils = new Utils()
-    
+
     println "About to try replace versions: '${replaceVersions}'"
 
     if (replaceVersions.size() > 0) {
-        println "Now updating all projects within organisation: ${organisation}"
+        // create individual PRs for every version upgrade PR we need to make
+        for (pair in replaceVersions) {
 
-        def repos
-        if (repoNames?.trim()){
-            repos = splitRepoNames(repoNames)
-        } else {
-           repos = getRepos(organisation)
-        }
+            def property = pair[0]
+            def version = pair[1]
 
-        for (repo in repos) {
-            repo = repo.toString().trim()
-            def project = "${organisation}/${repo}"
+            println "Now updating all projects within organisation: ${organisation}"
 
-            // lets check if the repo has a package.son
-            packageUrl = new URL("https://raw.githubusercontent.com/${organisation}/${repo}/master/package.json")
-            def hasPackage = false
-            try {
-                hasPackage = !packageUrl.text.isEmpty()
-            } catch( FileNotFoundException e1 ) {
-                // ignore
+            // get the repos we want to update
+            def repos
+            if (repoNames?.trim()) {
+                repos = splitRepoNames(repoNames)
+            } else {
+                repos = getRepos(organisation)
             }
 
-            if (hasPackage) {
-                // skip if there's a version update PR already open'
-                def hasOpenPR
-                container(name: containerName) {
-                    hasOpenPR = utils.hasOpenPR(project)
+            for (repo in repos) {
+                repo = repo.toString().trim()
+                def project = "${organisation}/${repo}"
+
+                // lets check if the repo has a package.son
+                packageUrl = new URL("https://raw.githubusercontent.com/${organisation}/${repo}/master/package.json")
+                def hasPackage = false
+                try {
+                    hasPackage = !packageUrl.text.isEmpty()
+                } catch (FileNotFoundException e1) {
+                    // ignore
                 }
-                if (hasOpenPR){
-                    echo "Found an open version update PR so skipping ${project}"
-                } else {
+
+                if (hasPackage) {
+                    // skip if there's a version update PR already open'
+                    def existingPR
+                    container(name: containerName) {
+                        existingPR = utils.getExistingPR(project, pair)
+                    }
+
                     stage "Updating ${project}"
                     sh "rm -rf ${repo}"
                     sh "git clone https://github.com/${project}.git"
-                    dir(repo){
+                    dir(repo) {
                         sh "git remote set-url origin git@github.com:${project}.git"
 
                         def uid = UUID.randomUUID().toString()
                         sh "git checkout -b versionUpdate${uid}"
-                        utils.replacePackageVersions("${packageLocation}", replaceVersions)
+                        utils.replacePackageVersion("${packageLocation}", pair)
 
                         def gitStatus = sh(script: "git status", returnStdout: true).toString().trim()
-                        
-                        if (gitStatus != null && !gitStatus.contains('nothing to commit')){
+
+                        if (gitStatus != null && !gitStatus.contains('nothing to commit')) {
 
                             container(name: containerName) {
 
@@ -78,17 +84,17 @@ def call(body) {
                                 sh "git config --global user.email fabric8-admin@googlegroups.com"
                                 sh "git config --global user.name fabric8-release"
 
-                                def message = "fix(version): update property versions"
+                                def message = "fix(version): update ${property} to ${version}"
                                 sh "git add ${packageLocation}"
-                                
+
                                 sh "git commit -m \"${message}\""
 
                                 try {
                                     sh "git push origin versionUpdate${uid}"
-                                    id = flow.createPullRequest("${message}", "${project}", "versionUpdate${uid}")
-                                
-                                } catch (err){
-                                    def msg =  """
+                                    newPRID = flow.createPullRequest("${message}", "${project}", "versionUpdate${uid}")
+
+                                } catch (err) {
+                                    def msg = """
                                     Skipping NPM version update for ${project}
 
                                     ERROR: ${err}
@@ -97,23 +103,22 @@ def call(body) {
                                     echo "${msg}"
                                 }
                             }
-
-                            // lets not wait for version update PRs to merge yet as it's a manual merge ATM'
-                            // waitUntilPullRequestMerged{
-                            //     name = project
-                            //     prId = id
-                            // }
                         } else {
                             echo "No changes found skipping"
                         }
-                    }   
+                    }
+
+                    if (existingPR) {
+                        // delete existing PR
+                        flow.closePR(project, existingPR, version, newPRID)
+                    }
+                } else {
+                    println "Ignoring project ${project} as it has no package.json"
                 }
-            } else {
-                println "Ignoring project ${project} as it has no package.json"
             }
         }
     }
-  }
+}
 
 @NonCPS
 def loadPackagePropertyVersions(String json) {
@@ -121,7 +126,7 @@ def loadPackagePropertyVersions(String json) {
     // HashMap isn't serializable and NonCPS causes issues in SED command later so use a list
     def replaceVersions = []
     LinkedHashMap j = new JsonSlurperClassic().parseText(json)
-    for (def d : j.dependencies){
+    for (def d : j.dependencies) {
         replaceVersions << [d.key, d.value]
     }
 
@@ -129,7 +134,7 @@ def loadPackagePropertyVersions(String json) {
 }
 
 @NonCPS
-def getRepos(String organisation){
+def getRepos(String organisation) {
     repoApi = new URL("https://api.github.com/orgs/${organisation}/repos?per_page=500")
     repos = new JsonSlurperClassic().parse(repoApi.newReader())
 
@@ -143,10 +148,10 @@ def getRepos(String organisation){
 }
 
 @NonCPS
-def splitRepoNames(repoNames){
+def splitRepoNames(repoNames) {
     def repos = repoNames.split(',')
     def list = []
-    for (name in repos){
+    for (name in repos) {
         echo "project to process ${name}"
         list << name
     }
