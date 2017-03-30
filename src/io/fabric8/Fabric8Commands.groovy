@@ -372,6 +372,36 @@ def createPullRequest(String message, String project, String branch){
   }
 }
 
+
+def mergePR (project, id){
+  def githubToken = getGitHubToken()
+  def apiUrl = new URL("https://api.github.com/repos/${project}/pulls/${id}/merge")
+
+  def HttpURLConnection connection = apiUrl.openConnection()
+  if(githubToken.length() > 0) {
+    connection.setRequestProperty("Authorization", "Bearer ${githubToken}")
+  }
+  connection.setRequestMethod("PUT")
+  connection.setDoOutput(true)
+  connection.connect()
+
+  // execute the POST request
+  def rs = new JsonSlurper().parse(new InputStreamReader(connection.getInputStream(),"UTF-8"))
+
+  def code = connection.getResponseCode()
+
+  if (code != 200){
+    if (code == 405) {
+      error "${project} PR ${id} not merged.  ${rs.message}"
+    } else {
+      error "${project} PR ${id} not merged.  GitHub API Response code: ${code}"
+    }
+  } else {
+    echo "${project} PR ${id} ${rs.message}"
+  }
+  connection.disconnect()
+}
+
 def addCommentToPullRequest(comment, pr, project){
   def githubToken = getGitHubToken()
   def apiUrl = new URL("https://api.github.com/repos/${project}/issues/${pr}/comments")

@@ -16,6 +16,7 @@ def call(body) {
 
     def packageJSON = config.parentPaLocation ?: 'package.json'
     def containerName = config.containerName ?: 'clients'
+    def autoMerge = config.autoMerge ?: 'false'
 
     for (int i = 0; i < config.projects.size(); i++) {
         def project = config.projects[i]
@@ -53,6 +54,10 @@ def call(body) {
                 sh "cd ${repo} && git push origin versionUpdate${uid}"
 
                 id = flow.createPullRequest("${message}", "${project}", "versionUpdate${uid}")
+
+                if (autoMerge){
+                    flow.mergePR(project, id)
+                }
             }
 
             // I dont think we need to wait at the moment, lets just raise all teh PRs
