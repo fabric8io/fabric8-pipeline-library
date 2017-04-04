@@ -14,9 +14,10 @@ def call(Map parameters = [:], body) {
     def cloud = flow.getCloudConfig()
 
     if (flow.isOpenShift()) {
-        podTemplate(cloud: cloud, label: label, inheritFrom: "${inheritFrom}", serviceAccount: 'jenkins',
+        podTemplate(cloud: cloud, label: label, inheritFrom: "${inheritFrom}", serviceAccount: 'jenkins', restartPolicy: 'OnFailure',
                 containers: [
-                        [name: 'jnlp', image: "${jnlpImage}", args: '${computer.jnlpmac} ${computer.name}', workingDir: '/home/jenkins/'],
+                        [name: 'jnlp', image: "${jnlpImage}", args: '${computer.jnlpmac} ${computer.name}', workingDir: '/home/jenkins/',
+                        resourceLimitMemory: '512Mi'], // needs to be high to work on OSO
                         [name: 'maven', image: "${mavenImage}", command: '/bin/sh -c', args: 'cat', ttyEnabled: true, workingDir: '/home/jenkins/',
                          envVars: [
                                  [key: 'MAVEN_OPTS', value: '-Duser.home=/root/ -XX:+UseParallelGC \
@@ -24,8 +25,8 @@ def call(Map parameters = [:], body) {
          -XX:MaxHeapFreeRatio=40 \
          -XX:GCTimeRatio=4 \
          -XX:AdaptiveSizePolicyWeight=90 \
-         -Xms256m -Xmx300m']],
-                         resourceLimitMemory: '400Mi',resourceRequestCpu:'500m']],
+         -Xms512m -Xmx512m']],
+                         resourceLimitMemory: '1Gi']],
                 volumes: [secretVolume(secretName: 'jenkins-maven-settings', mountPath: '/root/.m2'),
                           persistentVolumeClaim(claimName: 'jenkins-mvn-local-repo', mountPath: '/root/.mvnrepository'),
                           secretVolume(secretName: 'jenkins-release-gpg', mountPath: '/home/jenkins/.gnupg'),
