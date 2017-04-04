@@ -3,7 +3,7 @@ import io.fabric8.Fabric8Commands
 
 def call(Map parameters = [:], body) {
     def flow = new Fabric8Commands()
-    def defaultLabel = "go.${env.JOB_NAME}.${env.BUILD_NUMBER}".replace('-', '_').replace('/', '_')
+    def defaultLabel = buildId('go')
     def label = parameters.get('label', defaultLabel)
 
     def goImage = parameters.get('goImage', 'fabric8/go-builder:1.0.8')

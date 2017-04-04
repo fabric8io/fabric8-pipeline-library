@@ -3,7 +3,7 @@ import io.fabric8.Fabric8Commands
 def call(Map parameters = [:], body) {
     def flow = new Fabric8Commands()
 
-    def defaultLabel = "ui.${env.JOB_NAME}.${env.BUILD_NUMBER}".replace('-', '_').replace('/', '_')
+    def defaultLabel = buildId('ui')
     def label = parameters.get('label', defaultLabel)
 
     def uiImage = parameters.get('uiImage', 'fabric8/fabric8-ui-builder:0.0.7')

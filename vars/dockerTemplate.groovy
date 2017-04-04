@@ -3,7 +3,7 @@ import io.fabric8.Fabric8Commands
 def call(Map parameters = [:], body) {
     def flow = new Fabric8Commands()
 
-    def defaultLabel = "docker.${env.JOB_NAME}.${env.BUILD_NUMBER}".replace('-', '_').replace('/', '_')
+    def defaultLabel = buildId('docker')
     def label = parameters.get('label', defaultLabel)
 
     def dockerImage = parameters.get('dockerImage', 'docker:1.11')
