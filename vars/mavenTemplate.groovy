@@ -25,7 +25,7 @@ def call(Map parameters = [:], body) {
          -XX:GCTimeRatio=4 \
          -XX:AdaptiveSizePolicyWeight=90 \
          -Xms256m -Xmx300m']],
-                         resourceLimitMemory: '400Mi']],
+                         resourceLimitMemory: '400Mi',resourceRequestCpu:'500m']],
                 volumes: [secretVolume(secretName: 'jenkins-maven-settings', mountPath: '/root/.m2'),
                           persistentVolumeClaim(claimName: 'jenkins-mvn-local-repo', mountPath: '/root/.mvnrepository'),
                           secretVolume(secretName: 'jenkins-release-gpg', mountPath: '/home/jenkins/.gnupg'),
