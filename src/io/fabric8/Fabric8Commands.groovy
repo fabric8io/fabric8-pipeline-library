@@ -373,7 +373,6 @@ def createPullRequest(String message, String project, String branch) {
 }
 
 def closePR(project, id, newVersion, newPRID) {
-    echo '2'
     def githubToken = getGitHubToken()
     def apiUrl = new URL("https://api.github.com/repos/${project}/pulls/${id}")
     echo "deleting PR for ${apiUrl}"
