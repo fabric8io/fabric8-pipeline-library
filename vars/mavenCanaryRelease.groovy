@@ -1,4 +1,6 @@
 #!/usr/bin/groovy
+import io.fabric8.Utils
+
 def call(body) {
     // evaluate the body block, and collect configuration into the object
     def config = [:]
@@ -21,12 +23,17 @@ def call(body) {
     sh "mvn org.codehaus.mojo:versions-maven-plugin:2.2:set -U -DnewVersion=${config.version}"
     sh "mvn clean -e -U deploy -Dmaven.test.skip=${skipTests} ${profile}"
 
-    if (flow.hasService("bayesian")) {
+    if (flow.hasService("bayesian-link")) {
         try {
-          sh 'mvn io.github.stackinfo:stackinfo-maven-plugin:0.1:prepare'
-          def response = bayesianAnalysis()
+            sh 'mvn io.github.stackinfo:stackinfo-maven-plugin:0.2:prepare'
+            def response = bayesianAnalysis url: 'http://bayesian-link'
+            if (response.success) {
+                def utils = new io.fabric8.Utils()
+                def buildName = utils.getValidOpenShiftBuildName()
+                utils.addAnnotationToBuild(buildName, 'fabric8.io/bayesian.analysisUrl', response.getAnalysisUrl())
+            }
         } catch (err) {
-          echo "Unable to run Bayesian analysis: ${err}"
+            echo "Unable to run Bayesian analysis: ${err}"
         }
     }
 
