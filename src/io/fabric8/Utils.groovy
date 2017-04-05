@@ -234,10 +234,10 @@ def getExistingPR(project, pair){
       def pr = rs[i]
       
       if (pr.state == 'open' && pr.title == "fix(version): update ${property} to ${version}"){
-          return true
+          return pr.number
       }
     }
 
-    return false
+    return null
 }
 return this
