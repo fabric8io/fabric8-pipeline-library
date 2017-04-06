@@ -99,7 +99,13 @@ def addAnnotationToBuild(buildName, annotation, value) {
   if (flow.isOpenShift()) {
     echo "Adding annotation '${annotation}: ${value}' to Build ${buildName}"
     OpenShiftClient oClient = new DefaultOpenShiftClient();
-    oClient.builds().withName(buildName).edit().editMetadata().addToAnnotations(annotation, value).endMetadata().done()
+    
+    def usersNamespace = getNamespace()
+    if (usersNamespace.endsWith("-jenkins")){
+      usersNamespace = usersNamespace.substring(0, usersNamespace.lastIndexOf("-jenkins"))
+    }
+    
+    oClient.builds().inNamespace(usersNamespace).withName(buildName).edit().editMetadata().addToAnnotations(annotation, value).endMetadata().done()
   } else {
     echo "Not running on openshift so skip adding annotation ${annotation}: value"
   }
