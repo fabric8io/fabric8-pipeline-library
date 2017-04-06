@@ -20,7 +20,13 @@ import io.fabric8.Fabric8Commands
 @NonCPS
 def environmentNamespace(environment) {
   KubernetesClient kubernetes = new DefaultKubernetesClient()
-  return kubernetes.getNamespace() + "-${environment}"
+  
+  def ns = getNamespace()
+  if (ns.endsWith("-jenkins")){
+    ns = ns.substring(0, ns.lastIndexOf("-jenkins"))
+  }
+
+  return ns + "-${environment}"
 }
 
 @NonCPS
