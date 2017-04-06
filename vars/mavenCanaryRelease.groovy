@@ -26,7 +26,7 @@ def call(body) {
     if (flow.hasService("bayesian-link")) {
         try {
             sh 'mvn io.github.stackinfo:stackinfo-maven-plugin:0.2:prepare'
-            def response = bayesianAnalysis url: 'http://bayesian-link'
+            def response = bayesianAnalysis url: 'https://bayesian-link'
             if (response.success) {
                 def utils = new io.fabric8.Utils()
                 def buildName = utils.getValidOpenShiftBuildName()
