@@ -98,10 +98,8 @@ def addAnnotationToBuild(buildName, annotation, value) {
   def flow = new Fabric8Commands()
   if (flow.isOpenShift()) {
     echo "Adding annotation '${annotation}: ${value}' to Build ${buildName}"
-    OpenShiftClient oClient = new DefaultOpenShiftClient();
-    
+    OpenShiftClient oClient = new DefaultOpenShiftClient()
     def usersNamespace = getUsersNamespace()
-
     echo "looking for ${buildName} in namespace ${usersNamespace}"
     oClient.builds().inNamespace(usersNamespace).withName(buildName).edit().editMetadata().addToAnnotations(annotation, value).endMetadata().done()
   } else {
@@ -109,6 +107,7 @@ def addAnnotationToBuild(buildName, annotation, value) {
   }
 }
 
+@NonCPS
 def getUsersNamespace(){
     def usersNamespace = getNamespace()
     if (usersNamespace.endsWith("-jenkins")){
