@@ -100,16 +100,23 @@ def addAnnotationToBuild(buildName, annotation, value) {
     echo "Adding annotation '${annotation}: ${value}' to Build ${buildName}"
     OpenShiftClient oClient = new DefaultOpenShiftClient();
     
-    def usersNamespace = getNamespace()
-    if (usersNamespace.endsWith("-jenkins")){
-      usersNamespace = usersNamespace.substring(0, usersNamespace.lastIndexOf("-jenkins"))
-    }
-    
+    def usersNamespace = getUsersNamespace()
+
+    echo "looking for ${buildName} in namespace ${usersNamespace}"
     oClient.builds().inNamespace(usersNamespace).withName(buildName).edit().editMetadata().addToAnnotations(annotation, value).endMetadata().done()
   } else {
     echo "Not running on openshift so skip adding annotation ${annotation}: value"
   }
 }
+
+def getUsersNamespace(){
+    def usersNamespace = getNamespace()
+    if (usersNamespace.endsWith("-jenkins")){
+      usersNamespace = usersNamespace.substring(0, usersNamespace.lastIndexOf("-jenkins"))
+    }
+    return usersNamespace
+}
+
 
 def isCI(){
 
@@ -190,7 +197,8 @@ def isValidBuildName(buildName){
   if (flow.isOpenShift()) {
     echo "Looking for matching Build ${buildName}"
     OpenShiftClient oClient = new DefaultOpenShiftClient();
-    def build = oClient.builds().withName(buildName).get()
+    def usersNamespace = getUsersNamespace()
+    def build = oClient.builds().inNamespace(usersNamespace).withName(buildName).get()
     if (build){
       return true
     }
