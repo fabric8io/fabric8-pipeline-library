@@ -233,6 +233,7 @@ def getExistingPR(project, pair){
     for(int i = 0; i < rs.size(); i++){
       def pr = rs[i]
       
+      // should this be title.contains so we check old versions?
       if (pr.state == 'open' && pr.title == "fix(version): update ${property} to ${version}"){
           return pr.number
       }
