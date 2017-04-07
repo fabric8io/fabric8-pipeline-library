@@ -209,7 +209,14 @@ def isValidBuildName(buildName){
 
 @NonCPS
 def getValidOpenShiftBuildName(){
-  def buildName = env.JOB_NAME + '-' + env.BUILD_NUMBER
+
+  def jobName = env.JOB_NAME
+  if (jobName.contains('/')){
+    jobName = jobName.substring(0, jobName.lastIndexOf('/'))
+    jobName = jobName.replace('/','.')
+  }
+
+  def buildName = jobName + '-' + env.BUILD_NUMBER
   buildName = buildName.substring(buildName.lastIndexOf("/") + 1).toLowerCase()
   if (isValidBuildName(buildName)){
     return buildName
