@@ -23,6 +23,7 @@ def call(body) {
     sh "mvn org.codehaus.mojo:versions-maven-plugin:2.2:set -U -DnewVersion=${config.version}"
     sh "mvn clean -e -U deploy -Dmaven.test.skip=${skipTests} ${profile}"
 
+
     junitResults(body);
 
     def buildName = ""
@@ -35,11 +36,11 @@ def call(body) {
     if (buildName != null && !buildName.isEmpty()) {
         def buildUrl = "${env.BUILD_URL}"
         if (!buildUrl.isEmpty()) {
-            utils.addAnnotationToBuild(buildName, 'fabric8.io/jenkins.testReportUrl', "${buildUrl}testReport")
+            utils.addAnnotationToBuild('fabric8.io/jenkins.testReportUrl', "${buildUrl}testReport")
         }
         def changeUrl = "${env.CHANGE_URL}"
         if (!changeUrl.isEmpty()) {
-            utils.addAnnotationToBuild(buildName, 'fabric8.io/jenkins.changeUrl', changeUrl)
+            utils.addAnnotationToBuild('fabric8.io/jenkins.changeUrl', changeUrl)
         }
 
         if (flow.hasService("bayesian-link")) {
@@ -47,7 +48,9 @@ def call(body) {
                 sh 'mvn io.github.stackinfo:stackinfo-maven-plugin:0.2:prepare'
                 def response = bayesianAnalysis url: 'https://bayesian-link'
                 if (response.success) {
-                    utils.addAnnotationToBuild(buildName, 'fabric8.io/bayesian.analysisUrl', response.getAnalysisUrl())
+                    utils.addAnnotationToBuild('fabric8.io/bayesian.analysisUrl', response.getAnalysisUrl())
+                } else {
+                    error "Bayesian analysis failed ${response}"
                 }
             } catch (err) {
                 echo "Unable to run Bayesian analysis: ${err}"
