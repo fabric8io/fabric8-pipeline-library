@@ -24,12 +24,16 @@ def call(body) {
     sh "mvn clean -e -U deploy -Dmaven.test.skip=${skipTests} ${profile}"
 
     if (flow.hasService("bayesian-link")) {
-        sh 'mvn io.github.stackinfo:stackinfo-maven-plugin:0.2:prepare'
-        def response = bayesianAnalysis url: 'https://bayesian-link'
-        if (response.success) {
-            def utils = new io.fabric8.Utils()
-            def buildName = utils.getValidOpenShiftBuildName()
-            utils.addAnnotationToBuild(buildName, 'fabric8.io/bayesian.analysisUrl', response.getAnalysisUrl())
+        try {
+            sh 'mvn io.github.stackinfo:stackinfo-maven-plugin:0.2:prepare'
+            def response = bayesianAnalysis url: 'https://bayesian-link'
+            if (response.success) {
+                def utils = new io.fabric8.Utils()
+                def buildName = utils.getValidOpenShiftBuildName()
+                utils.addAnnotationToBuild(buildName, 'fabric8.io/bayesian.analysisUrl', response.getAnalysisUrl())
+            }
+        } catch (err) {
+            echo "Unable to run Bayesian analysis: ${err}"
         }
     }
 
