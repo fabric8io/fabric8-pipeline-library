@@ -412,6 +412,34 @@ def closePR(project, id, newVersion, newPRID) {
     connection.disconnect()
 }
 
+def getIssueComments(project, id) {
+    def githubToken = getGitHubToken()
+    def apiUrl = new URL("https://api.github.com/repos/${project}/issues/${id}/comments")
+    echo "getting comments for ${apiUrl}"
+
+    HttpURLConnection connection = apiUrl.openConnection()
+    if (githubToken.length() > 0) {
+        connection.setRequestProperty("Authorization", "Bearer ${githubToken}")
+    }
+
+    connection.setRequestMethod("GET")
+    connection.setDoOutput(true)
+    connection.connect()
+
+    def rs = new JsonSlurper().parse(new InputStreamReader(connection.getInputStream(), "UTF-8"))
+
+    def code = connection.getResponseCode()
+
+    connection.disconnect()
+
+    if (code != 200) {
+        error "Cannot get ${project} PR ${id} comments.  ${connection.getResponseMessage()}"
+
+    }
+
+    return rs
+}
+
 def mergePR(project, id) {
     def githubToken = getGitHubToken()
     def apiUrl = new URL("https://api.github.com/repos/${project}/pulls/${id}/merge")
