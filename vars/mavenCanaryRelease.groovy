@@ -23,6 +23,8 @@ def call(body) {
     sh "mvn org.codehaus.mojo:versions-maven-plugin:2.2:set -U -DnewVersion=${config.version}"
     sh "mvn clean -e -U deploy -Dmaven.test.skip=${skipTests} ${profile}"
 
+    junitResults(body);
+
     if (flow.hasService("bayesian-link")) {
         try {
             sh 'mvn io.github.stackinfo:stackinfo-maven-plugin:0.2:prepare'
