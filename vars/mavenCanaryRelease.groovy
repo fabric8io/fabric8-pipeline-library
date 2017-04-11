@@ -1,5 +1,4 @@
 #!/usr/bin/groovy
-import io.fabric8.Utils
 
 def call(body) {
     // evaluate the body block, and collect configuration into the object
@@ -15,9 +14,9 @@ def call(body) {
 
     def profile
     if (flow.isOpenShift()) {
-      profile = '-P openshift'
+        profile = '-P openshift'
     } else {
-      profile = '-P kubernetes'
+        profile = '-P kubernetes'
     }
 
     sh "git checkout -b ${env.JOB_NAME}-${config.version}"
@@ -26,25 +25,33 @@ def call(body) {
 
     junitResults(body);
 
-    def buildName = utils.getValidOpenShiftBuildName()
-    def buildUrl = "${env.BUILD_URL}"
-    if (!buildUrl.isEmpty()) {
-        utils.addAnnotationToBuild(buildName, 'fabric8.io/jenkins.testReportUrl', "${buildUrl}testReport")
-    }
-    def changeUrl = "${env.CHANGE_URL}"
-    if (!changeUrl.isEmpty()) {
-        utils.addAnnotationToBuild(buildName, 'fabric8.io/jenkins.changeUrl', changeUrl)
+    def buildName = ""
+    try {
+        buildName = utils.getValidOpenShiftBuildName()
+    } catch (e) {
+        echo "Failed to find buildName due to: ${e}"
     }
 
-    if (flow.hasService("bayesian-link")) {
-        try {
-            sh 'mvn io.github.stackinfo:stackinfo-maven-plugin:0.2:prepare'
-            def response = bayesianAnalysis url: 'https://bayesian-link'
-            if (response.success) {
-                utils.addAnnotationToBuild(buildName, 'fabric8.io/bayesian.analysisUrl', response.getAnalysisUrl())
+    if (buildName != null && !buildName.isEmpty())
+        def buildUrl = "${env.BUILD_URL}"
+        if (!buildUrl.isEmpty()) {
+            utils.addAnnotationToBuild(buildName, 'fabric8.io/jenkins.testReportUrl', "${buildUrl}testReport")
+        }
+        def changeUrl = "${env.CHANGE_URL}"
+        if (!changeUrl.isEmpty()) {
+            utils.addAnnotationToBuild(buildName, 'fabric8.io/jenkins.changeUrl', changeUrl)
+        }
+
+        if (flow.hasService("bayesian-link")) {
+            try {
+                sh 'mvn io.github.stackinfo:stackinfo-maven-plugin:0.2:prepare'
+                def response = bayesianAnalysis url: 'https://bayesian-link'
+                if (response.success) {
+                    utils.addAnnotationToBuild(buildName, 'fabric8.io/bayesian.analysisUrl', response.getAnalysisUrl())
+                }
+            } catch (err) {
+                echo "Unable to run Bayesian analysis: ${err}"
             }
-        } catch (err) {
-            echo "Unable to run Bayesian analysis: ${err}"
         }
     }
 
