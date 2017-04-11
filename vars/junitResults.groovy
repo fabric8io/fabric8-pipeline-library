@@ -5,17 +5,18 @@ def call(body) {
     body.delegate = config
     body()
     def archiveTestResults = config.archiveTestResults ?: true
-
     if (archiveTestResults) {
-        def surefire = new File ("target/surefire-reports")
-        if (surefire.exists() && surefire.isDirectory()) {
-            step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/TEST-*.xml'])
+        def surefire = findFiles(glob: '**/surefire-reports/*.xml')
+        if (surefire) {
+            step([$class: 'JUnitResultArchiver', testResults: '**/surefire-reports/*.xml', healthScaleFactor: 1.0])
         }
 
-        def failsafe = new File ("target/failsafe-reports")
-        if (failsafe.exists() && failsafe.isDirectory()) {
-            step([$class: 'JUnitResultArchiver', testResults: '**/target/failsafe-reports/TEST-*.xml'])
+
+        def failsafe = findFiles(glob: '**/failsafe-reports/*.xml')
+        if (failsafe) {
+            step([$class: 'JUnitResultArchiver', testResults: '**/failsafe-reports/*.xml', healthScaleFactor: 1.0])
         }
+
     }
 
 }
