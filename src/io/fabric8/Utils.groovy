@@ -265,7 +265,100 @@ def getExistingPR(project, pair){
         }
       }
     }
-
     return null
+}
+
+def getDownstreamProjectOverrides(project, id, downstreamProject, botName = '@fabric8cd'){
+
+  if (!downstreamProject){
+    error 'no downstreamProjects provided'
+  }
+  def flow = new Fabric8Commands()
+  def comments = flow.getIssueComments(project, id)
+  // start by looking at the most recent commments and work back
+  Collections.reverse(comments)
+  for (comment in comments) {
+    echo "Found PR comment ${comment.body}"
+    def text = comment.body.trim()
+    def match = 'CI downstream projects'
+    if (text.startsWith(botName)){
+      if (text.contains(match)){
+        def result = text.substring(text.indexOf("[") + 1, text.indexOf("]"))
+        if (!result){
+          echo 'no downstream projects found'
+        }
+        def list =  result.split(',')
+        for (repos in list) {
+          if (!repos.contains('=')){
+            error 'no override project found in the form organisation=foo'
+          }
+          def overrides =  repos.split('=')
+          if (downstreamProject == overrides[0].trim()){
+            "matched and returning ${overrides[1].trim()}"
+            return overrides[1].trim()
+          }
+        }
+      }
+    }
+  }
+}
+
+def getDownstreamProjectOverrides(downstreamProject, botName = '@fabric8cd'){
+
+  def flow = new Fabric8Commands()
+
+  def id = env.CHANGE_ID
+  if (!id){
+    error 'no env.CHANGE_ID / pull request id found'
+  }
+
+  def project = getRepoName()
+
+  return getDownstreamProjectOverrides(project, id, downstreamProject, botName = '@fabric8cd')
+}
+
+
+def isSkipCIDeploy(botName = '@fabric8cd'){
+  def id = env.CHANGE_ID
+  if (!id){
+    error 'no env.CHANGE_ID / pull request id found'
+  }
+
+  def flow = new Fabric8Commands()
+  def project = getRepoName()
+
+  def comments = flow.getIssueComments(project, id)
+  // start by looking at the most recent commments and work back
+  Collections.reverse(comments)
+  for (comment in comments) {
+    echo comment.body
+    def text = comment.body.trim()
+    def skipTrue = 'CI skip deploy=true'
+    def skipFalse = 'CI skip deploy=false'
+    if (text.startsWith(botName)){
+      if (text.contains(skipTrue)){
+        return true
+      } else if (text.contains(skipFalse)){
+        return false
+      }
+    }
+  }
+}
+
+// helper to get the repo name from the job name when using org + branch github plugins
+def getRepoName(){
+
+  def jobName = env.JOB_NAME
+
+  // job name from the org plugin
+  if (jobName.count('/') > 1){
+    return jobName.substring(jobName.indexOf('/')+1, jobName.lastIndexOf('/'))
+  }
+  // job name from the branch plugin
+  if (jobName.count('/') > 0){
+    return jobName.substring(0, jobName.lastIndexOf('/'))
+  }
+  // normal job name
+  return jobName
 }
 return this
