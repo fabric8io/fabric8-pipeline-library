@@ -10,7 +10,6 @@ def call(body) {
 
     def flow = new io.fabric8.Fabric8Commands()
     def utils = new io.fabric8.Utils()
-    def buildName = utils.getValidOpenShiftBuildName()
 
     def skipTests = config.skipTests ?: false
 
@@ -26,6 +25,8 @@ def call(body) {
     sh "mvn clean -e -U deploy -Dmaven.test.skip=${skipTests} ${profile}"
 
     junitResults(body);
+
+    def buildName = utils.getValidOpenShiftBuildName()
     def buildUrl = "${env.BUILD_URL}"
     if (!buildUrl.isEmpty()) {
         utils.addAnnotationToBuild(buildName, 'fabric8.io/jenkins.testReportUrl', "${buildUrl}testReport")
