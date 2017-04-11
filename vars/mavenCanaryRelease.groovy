@@ -28,11 +28,11 @@ def call(body) {
     def buildName = ""
     try {
         buildName = utils.getValidOpenShiftBuildName()
-    } catch (e) {
-        echo "Failed to find buildName due to: ${e}"
+    } catch (err) {
+        echo "Failed to find buildName due to: ${err}"
     }
 
-    if (buildName != null && !buildName.isEmpty())
+    if (buildName != null && !buildName.isEmpty()) {
         def buildUrl = "${env.BUILD_URL}"
         if (!buildUrl.isEmpty()) {
             utils.addAnnotationToBuild(buildName, 'fabric8.io/jenkins.testReportUrl', "${buildUrl}testReport")
