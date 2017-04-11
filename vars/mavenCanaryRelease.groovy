@@ -9,6 +9,8 @@ def call(body) {
     body()
 
     def flow = new io.fabric8.Fabric8Commands()
+    def utils = new io.fabric8.Utils()
+    def buildName = utils.getValidOpenShiftBuildName()
 
     def skipTests = config.skipTests ?: false
 
@@ -24,14 +26,20 @@ def call(body) {
     sh "mvn clean -e -U deploy -Dmaven.test.skip=${skipTests} ${profile}"
 
     junitResults(body);
+    def buildUrl = "${env.BUILD_URL}"
+    if (!buildUrl.isEmpty()) {
+        utils.addAnnotationToBuild(buildName, 'fabric8.io/jenkins.testReportUrl', "${buildUrl}testReport")
+    }
+    def changeUrl = "${env.CHANGE_URL}"
+    if (!changeUrl.isEmpty()) {
+        utils.addAnnotationToBuild(buildName, 'fabric8.io/jenkins.changeUrl', changeUrl)
+    }
 
     if (flow.hasService("bayesian-link")) {
         try {
             sh 'mvn io.github.stackinfo:stackinfo-maven-plugin:0.2:prepare'
             def response = bayesianAnalysis url: 'https://bayesian-link'
             if (response.success) {
-                def utils = new io.fabric8.Utils()
-                def buildName = utils.getValidOpenShiftBuildName()
                 utils.addAnnotationToBuild(buildName, 'fabric8.io/bayesian.analysisUrl', response.getAnalysisUrl())
             }
         } catch (err) {
