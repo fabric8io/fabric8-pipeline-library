@@ -16,34 +16,38 @@ def call(body) {
     def providerLabel = config.providerLabel ?: 'fabric8'
 
     def flow = new io.fabric8.Fabric8Commands()
+    def utils = new io.fabric8.Utils()
 
-    container('clients'){
+    openShiftProject = openShiftProject + '-' + utils.getRepoName()
+
+    container('clients') {
         // get the latest released yaml
         def yamlReleaseVersion = flow.getReleaseVersionFromMavenMetadata("${mavenRepo}/maven-metadata.xml")
         yaml = flow.getUrlAsString("${mavenRepo}/${yamlReleaseVersion}/${deploymentName}-${yamlReleaseVersion}-openshift.yml")
 
-        yaml = flow.swizzleImageName(yaml,originalImageName,newImageName)
+        yaml = flow.swizzleImageName(yaml, originalImageName, newImageName)
 
     }
     // cant use writeFile as we have long filename errors
     sh "echo '${yaml}' > snapshot.yml"
 
-    container('clients'){
+    container('clients') {
 
         try {
             sh "oc get project ${openShiftProject} | grep Active"
-        } catch (err){
+        } catch (err) {
             echo "${err}"
             sh "oc new-project ${openShiftProject}"
         }
 
         sh "oc process -n ${openShiftProject} -f ./snapshot.yml | oc apply -n ${openShiftProject} -f -"
 
-        sleep 10 // ok bad bad but there's a delay between DC's being applied and new pods being started.  lets find a better way to do this looking at teh new DC perhaps?
+        sleep 10
+        // ok bad bad but there's a delay between DC's being applied and new pods being started.  lets find a better way to do this looking at teh new DC perhaps?
 
-        waitUntil{
+        waitUntil {
             // wait until the pods are running has been deleted
-            try{
+            try {
                 sh "oc get pod -l project=${deploymentName},provider=${providerLabel} -n ${openShiftProject} | grep Running"
                 echo "${deploymentName} pod is running"
                 return true
@@ -54,4 +58,4 @@ def call(body) {
         }
         return sh(script: "oc get route ${deploymentName} -o jsonpath=\"{.spec.host}\" -n ${openShiftProject}", returnStdout: true).toString().trim()
     }
-  }
+}

@@ -268,6 +268,30 @@ def getExistingPR(project, pair){
     return null
 }
 
+def getOpenPRs(project){
+
+  def openPRs = []
+  def flow = new Fabric8Commands()
+  def githubToken = flow.getGitHubToken()
+  def apiUrl = new URL("https://api.github.com/repos/${project}/pulls")
+  def rs = restGetURL{
+    authString = githubToken
+    url = apiUrl
+  }
+
+  if (rs == null || rs.isEmpty()){
+    return false
+  }
+  for(int i = 0; i < rs.size(); i++){
+    def pr = rs[i]
+
+    if (pr.state == 'open'){
+      openPRs << String.valueOf(pr.number)
+    }
+  }
+  return openPRs
+}
+
 def getDownstreamProjectOverrides(project, id, downstreamProject, botName = '@fabric8cd'){
 
   if (!downstreamProject){
