@@ -2,18 +2,15 @@
 package io.fabric8
 
 import com.cloudbees.groovy.cps.NonCPS
-import io.fabric8.kubernetes.client.DefaultKubernetesClient
 import groovy.json.JsonSlurper
+import io.fabric8.kubernetes.api.KubernetesHelper
+import io.fabric8.kubernetes.client.DefaultKubernetesClient
+import io.fabric8.kubernetes.client.KubernetesClient
 import io.fabric8.openshift.client.DefaultOpenShiftClient
 import io.fabric8.openshift.client.OpenShiftClient
-import io.fabric8.kubernetes.client.KubernetesClient
-import io.fabric8.kubernetes.api.KubernetesHelper
 import jenkins.model.Jenkins
+
 import java.util.regex.Pattern
-import java.net.URL;
-import java.net.URLConnection;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 
 def swizzleImageName(text, match, replace) {
     return Pattern.compile("image: ${match}:(.*)").matcher(text).replaceFirst("image: ${replace}")
@@ -713,6 +710,16 @@ def isOpenShift() {
 def getCloudConfig() {
     def openshiftCloudConfig = Jenkins.getInstance().getCloud('openshift')
     return (openshiftCloudConfig) ? 'openshift' : 'kubernetes'
+}
+
+/**
+ * Should be called after checkout scm
+ */
+@NonCPS
+
+def getScmPushUrl() {
+    def url = sh(returnStdout: true, script: 'git config --get remote.origin.url').trim()
+    return url
 }
 
 return this
