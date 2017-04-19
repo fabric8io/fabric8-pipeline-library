@@ -4,23 +4,15 @@ package io.fabric8
 import com.cloudbees.groovy.cps.NonCPS
 import io.fabric8.kubernetes.client.DefaultKubernetesClient
 import io.fabric8.kubernetes.client.KubernetesClient
-import io.fabric8.openshift.api.model.Build
-import io.fabric8.openshift.api.model.ImageStream
-import io.fabric8.openshift.api.model.ImageStreamStatus
-import io.fabric8.openshift.api.model.NamedTagEventList
-import io.fabric8.openshift.api.model.TagEvent
 import io.fabric8.openshift.client.DefaultOpenShiftClient
 import io.fabric8.openshift.client.OpenShiftClient
 import io.fabric8.Fabric8Commands
-
-//
-//IMAGE_STREAM_TAG_RETRIES = 15;
-//IMAGE_STREAM_TAG_RETRY_TIMEOUT_IN_MILLIS = 1000;
+import jenkins.model.Jenkins
+import org.jenkinsci.plugins.workflow.job.WorkflowJob
 
 @NonCPS
 def environmentNamespace(environment) {
   KubernetesClient kubernetes = new DefaultKubernetesClient()
-  
   def ns = getNamespace()
   if (ns.endsWith("-jenkins")){
     ns = ns.substring(0, ns.lastIndexOf("-jenkins"))
@@ -31,13 +23,12 @@ def environmentNamespace(environment) {
 
 @NonCPS
 def getNamespace() {
-  KubernetesClient kubernetes = new DefaultKubernetesClient()
-  return kubernetes.getNamespace()
+  KubernetesClient client = new DefaultKubernetesClient()
+  return client.getNamespace()
 }
 
 @NonCPS
 def getImageStreamSha(imageStreamName) {
-  echo '1'
   OpenShiftClient oc = new DefaultOpenShiftClient()
   return findTagSha(oc, imageStreamName, getNamespace())
 }
@@ -94,9 +85,10 @@ def findTagSha(OpenShiftClient client, String imageStreamName, String namespace)
 }
 
 @NonCPS
-def addAnnotationToBuild(buildName, annotation, value) {
+def addAnnotationToBuild(annotation, value) {
   def flow = new Fabric8Commands()
   if (flow.isOpenShift()) {
+    def buildName = getValidOpenShiftBuildName()
     echo "Adding annotation '${annotation}: ${value}' to Build ${buildName}"
     OpenShiftClient oClient = new DefaultOpenShiftClient()
     def usersNamespace = getUsersNamespace()
@@ -160,12 +152,7 @@ def isCD(){
 }
 
 def addPipelineAnnotationToBuild(t){
-    def flow = new Fabric8Commands()
-    if (flow.isOpenShift()) {
-      // avoid annotating builds until we use the new helper methods to get the build name
-      //def buildName = getValidOpenShiftBuildName()
-      //addAnnotationToBuild(buildName, 'fabric8.io/pipeline.type', t)
-    }
+    addAnnotationToBuild('fabric8.io/pipeline.type', t)
 }
 
 def getLatestVersionFromTag(){
@@ -195,7 +182,7 @@ def isValidBuildName(buildName){
   def flow = new Fabric8Commands()
   if (flow.isOpenShift()) {
     echo "Looking for matching Build ${buildName}"
-    OpenShiftClient oClient = new DefaultOpenShiftClient();
+    OpenShiftClient oClient = new DefaultOpenShiftClient()
     def usersNamespace = getUsersNamespace()
     def build = oClient.builds().inNamespace(usersNamespace).withName(buildName).get()
     if (build){
@@ -210,14 +197,7 @@ def isValidBuildName(buildName){
 @NonCPS
 def getValidOpenShiftBuildName(){
 
-  def jobName = env.JOB_NAME
-  if (jobName.contains('/')){
-    jobName = jobName.substring(0, jobName.lastIndexOf('/'))
-    jobName = jobName.replace('/','.')
-  }
-
-  def buildName = jobName + '-' + env.BUILD_NUMBER
-  buildName = buildName.substring(buildName.lastIndexOf("/") + 1).toLowerCase()
+  def buildName = getOpenShiftBuildName()
   if (isValidBuildName(buildName)){
     return buildName
   } else {
@@ -385,4 +365,19 @@ def getRepoName(){
   // normal job name
   return jobName
 }
+
+@NonCPS
+def getOpenShiftBuildName(){
+  def activeInstance = Jenkins.getActiveInstance()
+  def  job = (WorkflowJob) activeInstance.getItemByFullName(env.JOB_NAME)
+  def run = job.getBuildByNumber(Integer.parseInt(env.BUILD_NUMBER))
+  def flow = new Fabric8Commands()
+  if (flow.isOpenShift()){
+    def clazz = Thread.currentThread().getContextClassLoader().loadClass("io.fabric8.jenkins.openshiftsync.BuildCause")
+    def cause = run.getCause(clazz)
+    return cause.name
+  }
+  return null
+}
+
 return this
