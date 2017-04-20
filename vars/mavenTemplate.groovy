@@ -28,7 +28,6 @@ def call(Map parameters = [:], body) {
          -Xms512m -Xmx512m']],
                          resourceLimitMemory: '768Mi']],
                 volumes: [secretVolume(secretName: 'jenkins-maven-settings', mountPath: '/root/.m2'),
-                          persistentVolumeClaim(claimName: 'jenkins-mvn-local-repo', mountPath: '/root/.mvnrepository'),
                           secretVolume(secretName: 'jenkins-release-gpg', mountPath: '/home/jenkins/.gnupg'),
                           secretVolume(secretName: 'jenkins-hub-api-token', mountPath: '/home/jenkins/.apitoken'),
                           secretVolume(secretName: 'jenkins-ssh-config', mountPath: '/root/.ssh'),
