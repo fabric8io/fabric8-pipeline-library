@@ -38,8 +38,8 @@ def call(body) {
         if (!buildUrl.isEmpty()) {
             utils.addAnnotationToBuild('fabric8.io/jenkins.testReportUrl', "${buildUrl}testReport")
         }
-        def changeUrl = "${env.CHANGE_URL}"
-        if (!changeUrl.isEmpty()) {
+        def changeUrl = env.CHANGE_URL
+        if (changeUrl != null && !changeUrl.isEmpty()) {
             utils.addAnnotationToBuild('fabric8.io/jenkins.changeUrl', changeUrl)
         }
 
