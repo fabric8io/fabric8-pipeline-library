@@ -7,9 +7,7 @@ def call(body) {
     body.delegate = config
     body()
 
-    def proceedMessage = """Version ${config.version} has now been deployed to the ${config.environment} environment.
-
-Would you like to promote version ${config.version} to the next environment?
+    def proceedMessage = """Would you like to promote version ${config.version} to the next environment?
 """
 
     hubotApprove message: proceedMessage, room: config.room
