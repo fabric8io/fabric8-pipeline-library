@@ -7,7 +7,7 @@ def call(Map parameters = [:], body) {
     def label = parameters.get('label', defaultLabel)
 
     def goImage = parameters.get('goImage', 'fabric8/go-builder:1.0.8')
-    def clientsImage = parameters.get('clientsImage', 'fabric8/builder-clients:0.1')
+    def clientsImage = parameters.get('clientsImage', 'fabric8/builder-clients:0.9')
     def inheritFrom = parameters.get('inheritFrom', 'base')
     def jnlpImage = (flow.isOpenShift()) ? 'fabric8/jenkins-slave-base-centos7:0.0.1' : 'jenkinsci/jnlp-slave:2.62'
 

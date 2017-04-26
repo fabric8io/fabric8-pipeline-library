@@ -7,7 +7,7 @@ def call(Map parameters = [:], body) {
     def label = parameters.get('label', defaultLabel)
 
     def mavenImage = parameters.get('mavenImage', 'fabric8/maven-builder:2.2.297')
-    def clientsImage = parameters.get('clientsImage', 'fabric8/builder-clients:0.6')
+    def clientsImage = parameters.get('clientsImage', 'fabric8/builder-clients:0.9')
     def dockerImage = parameters.get('dockerImage', 'docker:1.11')
     def inheritFrom = parameters.get('inheritFrom', 'base')
     def jnlpImage = (flow.isOpenShift()) ? 'fabric8/jenkins-slave-base-centos7:0.0.1' : 'jenkinsci/jnlp-slave:2.62'
