@@ -375,7 +375,9 @@ def getOpenShiftBuildName(){
   if (flow.isOpenShift()){
     def clazz = Thread.currentThread().getContextClassLoader().loadClass("io.fabric8.jenkins.openshiftsync.BuildCause")
     def cause = run.getCause(clazz)
-    return cause.name
+    if (cause != null) {
+      return cause.name
+    }
   }
   return null
 }
