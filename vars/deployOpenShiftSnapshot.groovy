@@ -57,19 +57,19 @@ def call(body) {
             export AUTH_LOGOUT_URI="https://${WS_K8S_API_SERVER}/connect/endsession?id_token={{id_token}}"
 
             
-            echo > FABRIC8_WIT_API_URL=${FABRIC8_WIT_API_URL} > ./values.txt
-            echo >> FABRIC8_RECOMMENDER_API_URL=${FABRIC8_RECOMMENDER_API_URL} > ./values.txt
-            echo >> FABRIC8_FORGE_API_URL=${FABRIC8_FORGE_API_URL} > ./values.txt
-            echo >> FABRIC8_SSO_API_URL=${FABRIC8_SSO_API_URL} > ./values.txt
+            echo "FABRIC8_WIT_API_URL=${FABRIC8_WIT_API_URL}" > ./values.txt
+            echo "FABRIC8_RECOMMENDER_API_URL=${FABRIC8_RECOMMENDER_API_URL}"  >> ./values.txt
+            echo "FABRIC8_FORGE_API_URL=${FABRIC8_FORGE_API_URL}"  >> ./values.txt
+            echo "FABRIC8_SSO_API_URL=${FABRIC8_SSO_API_URL}"  >> ./values.txt
 
-            echo >> OPENSHIFT_CONSOLE_URL=${OPENSHIFT_CONSOLE_URL} > ./values.txt
-            echo >> WS_K8S_API_SERVER=${WS_K8S_API_SERVER} > ./values.txt
+            echo "OPENSHIFT_CONSOLE_URL=${OPENSHIFT_CONSOLE_URL}"  >> ./values.txt
+            echo "WS_K8S_API_SERVER=${WS_K8S_API_SERVER}"  >> ./values.txt
 
-            echo >> PROXIED_K8S_API_SERVER=${PROXIED_K8S_API_SERVER} > ./values.txt
-            echo >> OAUTH_ISSUER=${OAUTH_ISSUER} > ./values.txt
-            echo >> PROXY_PASS_URL=${PROXY_PASS_URL} > ./values.txt
-            echo >> OAUTH_AUTHORIZE_URI=${OAUTH_AUTHORIZE_URI} > ./values.txt
-            echo >> AUTH_LOGOUT_URI=${AUTH_LOGOUT_URI} > ./values.txt
+            echo "PROXIED_K8S_API_SERVER=${PROXIED_K8S_API_SERVER}"  >> ./values.txt
+            echo "OAUTH_ISSUER=${OAUTH_ISSUER}"  >> ./values.txt
+            echo "PROXY_PASS_URL=${PROXY_PASS_URL}"  >> ./values.txt
+            echo "OAUTH_AUTHORIZE_URI=${OAUTH_AUTHORIZE_URI}"  >> ./values.txt
+            echo "AUTH_LOGOUT_URI=${AUTH_LOGOUT_URI}"  >> ./values.txt
                 
             '''
     // TODO lets use a comment on the PR to denote whether or not to use prod or pre-prod?
