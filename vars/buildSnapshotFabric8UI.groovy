@@ -46,9 +46,8 @@ def call(body) {
         export FABRIC8_RECOMMENDER_API_URL="https://api-bayesian.dev.rdu2c.fabric8.io/api/v1/"
         export FABRIC8_FORGE_API_URL="https://forge.api.prod-preview.openshift.io"
         export FABRIC8_SSO_API_URL="https://sso.prod-preview.openshift.io/"
-        export OPENSHIFT_CONSOLE_URL="https://console.free-int.openshift.com/console/"
 
-        export OPENSHIFT_CONSOLE_URL="https://console.starter-us-east-2.openshift.com/console/"
+        export OPENSHIFT_CONSOLE_URL="https://console.free-int.openshift.com/console/"
         export WS_K8S_API_SERVER="api.free-int.openshift.com:443"
 
         cd fabric8-ui && npm run build:prod
