@@ -40,7 +40,55 @@ def call(body) {
             sh "oc new-project ${openShiftProject}"
         }
 
-        sh "oc process -n ${openShiftProject} -f ./snapshot.yml | oc apply -n ${openShiftProject} -f -"
+        // TODO share this code with buildSnapshotFabric8UI.groovy!
+        sh '''
+            export FABRIC8_WIT_API_URL="https://api.openshift.io/api/"
+            export FABRIC8_RECOMMENDER_API_URL="https://recommender.api.openshift.io"
+            export FABRIC8_FORGE_API_URL="https://forge.api.openshift.io"
+            export FABRIC8_SSO_API_URL="https://sso.openshift.io/"
+            
+            export OPENSHIFT_CONSOLE_URL="https://console.starter-us-east-2.openshift.com/console/"
+            export WS_K8S_API_SERVER="api.starter-us-east-2.openshift.com:443"
+            
+            export PROXIED_K8S_API_SERVER="${WS_K8S_API_SERVER}"
+            export OAUTH_ISSUER="https://${WS_K8S_API_SERVER}"
+            export PROXY_PASS_URL="https://${WS_K8S_API_SERVER}"
+            export OAUTH_AUTHORIZE_URI="https://${WS_K8S_API_SERVER}/oauth/authorize"
+            export AUTH_LOGOUT_URI="https://${WS_K8S_API_SERVER}/connect/endsession?id_token={{id_token}}"
+
+            
+            echo > FABRIC8_WIT_API_URL=${FABRIC8_WIT_API_URL} > ./values.txt
+            echo >> FABRIC8_RECOMMENDER_API_URL=${FABRIC8_RECOMMENDER_API_URL} > ./values.txt
+            echo >> FABRIC8_FORGE_API_URL=${FABRIC8_FORGE_API_URL} > ./values.txt
+            echo >> FABRIC8_SSO_API_URL=${FABRIC8_SSO_API_URL} > ./values.txt
+
+            echo >> OPENSHIFT_CONSOLE_URL=${OPENSHIFT_CONSOLE_URL} > ./values.txt
+            echo >> WS_K8S_API_SERVER=${WS_K8S_API_SERVER} > ./values.txt
+
+            echo >> PROXIED_K8S_API_SERVER=${PROXIED_K8S_API_SERVER} > ./values.txt
+            echo >> OAUTH_ISSUER=${OAUTH_ISSUER} > ./values.txt
+            echo >> PROXY_PASS_URL=${PROXY_PASS_URL} > ./values.txt
+            echo >> OAUTH_AUTHORIZE_URI=${OAUTH_AUTHORIZE_URI} > ./values.txt
+            echo >> AUTH_LOGOUT_URI=${AUTH_LOGOUT_URI} > ./values.txt
+                
+            '''
+    // TODO lets use a comment on the PR to denote whether or not to use prod or pre-prod?
+    /*
+        sh '''
+            export FABRIC8_WIT_API_URL="https://api.prod-preview.openshift.io/api/"
+            export FABRIC8_RECOMMENDER_API_URL="https://api-bayesian.dev.rdu2c.fabric8.io/api/v1/"
+            export FABRIC8_FORGE_API_URL="https://forge.api.prod-preview.openshift.io"
+            export FABRIC8_SSO_API_URL="https://sso.prod-preview.openshift.io/"
+
+            export OPENSHIFT_CONSOLE_URL="https://console.free-int.openshift.com/console/"
+            export WS_K8S_API_SERVER="api.free-int.openshift.com:443"
+
+            cd fabric8-ui && npm run build:prod
+            '''
+    */
+
+
+        sh "oc process -n ${openShiftProject} --param-file=./values.txt -f ./snapshot.yml | oc apply -n ${openShiftProject} -f -"
 
         sleep 10
         // ok bad bad but there's a delay between DC's being applied and new pods being started.  lets find a better way to do this looking at teh new DC perhaps?
