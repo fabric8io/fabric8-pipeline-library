@@ -13,30 +13,43 @@ def call(body) {
         for ( v in config.pomVersionToUpdate ) {
             flow.searchAndReplaceMavenVersionProperty(v.key, v.value)
         }
-        stage 'Build + Unit test'
-        sh "mvn clean -e -U deploy"
 
+        def skipTests = config.skipTests ?: false
+
+        def profile
+        if (flow.isOpenShift()) {
+            profile = '-P openshift'
+        } else {
+            profile = '-P kubernetes'
+        }
+
+        stage ('Build + Unit test'){
+            sh "mvn clean -e -U deploy -Dmaven.test.skip=${skipTests} ${profile}"
+        }
+        
         def s2iMode = flow.isOpenShiftS2I()
         echo "s2i mode: ${s2iMode}"
         def m = readMavenPom file: 'pom.xml'
         def version = m.version
-
-        stage 'Push snapshot image to registry'
+        
         if (!s2iMode){
-            if (flow.isSingleNode()){
-                echo 'Running on a single node, skipping docker push as not needed'
+            stage ('Push snapshot image to registry'){
+                if (flow.isSingleNode()){
+                    echo 'Running on a single node, skipping docker push as not needed'
 
-                def groupId = m.groupId.split( '\\.' )
-                def user = groupId[groupId.size()-1].trim()
-                def artifactId = m.artifactId
-                sh "docker tag ${user}/${artifactId}:${version} ${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}/${user}/${artifactId}:${version}"
+                    def groupId = m.groupId.split( '\\.' )
+                    def user = groupId[groupId.size()-1].trim()
+                    def artifactId = m.artifactId
+                    sh "docker tag ${user}/${artifactId}:${version} ${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}/${user}/${artifactId}:${version}"
 
-            }else{
-                retry(3){
-                    sh "mvn fabric8:push -Ddocker.push.registry=${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}"
+                }else{
+                    retry(3){
+                        sh "mvn fabric8:push -Ddocker.push.registry=${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}"
+                    }
                 }
             }
         }
+
         return version
     }
   }
