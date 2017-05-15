@@ -10,6 +10,8 @@ def call(body) {
     def ghOrg =  config.githubOrganisation
     def dockerOrg = config.dockerOrganisation
     def prj = config.project
+    def buildOptions = config.dockerBuildOptions ?: ''
+
     def version
 
     if (!ghOrg){
@@ -60,7 +62,7 @@ def call(body) {
             def imageName = "docker.io/${dockerOrg}/${prj}"
 
             stage ('build image'){
-                sh "docker build -t ${imageName}:latest ."
+                sh "docker build -t ${imageName}:latest ${buildOptions} ."
             }
 
             stage ('push latest images'){
