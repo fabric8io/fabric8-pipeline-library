@@ -50,11 +50,12 @@ def call(body) {
             }
         }
 
-        stage ('Integration Testing'){
-            def utils = new io.fabric8.Utils()
-            def envTest = utils.environmentNamespace('test')
-            sh "mvn org.apache.maven.plugins:maven-failsafe-plugin:2.18.1:integration-test -Dfabric8.environment=${envTest} -Dit.test=*IT -DfailIfNoTests=false org.apache.maven.plugins:maven-failsafe-plugin:2.18.1:verify"
-        }
+        // commented out until we have whitelisting https://openshift.io/openshiftio/openshiftio/plan/detail/951
+        // stage ('Integration Testing'){
+        //     def utils = new io.fabric8.Utils()
+        //     def envTest = utils.environmentNamespace('test')
+        //     sh "mvn org.apache.maven.plugins:maven-failsafe-plugin:2.18.1:integration-test -Dfabric8.environment=${envTest} -Dit.test=*IT -DfailIfNoTests=false org.apache.maven.plugins:maven-failsafe-plugin:2.18.1:verify"
+        // }
         
         return version
     }
