@@ -26,8 +26,7 @@ def call(body) {
     sh "mkdir -p ${buildPath}"
 
     dir(buildPath) {
-        git "https://github.com/${ghOrg}/${prj}.git"
-
+        checkout scm
 
         container(name: 'go') {
             stage ('build binary'){
