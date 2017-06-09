@@ -15,9 +15,15 @@ import org.jenkinsci.plugins.workflow.job.WorkflowJob
 def environmentNamespace(environment) {
   KubernetesClient kubernetes = new DefaultKubernetesClient()
   def ns = getNamespace()
-  def answer = Environments.namespaceForEnvironment(kubernetes, environment, ns)
-  if (answer) {
-    return answer;
+
+  try {
+    def answer = Environments.namespaceForEnvironment(kubernetes, environment, ns)
+    if (answer) {
+      return answer;
+    }
+  } catch (e) {
+    echo "WARNING: Failed to invoke Environments.namespaceForEnvironment probably due to API whitelisting: ${e}"
+    e.printStackTrace()
   }
   if (ns.endsWith("-jenkins")){
     ns = ns.substring(0, ns.lastIndexOf("-jenkins"))
