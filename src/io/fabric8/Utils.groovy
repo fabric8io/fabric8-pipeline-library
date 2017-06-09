@@ -2,6 +2,7 @@
 package io.fabric8
 
 import com.cloudbees.groovy.cps.NonCPS
+import io.fabric8.kubernetes.api.environments.Environments
 import io.fabric8.kubernetes.client.DefaultKubernetesClient
 import io.fabric8.kubernetes.client.KubernetesClient
 import io.fabric8.openshift.client.DefaultOpenShiftClient
@@ -13,10 +14,10 @@ import org.jenkinsci.plugins.workflow.job.WorkflowJob
 @NonCPS
 def environmentNamespace(String environment) {
   KubernetesClient kubernetes = new DefaultKubernetesClient()
-  def ns = getNamespace()
+  def ns = kubernetes.getNamespace()
 
   try {
-    def answer = io.fabric8.kubernetes.api.environments.Environments.namespaceForEnvironment(kubernetes, environment, ns)
+    def answer = Environments.namespaceForEnvironment(environment)
     if (answer) {
       return answer;
     }
