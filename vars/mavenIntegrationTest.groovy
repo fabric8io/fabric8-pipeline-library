@@ -17,6 +17,7 @@ def call(body) {
             def ns = utils.environmentNamespace(envName)
             if (ns) {
                 kubeNS = "-Dkubernetes.namespace=${ns}"
+                echo "Running the integration tests in the namespace: ${ns}"
             }
         } catch (e) {
             echo "ERROR: failed to find the environment namespace for ${envName} due to ${e}"
