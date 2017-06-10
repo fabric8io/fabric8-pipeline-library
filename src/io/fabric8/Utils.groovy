@@ -2,8 +2,6 @@
 package io.fabric8
 
 import com.cloudbees.groovy.cps.NonCPS
-import io.fabric8.kubernetes.api.environments.Environments
-import io.fabric8.kubernetes.api.pipelines.PipelineConfiguration
 import io.fabric8.kubernetes.client.DefaultKubernetesClient
 import io.fabric8.kubernetes.client.KubernetesClient
 import io.fabric8.openshift.client.DefaultOpenShiftClient
@@ -14,7 +12,7 @@ import org.jenkinsci.plugins.workflow.job.WorkflowJob
 @NonCPS
 String environmentNamespace(String environment) {
   try {
-    def answer = Environments.namespaceForEnvironment(environment)
+    def answer = io.fabric8.kubernetes.api.environments.Environments.namespaceForEnvironment(environment)
     if (answer) {
       return answer;
     }
@@ -33,28 +31,28 @@ String environmentNamespace(String environment) {
  * Loads the environments in the default user namespace
  */
 @NonCPS
-Environments environments() {
+def environments() {
   try {
-    return Environments.load()
+    return io.fabric8.kubernetes.api.environments.Environments.load()
   } catch (e) {
     echo "WARNING: Failed to invoke Environments.load() probably due to API whitelisting: ${e}"
     e.printStackTrace()
   }
-  return new Environments(getNamespace(), new HashMap())
+  return new io.fabric8.kubernetes.api.environments.Environments(getNamespace(), new HashMap())
 }
 
 /**
  * Loads the environments from the given namespace
  */
 @NonCPS
-Environments environments(String namespace) {
+def environments(String namespace) {
   try {
-    return Environments.load(namespace)
+    return io.fabric8.kubernetes.api.environments.Environments.load(namespace)
   } catch (e) {
     echo "WARNING: Failed to invoke Environments.load(namespace) probably due to API whitelisting: ${e}"
     e.printStackTrace()
   }
-  return new Environments(namespace, new HashMap())
+  return new io.fabric8.kubernetes.api.environments.Environments(namespace, new HashMap())
 }
 
 
@@ -62,14 +60,14 @@ Environments environments(String namespace) {
  * Loads the environments from the user namespace
  */
 @NonCPS
-PipelineConfiguration pipelineConfiguration() {
+def pipelineConfiguration() {
   try {
-    return PipelineConfiguration.loadPipelineConfiguration()
+    return io.fabric8.kubernetes.api.pipelines.PipelineConfiguration.loadPipelineConfiguration()
   } catch (e) {
     echo "WARNING: Failed to invoke Environments.loadPipelineConfiguration() probably due to API whitelisting: ${e}"
     e.printStackTrace()
   }
-  return new PipelineConfiguration()
+  return new io.fabric8.kubernetes.api.pipelines.PipelineConfiguration()
 }
 
 
@@ -77,14 +75,14 @@ PipelineConfiguration pipelineConfiguration() {
  * Loads the environments from the given namespace
  */
 @NonCPS
-PipelineConfiguration pipelineConfiguration(String namespace) {
+def pipelineConfiguration(String namespace) {
   try {
-    return PipelineConfiguration.loadPipelineConfiguration(namespace)
+    return io.fabric8.kubernetes.api.pipelines.PipelineConfiguration.loadPipelineConfiguration(namespace)
   } catch (e) {
     echo "WARNING: Failed to invoke PipelineConfiguration.loadPipelineConfiguration(namespace) probably due to API whitelisting: ${e}"
     e.printStackTrace()
   }
-  return new PipelineConfiguration()
+  return new io.fabric8.kubernetes.api.pipelines.PipelineConfiguration()
 }
 
 /**
@@ -94,7 +92,7 @@ PipelineConfiguration pipelineConfiguration(String namespace) {
 boolean isDisabledITests() {
   boolean answer = false
   try {
-    PipelineConfiguration config = pipelineConfiguration()
+    def config = pipelineConfiguration()
     echo "Loaded PipelineConfiguration ${config}"
 
     if (isCD()) {
