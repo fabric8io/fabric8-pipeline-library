@@ -17,7 +17,7 @@ def environmentNamespace(String environment) {
   def ns = kubernetes.getNamespace()
 
   try {
-    def answer = Environments.namespaceForEnvironment(environment)
+    def answer = Environments.namespaceForEnvironment(environment, ns)
     if (answer) {
       return answer;
     }
