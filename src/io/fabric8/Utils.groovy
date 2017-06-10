@@ -86,6 +86,26 @@ PipelineConfiguration pipelineConfiguration(String namespace) {
   return new PipelineConfiguration()
 }
 
+/**
+ * Returns true if the integration tests should be disabled
+ */
+@NonCPS
+boolean isDisabledITests() {
+  try {
+    PipelineConfiguration config = pipelineConfiguration()
+    if (isCD()) {
+      return config.isDisableITestsCD()
+    } else if (isCI()) {
+      return config.isDisableITestsCI()
+    }
+  } catch (e) {
+    echo "WARNING: Failed to find the flag on the PipelineConfiguration object - probably due to the jenkins plugin `kubernetes-pipeline-plugin` version: ${e}"
+    e.printStackTrace()
+  }
+  return false;
+}
+
+
 
 @NonCPS
 String getNamespace() {
