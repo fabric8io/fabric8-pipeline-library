@@ -3,32 +3,108 @@ package io.fabric8
 
 import com.cloudbees.groovy.cps.NonCPS
 import io.fabric8.kubernetes.api.environments.Environments
+import io.fabric8.kubernetes.api.pipelines.PipelineConfiguration
 import io.fabric8.kubernetes.client.DefaultKubernetesClient
 import io.fabric8.kubernetes.client.KubernetesClient
 import io.fabric8.openshift.client.DefaultOpenShiftClient
 import io.fabric8.openshift.client.OpenShiftClient
-import io.fabric8.Fabric8Commands
 import jenkins.model.Jenkins
 import org.jenkinsci.plugins.workflow.job.WorkflowJob
 
 @NonCPS
-def environmentNamespace(String environment) {
-  KubernetesClient kubernetes = new DefaultKubernetesClient()
-  def ns = kubernetes.getNamespace()
-
+String environmentNamespace(String environment) {
   try {
-    def answer = Environments.namespaceForEnvironment(environment, ns)
+    def answer = Environments.namespaceForEnvironment(environment)
     if (answer) {
       return answer;
     }
   } catch (e) {
-    echo "WARNING: Failed to invoke Environments.namespaceForEnvironment probably due to API whitelisting: ${e}"
+    echo "WARNING: Failed to invoke Environments.namespaceForEnvironment(environment) probably due to API whitelisting: ${e}"
     e.printStackTrace()
   }
   if (ns.endsWith("-jenkins")){
     ns = ns.substring(0, ns.lastIndexOf("-jenkins"))
   }
   return ns + "-${environment.toLowerCase()}"
+}
+
+/**
+ * Loads the environments in the default user namespace
+ */
+@NonCPS
+Environments environments() {
+  try {
+    return Environments.load()
+  } catch (e) {
+    echo "WARNING: Failed to invoke Environments.load() probably due to API whitelisting: ${e}"
+    e.printStackTrace()
+  }
+  return new Environments(getNamespace(), new HashMap())
+}
+
+/**
+ * Loads the environments from the given namespace
+ */
+@NonCPS
+Environments environments(String namespace) {
+  try {
+    return Environments.load(namespace)
+  } catch (e) {
+    echo "WARNING: Failed to invoke Environments.load(namespace) probably due to API whitelisting: ${e}"
+    e.printStackTrace()
+  }
+  return new Environments(namespace, new HashMap())
+}
+
+
+/**
+ * Loads the environments from the user namespace
+ */
+@NonCPS
+PipelineConfiguration pipelineConfiguration() {
+  try {
+    return PipelineConfiguration.loadPipelineConfiguration()
+  } catch (e) {
+    echo "WARNING: Failed to invoke Environments.loadPipelineConfiguration() probably due to API whitelisting: ${e}"
+    e.printStackTrace()
+  }
+  return new PipelineConfiguration()
+}
+
+
+/**
+ * Loads the environments from the given namespace
+ */
+@NonCPS
+PipelineConfiguration pipelineConfiguration(String namespace) {
+  try {
+    return PipelineConfiguration.loadPipelineConfiguration(namespace)
+  } catch (e) {
+    echo "WARNING: Failed to invoke PipelineConfiguration.loadPipelineConfiguration(namespace) probably due to API whitelisting: ${e}"
+    e.printStackTrace()
+  }
+  return new PipelineConfiguration()
+}
+
+/**
+ * Returns true if the integration tests should be disabled
+ */
+@NonCPS
+boolean isDisabledITests() {
+  try {
+    PipelineConfiguration config = pipelineConfiguration()
+    echo "Loaded PipelineConfiguration ${config}"
+
+    if (isCD()) {
+      return config.isDisableITestsCD()
+    } else if (isCI()) {
+      return config.isDisableITestsCI()
+    }
+  } catch (e) {
+    echo "WARNING: Failed to find the flag on the PipelineConfiguration object - probably due to the jenkins plugin `kubernetes-pipeline-plugin` version: ${e}"
+    e.printStackTrace()
+  }
+  return false;
 }
 
 
