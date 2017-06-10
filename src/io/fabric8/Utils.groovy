@@ -38,7 +38,9 @@ def environments() {
     echo "WARNING: Failed to invoke Environments.load() probably due to API whitelisting: ${e}"
     e.printStackTrace()
   }
-  return new io.fabric8.kubernetes.api.environments.Environments(getNamespace(), new HashMap())
+  // TODO can't do this in old jenkins which don't have this class yet
+  // return new io.fabric8.kubernetes.api.environments.Environments(getNamespace(), new HashMap())
+  return null
 }
 
 /**
@@ -52,7 +54,9 @@ def environments(String namespace) {
     echo "WARNING: Failed to invoke Environments.load(namespace) probably due to API whitelisting: ${e}"
     e.printStackTrace()
   }
-  return new io.fabric8.kubernetes.api.environments.Environments(namespace, new HashMap())
+  // TODO can't do this in old jenkins which don't have this class yet
+  // return new io.fabric8.kubernetes.api.environments.Environments(namespace, new HashMap())
+  return null
 }
 
 
@@ -67,7 +71,9 @@ def pipelineConfiguration() {
     echo "WARNING: Failed to invoke Environments.loadPipelineConfiguration() probably due to API whitelisting: ${e}"
     e.printStackTrace()
   }
-  return new io.fabric8.kubernetes.api.pipelines.PipelineConfiguration()
+  // TODO can't do this in old jenkins which don't have this class yet
+  // return new io.fabric8.kubernetes.api.pipelines.PipelineConfiguration()
+  return null
 }
 
 
@@ -82,7 +88,9 @@ def pipelineConfiguration(String namespace) {
     echo "WARNING: Failed to invoke PipelineConfiguration.loadPipelineConfiguration(namespace) probably due to API whitelisting: ${e}"
     e.printStackTrace()
   }
-  return new io.fabric8.kubernetes.api.pipelines.PipelineConfiguration()
+  // TODO can't do this in old jenkins which don't have this class yet
+  //return new io.fabric8.kubernetes.api.pipelines.PipelineConfiguration()
+  return null
 }
 
 /**
