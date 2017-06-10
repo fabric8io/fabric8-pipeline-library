@@ -22,6 +22,7 @@ String environmentNamespace(String environment) {
     echo "WARNING: Failed to invoke Environments.namespaceForEnvironment(environment) probably due to API whitelisting: ${e}"
     e.printStackTrace()
   }
+  String ns = getNamespace()
   if (ns.endsWith("-jenkins")){
     ns = ns.substring(0, ns.lastIndexOf("-jenkins"))
   }
