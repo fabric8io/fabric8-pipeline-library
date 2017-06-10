@@ -93,6 +93,8 @@ PipelineConfiguration pipelineConfiguration(String namespace) {
 boolean isDisabledITests() {
   try {
     PipelineConfiguration config = pipelineConfiguration()
+    echo "Loaded PipelineConfiguration ${config}"
+
     if (isCD()) {
       return config.isDisableITestsCD()
     } else if (isCI()) {
