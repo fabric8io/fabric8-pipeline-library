@@ -92,20 +92,25 @@ PipelineConfiguration pipelineConfiguration(String namespace) {
  */
 @NonCPS
 boolean isDisabledITests() {
+  boolean answer = false
   try {
     PipelineConfiguration config = pipelineConfiguration()
     echo "Loaded PipelineConfiguration ${config}"
 
     if (isCD()) {
-      return config.isDisableITestsCD()
+      answer = config.isDisableITestsCD()
     } else if (isCI()) {
-      return config.isDisableITestsCI()
+      answer = config.isDisableITestsCI()
     }
   } catch (e) {
     echo "WARNING: Failed to find the flag on the PipelineConfiguration object - probably due to the jenkins plugin `kubernetes-pipeline-plugin` version: ${e}"
     e.printStackTrace()
   }
-  return false;
+
+  // TODO lets just disable ITests for now until this issue is fixed:
+  echo "Due to this issue: https://github.com/openshiftio/booster-common/issues/8 we are temporary disabling integration tests OOTB"
+  answer = true
+  return answer;
 }
 
 
