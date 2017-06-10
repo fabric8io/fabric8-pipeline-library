@@ -63,7 +63,7 @@ Environments environments(String namespace) {
 @NonCPS
 PipelineConfiguration pipelineConfiguration() {
   try {
-    return Environments.loadPipelineConfiguration()
+    return PipelineConfiguration.loadPipelineConfiguration()
   } catch (e) {
     echo "WARNING: Failed to invoke Environments.loadPipelineConfiguration() probably due to API whitelisting: ${e}"
     e.printStackTrace()
@@ -78,9 +78,9 @@ PipelineConfiguration pipelineConfiguration() {
 @NonCPS
 PipelineConfiguration pipelineConfiguration(String namespace) {
   try {
-    return Environments.loadPipelineConfiguration(namespace)
+    return PipelineConfiguration.loadPipelineConfiguration(namespace)
   } catch (e) {
-    echo "WARNING: Failed to invoke Environments.loadPipelineConfiguration(namespace) probably due to API whitelisting: ${e}"
+    echo "WARNING: Failed to invoke PipelineConfiguration.loadPipelineConfiguration(namespace) probably due to API whitelisting: ${e}"
     e.printStackTrace()
   }
   return new PipelineConfiguration()
