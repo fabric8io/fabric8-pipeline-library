@@ -92,7 +92,7 @@ def pipelineConfiguration(String namespace) {
 boolean isDisabledITests() {
   boolean answer = false
   try {
-    PipelineConfiguration config = pipelineConfiguration()
+    def config = pipelineConfiguration()
     echo "Loaded PipelineConfiguration ${config}"
 
     if (isCD()) {
