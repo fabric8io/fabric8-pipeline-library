@@ -2,6 +2,7 @@
 package io.fabric8
 
 import com.cloudbees.groovy.cps.NonCPS
+import io.fabric8.kubernetes.api.environments.Environments
 import io.fabric8.kubernetes.client.DefaultKubernetesClient
 import io.fabric8.kubernetes.client.KubernetesClient
 import io.fabric8.openshift.client.DefaultOpenShiftClient
@@ -11,18 +12,29 @@ import jenkins.model.Jenkins
 import org.jenkinsci.plugins.workflow.job.WorkflowJob
 
 @NonCPS
-def environmentNamespace(environment) {
+def environmentNamespace(String environment) {
   KubernetesClient kubernetes = new DefaultKubernetesClient()
-  def ns = getNamespace()
+  def ns = kubernetes.getNamespace()
+
+  try {
+    def answer = Environments.namespaceForEnvironment(environment, ns)
+    if (answer) {
+      return answer;
+    }
+  } catch (e) {
+    echo "WARNING: Failed to invoke Environments.namespaceForEnvironment probably due to API whitelisting: ${e}"
+    e.printStackTrace()
+  }
   if (ns.endsWith("-jenkins")){
     ns = ns.substring(0, ns.lastIndexOf("-jenkins"))
   }
-
-  return ns + "-${environment}"
+  return ns + "-${environment.toLowerCase()}"
 }
 
+
+
 @NonCPS
-def getNamespace() {
+String getNamespace() {
   KubernetesClient client = new DefaultKubernetesClient()
   return client.getNamespace()
 }
