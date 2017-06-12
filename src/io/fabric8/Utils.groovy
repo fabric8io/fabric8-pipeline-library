@@ -411,6 +411,31 @@ def getDownstreamProjectOverrides(project, id, downstreamProject, botName = '@fa
   }
 }
 
+def hasPRComment(token, match){
+  def flow = new Fabric8Commands()
+
+  def project = flow.getGitHubProject()
+  def pr = env.CHANGE_ID
+  if (!pr){
+    error 'no pull request number found so cannot get comments'
+  }
+  if (!match){
+    error 'provide a comment to match on'
+  }
+
+  def comments = flow.getIssueComments(project, pr, token)
+  // start by looking at the most recent commments and work back
+  Collections.reverse(comments)
+  for (comment in comments) {
+    echo "Found PR comment ${comment.body}, checking if it matches ${match}"
+    def text = comment.body.trim()
+    if (text.equalsIgnoreCase(match)){
+      return true
+    }
+  }
+  return false
+}
+
 def getDownstreamProjectOverrides(downstreamProject, botName = '@fabric8cd'){
 
   def flow = new Fabric8Commands()

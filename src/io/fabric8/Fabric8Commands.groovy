@@ -409,13 +409,12 @@ def closePR(project, id, newVersion, newPRID) {
     connection.disconnect()
 }
 
-def getIssueComments(project, id) {
-    def githubToken = getGitHubToken()
+def getIssueComments(project, id, String githubToken = getGitHubToken()) {
     def apiUrl = new URL("https://api.github.com/repos/${project}/issues/${id}/comments")
     echo "getting comments for ${apiUrl}"
 
-    HttpURLConnection connection = apiUrl.openConnection()
-    if (githubToken.length() > 0) {
+    def HttpURLConnection connection = apiUrl.openConnection()
+    if (githubToken != null && githubToken.length() > 0) {
         connection.setRequestProperty("Authorization", "Bearer ${githubToken}")
     }
 
@@ -425,13 +424,17 @@ def getIssueComments(project, id) {
 
     def rs = new JsonSlurper().parse(new InputStreamReader(connection.getInputStream(), "UTF-8"))
 
-    def code = connection.getResponseCode()
+    def code = 0
+    try {
+        code = connection.getResponseCode()
+    } catch (org.jenkinsci.plugins.scriptsecurity.sandbox.RejectedAccessException ex){
+        echo "${ex} will try to continue"
+    }
 
     connection.disconnect()
 
-    if (code != 200) {
+    if (code != 0 && code != 200) {
         error "Cannot get ${project} PR ${id} comments.  ${connection.getResponseMessage()}"
-
     }
 
     return rs
@@ -522,6 +525,65 @@ def addMergeCommentToPullRequest(String pr, String project) {
     }
 }
 
+def getGitHubProject(){
+    def url = getScmPushUrl()
+    if (!url.contains('github.com')){
+        error "${url} is not a GitHub URL"
+    }
+
+    if (url.contains("https://github.com/")){
+        url = url.replaceAll("https://github.com/", '')
+
+    } else if (url.contains("git@github.com:")){
+        url = url.replaceAll("git@github.com:", '')
+    }
+
+    if (url.contains(".git")){
+        url = url.replaceAll(".git", '')
+    }
+    return url.trim()
+}
+
+def isAuthorCollaborator(githubToken) {
+    if (!githubToken){
+        container(name: 'maven') {
+            githubToken = getGitHubToken()
+            if (!githubToken){
+                echo "No GitHub api key found so trying annonynous GitHub api call"
+            }
+        }
+    }
+    def project = getGitHubProject()
+
+    def changeAuthor = env.CHANGE_AUTHOR
+    if (!changeAuthor){
+        error "No commit author found.  Is this a pull request pipeline?"
+    }
+    echo "Checking if user ${changeAuthor} is a collaborator on ${project}"
+
+    def apiUrl = new URL("https://api.github.com/repos/${project}/collaborators/${changeAuthor}")
+
+    def HttpURLConnection connection = apiUrl.openConnection()
+    if (githubToken != null && githubToken.length() > 0) {
+        connection.setRequestProperty("Authorization", "Bearer ${githubToken}")
+    }
+    connection.setRequestMethod("GET")
+    connection.setDoOutput(true)
+
+    try {
+        connection.connect()
+        new InputStreamReader(connection.getInputStream(), "UTF-8")
+        return true
+    } catch (FileNotFoundException e1) {
+        return false
+    } finally {
+        connection.disconnect()
+    }
+
+    error "Error checking if user ${changeAuthor} is a collaborator on ${project}.  GitHub API Response code: ${code}"
+
+}
+
 def getUrlAsString(urlString) {
 
     def url = new URL(urlString)
@@ -608,10 +670,9 @@ def deleteRemoteBranch(String branchName, containerName) {
         sh 'chmod 700 /root/.ssh-git'
         sh "git push origin --delete ${branchName}"
     }
-
 }
 
-def getGitHubToken() {
+ def getGitHubToken() {
     def tokenPath = '/home/jenkins/.apitoken/hub'
     def githubToken = readFile tokenPath
     if (!githubToken?.trim()) {
@@ -719,6 +780,10 @@ def getCloudConfig() {
 
 def getScmPushUrl() {
     def url = sh(returnStdout: true, script: 'git config --get remote.origin.url').trim()
+
+    if (!url){
+        error "no URL found for git config --get remote.origin.url "
+    }
     return url
 }
 
