@@ -29,7 +29,7 @@ def call(body) {
     sh "mkdir -p ${buildPath}"
 
     dir(buildPath) {
-        checkout scm
+        git "https://github.com/${ghOrg}/${prj}.git"
 
         sh "git config user.email fabric8-admin@googlegroups.com"
         sh "git config user.name fabric8-release"
