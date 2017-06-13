@@ -409,7 +409,10 @@ def closePR(project, id, newVersion, newPRID) {
     connection.disconnect()
 }
 
-def getIssueComments(project, id, String githubToken = getGitHubToken()) {
+def getIssueComments(project, id, githubToken = null) {
+    if (!githubToken){
+        githubToken = getGitHubToken()
+    }
     def apiUrl = new URL("https://api.github.com/repos/${project}/issues/${id}/comments")
     echo "getting comments for ${apiUrl}"
 
