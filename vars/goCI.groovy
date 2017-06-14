@@ -12,7 +12,8 @@ def call(body) {
     def dockerOrg = config.dockerOrganisation
     def prj = config.project
     def buildOptions = config.dockerBuildOptions ?: ''
-    
+    def makeTarget = config.makeTarget ?: ''
+
     def flow = new Fabric8Commands()
     def version
     def imageName 
@@ -27,6 +28,15 @@ def call(body) {
         error 'no project defined'
     }
 
+    def token
+    try {
+        withCredentials([usernamePassword(credentialsId: 'cd-github', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+            token = env.PASS
+        }
+    } catch (err){
+        echo 'no cd-github credentials so will default to using a secret or annonymous'
+    }
+    
     def buildPath = "/home/jenkins/go/src/github.com/${ghOrg}/${prj}"
 
     sh "mkdir -p ${buildPath}"
@@ -35,9 +45,13 @@ def call(body) {
         checkout scm
 
         container(name: 'go') {
+            if (!flow.isAuthorCollaborator(token)){
+                error 'Change author is not a collaborator on the project, failing build until we support the [test] comment'
+            }
+
             stage ('build binary'){
                 version = "SNAPSHOT-${env.BRANCH_NAME}-${env.BUILD_NUMBER}"
-                sh "make"
+                sh "make ${makeTarget}"
             }
         }
 

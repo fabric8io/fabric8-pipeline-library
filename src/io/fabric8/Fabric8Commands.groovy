@@ -549,11 +549,9 @@ def getGitHubProject(){
 
 def isAuthorCollaborator(githubToken) {
     if (!githubToken){
-        container(name: 'maven') {
-            githubToken = getGitHubToken()
-            if (!githubToken){
-                echo "No GitHub api key found so trying annonynous GitHub api call"
-            }
+        githubToken = getGitHubToken()
+        if (!githubToken){
+            echo "No GitHub api key found so trying annonynous GitHub api call"
         }
     }
     def project = getGitHubProject()
