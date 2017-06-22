@@ -432,9 +432,9 @@ def getIssueComments(project, id, githubToken = null) {
         code = connection.getResponseCode()
     } catch (org.jenkinsci.plugins.scriptsecurity.sandbox.RejectedAccessException ex){
         echo "${ex} will try to continue"
+    } finally {
+        connection.disconnect()
     }
-
-    connection.disconnect()
 
     if (code != 0 && code != 200) {
         error "Cannot get ${project} PR ${id} comments.  ${connection.getResponseMessage()}"
@@ -455,21 +455,65 @@ def mergePR(project, id) {
     connection.setDoOutput(true)
     connection.connect()
 
-    // execute the POST request
-    def rs = new JsonSlurper().parse(new InputStreamReader(connection.getInputStream(), "UTF-8"))
+    // execute the request
+    def rs
+    try{
+        rs = new JsonSlurper().parse(new InputStreamReader(connection.getInputStream(), "UTF-8"))
 
-    def code = connection.getResponseCode()
+        def code = connection.getResponseCode()
 
-    if (code != 200) {
-        if (code == 405) {
-            error "${project} PR ${id} not merged.  ${rs.message}"
+        if (code != 200) {
+            if (code == 405) {
+                error "${project} PR ${id} not merged.  ${rs.message}"
+            } else {
+                error "${project} PR ${id} not merged.  GitHub API Response code: ${code}"
+            }
         } else {
-            error "${project} PR ${id} not merged.  GitHub API Response code: ${code}"
+            echo "${project} PR ${id} ${rs.message}"
         }
-    } else {
-        echo "${project} PR ${id} ${rs.message}"
+    } finally {
+        connection.disconnect()
+        // if merge failed try to squash and merge
+        squashAndMerge(project, id)
     }
-    connection.disconnect()
+}
+
+def squashAndMerge(project, id) {
+    def githubToken = getGitHubToken()
+    def apiUrl = new URL("https://api.github.com/repos/${project}/pulls/${id}/merge")
+
+    def HttpURLConnection connection = apiUrl.openConnection()
+    if (githubToken.length() > 0) {
+        connection.setRequestProperty("Authorization", "Bearer ${githubToken}")
+    }
+    connection.setRequestMethod("PUT")
+    connection.setDoOutput(true)
+    connection.connect()
+    def body = "{\"merge_method\":\"squash\"}"
+
+    try{
+
+        OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream())
+        writer.write(body)
+        writer.flush()
+
+        new InputStreamReader(connection.getInputStream())
+
+        def code = connection.getResponseCode()
+
+        if (code != 200) {
+            if (code == 405) {
+                error "${project} PR ${id} not merged.  ${rs.message}"
+            } else {
+                error "${project} PR ${id} not merged.  GitHub API Response code: ${code}"
+            }
+        } else {
+            echo "${project} PR ${id} ${rs.message}"
+        }
+    } finally {
+        connection.disconnect()
+        // if merge failed try to squash and merge
+    }
 }
 
 def addCommentToPullRequest(comment, pr, project) {
