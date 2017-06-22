@@ -473,6 +473,7 @@ def mergePR(project, id) {
         }
     } finally {
         connection.disconnect()
+        connection = null
         // if merge failed try to squash and merge
         squashAndMerge(project, id)
     }
@@ -512,7 +513,7 @@ def squashAndMerge(project, id) {
         }
     } finally {
         connection.disconnect()
-        // if merge failed try to squash and merge
+        connection = null
     }
 }
 
