@@ -493,14 +493,13 @@ def squashAndMerge(project, id) {
     connection.connect()
     def body = "{\"merge_method\":\"squash\"}"
 
+    def rs
     try{
-
         OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream())
         writer.write(body)
         writer.flush()
 
-        new InputStreamReader(connection.getInputStream())
-
+        rs = new JsonSlurper().parse(new InputStreamReader(connection.getInputStream(), "UTF-8"))
         def code = connection.getResponseCode()
 
         if (code != 200) {
@@ -515,6 +514,7 @@ def squashAndMerge(project, id) {
     } finally {
         connection.disconnect()
         connection = null
+        rs = null
     }
 }
 
