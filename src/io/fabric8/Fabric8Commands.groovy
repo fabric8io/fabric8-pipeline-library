@@ -474,6 +474,7 @@ def mergePR(project, id) {
     } finally {
         connection.disconnect()
         connection = null
+        rs = null
         // if merge failed try to squash and merge
         squashAndMerge(project, id)
     }
