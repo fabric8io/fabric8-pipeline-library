@@ -372,7 +372,7 @@ Now that we don't store the next release version in the poms we need to figure i
 
 Deploys the staged fabric8 release to a remote OpenShift cluster
 
-__NOTE__ in order for images to be found by the the remote OpenShift instance it must be able to pull images from the staging docker registry.  Noting private networks and insecure-registry flags.
+__NOTE__ in order for images to be found by the remote OpenShift instance it must be able to pull images from the staging docker registry.  Noting private networks and insecure-registry flags.
 
 ```groovy
     node{
@@ -388,7 +388,7 @@ __NOTE__ in order for images to be found by the the remote OpenShift instance it
 
 Deploys the staged fabric8 release to a remote Kubernetes cluster  
 
-__NOTE__ in order for images to be found by the the remote OpenShift instance it must be able to pull images from the staging docker registry.  Noting private networks and insecure-registry flags.    
+__NOTE__ in order for images to be found by the remote OpenShift instance it must be able to pull images from the staging docker registry.  Noting private networks and insecure-registry flags.    
 
 ```groovy
     node{
@@ -455,7 +455,7 @@ A template defines how the jenkins slave pod will look like, but the pod is not 
 When a node is requested the matching template will be selected and pod from the template will be created.
 
 The library provides shortcut function both to nodes and templates. In most cases you will just need to use the node.
-The only exception is when you need to mix and match (see [mixing and mathcing](#mixing-and-matching)).
+The only exception is when you need to mix and match (see [mixing and matching](#mixing-and-matching)).
 
 
 The provided node / template pairs are the following:
@@ -597,7 +597,7 @@ Templates can be created either by using the Jenkins administration console or b
 #### Using the Jenkins Administration Console
 
 In the console choose `Manage Jenkins` -> `Configure System` and scroll down until you find the section `Cloud` -> `Kubernetes`.
-There you can click to `Add Pod Template` to create your own using the wizzard.
+There you can click to `Add Pod Template` to create your own using the wizard.
 
 Then you can just instantiate the template by creating a node that references the label to the template:
 
