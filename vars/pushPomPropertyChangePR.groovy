@@ -15,6 +15,7 @@ def call(body) {
 
   def pomLocation = config.parentPomLocation ?: 'pom.xml'
   def containerName = config.containerName ?: 'clients'
+  def autoMerge = config.autoMerge ?: false
 
   for (int i = 0; i < config.projects.size(); i++) {
     def project = config.projects[i]
@@ -58,11 +59,16 @@ def call(body) {
         id = flow.createPullRequest("${message}","${project}","versionUpdate${uid}")
       }
       echo "received Pull Request Id: ${id}"
-      flow.addMergeCommentToPullRequest(id, project)
-
-      waitUntilPullRequestMerged{
-        name = project
-        prId = id
+      
+      if (autoMerge){
+        sleep 5 // give a bit of time for GitHub to get itself in order after the new PR
+        flow.mergePR(project, id)
+      } else {
+        flow.addMergeCommentToPullRequest(id, project)
+        waitUntilPullRequestMerged{
+          name = project
+          prId = id
+        }
       }
     }
   }
