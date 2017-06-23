@@ -471,12 +471,13 @@ def mergePR(project, id) {
         } else {
             echo "${project} PR ${id} ${rs.message}"
         }
+    } catch (err) {
+        // if merge failed try to squash and merge
+        squashAndMerge(project, id)
     } finally {
         connection.disconnect()
         connection = null
         rs = null
-        // if merge failed try to squash and merge
-        squashAndMerge(project, id)
     }
 }
 
