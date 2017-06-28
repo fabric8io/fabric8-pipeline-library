@@ -430,8 +430,8 @@ def getIssueComments(project, id, githubToken = null) {
     def code = 0
     try {
         code = connection.getResponseCode()
-    } catch (org.jenkinsci.plugins.scriptsecurity.sandbox.RejectedAccessException ex){
-        echo "${ex} will try to continue"
+    // } catch (org.jenkinsci.plugins.scriptsecurity.sandbox.RejectedAccessException ex){
+    //     echo "${ex} will try to continue"
     } finally {
         connection.disconnect()
     }
