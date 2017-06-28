@@ -43,22 +43,11 @@ def call(body) {
             utils.addAnnotationToBuild('fabric8.io/jenkins.changeUrl', changeUrl)
         }
 
-        if (flow.hasService("bayesian-link")) {
-            try {
-                sh 'mvn io.github.stackinfo:stackinfo-maven-plugin:0.2:prepare'
-                def response = bayesianAnalysis url: 'https://bayesian-link'
-                if (response.success) {
-                    utils.addAnnotationToBuild('fabric8.io/bayesian.analysisUrl', response.getAnalysisUrl())
-                } else {
-                    error "Bayesian analysis failed ${response}"
-                }
-            } catch (err) {
-                echo "Unable to run Bayesian analysis: ${err}"
-            }
-        }
+        bayesianScanner(body);
     }
 
-    //try sonarQube
+
+
     sonarQubeScanner(body);
 
 
@@ -81,15 +70,5 @@ def call(body) {
         }
     }
 
-    if (flow.hasService("content-repository")) {
-      try {
-        //sh 'mvn site site:deploy'
-        echo 'mvn site disabled'
-      } catch (err) {
-        // lets carry on as maven site isn't critical
-        echo 'unable to generate maven site'
-      }
-    } else {
-      echo 'no content-repository service so not deploying the maven site report'
-    }
+    contentRepository(body);
   }
