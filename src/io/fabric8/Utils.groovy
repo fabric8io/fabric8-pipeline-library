@@ -119,6 +119,24 @@ boolean isDisabledITests() {
   return answer;
 }
 
+/**
+ * Returns true if we should mount the docker socket for docker builds
+ */
+@NonCPS
+boolean isUseDockerSocket() {
+  boolean answer = false
+  try {
+    def config = pipelineConfiguration()
+    echo "Loaded PipelineConfiguration ${config}"
+
+    return config.isUseDockerSocket()
+  } catch (e) {
+    echo "WARNING: Failed to find the flag on the PipelineConfiguration object - probably due to the jenkins plugin `kubernetes-pipeline-plugin` version: ${e}"
+    e.printStackTrace()
+  }
+  return true;
+}
+
 
 
 @NonCPS
