@@ -9,7 +9,7 @@ def call(body) {
 
     if (runBayesianScanner) {
         def flow = new io.fabric8.Fabric8Commands()
-        def utils = io.fabric8.Utils()
+        def utils = new io.fabric8.Utils()
         echo "Checking ${serviceName} exists"
         if (flow.hasService(serviceName)) {
             try {
