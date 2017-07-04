@@ -26,7 +26,9 @@ def call(body) {
         yaml = flow.getUrlAsString("${mavenRepo}/${yamlReleaseVersion}/${deploymentName}-${yamlReleaseVersion}-openshift.yml")
 
         yaml = flow.swizzleImageName(yaml, originalImageName, newImageName)
-
+        if (yaml.contains(originalImageName)){
+            error "original image ${originalImageName} not replaced with ${newImageName} in yaml: \n ${yaml}"
+        }
     }
     // cant use writeFile as we have long filename errors
     sh "echo '${yaml}' > snapshot.yml"
