@@ -10,6 +10,7 @@
       - [Approve](#approve)
       - [Deploy Project](#deploy-project)
       - [Drop Project](#drop-project)
+      - [Get Deployment Resources](#get-deployment-resources)
       - [Get Kubernetes JSON](#get-kubernetes-json)
       - [Get New Version](#get-new-version)
       - [Maven Canary Release](#maven-canary-release)
@@ -29,16 +30,16 @@
       - [Git Tag](#git-tag)
       - [Deploy Remote OpenShift](#deploy-remote-openshift)
       - [Deploy Remote Kubernetes](#deploy-remote-kubernetes)
+      - [Add Annotation To Build](#add-annotation-to-build)
   - [Understanding how it works](#understanding-how-it-works)
-      - [Templates vs Nodes](#templates-vs-nodes)
-        - [Maven Node](#maven-node)
-        - [Docker Node](#docker-node)
-        - [Clients Node](#clients-node)
-        - [Release Node](#release-node)
-      - [Mixing and Matching](#mixing-and-matching)        
-      - [Creating and using your own templates](#creating-and-using-your-own-templates)
-        - [Using the Jenkins Administration Console](#using the jenkins administration console)
-
+    - [Template vs Node](#template-vs-node)
+      - [Maven Node](#maven-node)
+      - [Docker Node](#docker-node)
+      - [Clients Node](#clients-node)
+      - [Release Node](#release-node)
+    - [Mixing and matching](#mixing-and-matching)
+    - [Creating and using your own templates](#creating-and-using-your-own-templates)
+      - [Using the Jenkins Administration Console](#using-the-jenkins-administration-console)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
