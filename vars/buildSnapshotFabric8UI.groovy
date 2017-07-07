@@ -53,7 +53,6 @@ def call(body) {
         cd fabric8-ui && npm run build:prod
         '''
 */
-    def shortCommitSha = getNewVersion {}
-    def tempVersion= 'SNAPSHOT.' + shortCommitSha + env.BUILD_NUMBER
+    def tempVersion= "SNAPSHOT-${env.BRANCH_NAME}-${env.BUILD_NUMBER}"
     return tempVersion
 }
