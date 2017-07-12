@@ -32,7 +32,10 @@ def call(body) {
     }
     // cant use writeFile as we have long filename errors
     sh "echo '${yaml}' > snapshot.yml"
-
+    def template = false
+    if (yaml.contains('kind: Template')){
+        template = true
+    }
     container('clients') {
 
         try {
@@ -43,6 +46,7 @@ def call(body) {
         }
 
         // TODO share this code with buildSnapshotFabric8UI.groovy!
+        // this is only when deploying fabric8-ui, need to figure out a better way
         sh '''
             export FABRIC8_WIT_API_URL="https://api.openshift.io/api/"
             export FABRIC8_RECOMMENDER_API_URL="https://recommender.api.openshift.io"
@@ -89,8 +93,11 @@ def call(body) {
             '''
     */
 
-
-        sh "oc process -n ${openShiftProject} --param-file=./values.txt -f ./snapshot.yml | oc apply -n ${openShiftProject} -f -"
+        if (template){
+            sh "oc process -n ${openShiftProject} --param-file=./values.txt -f ./snapshot.yml | oc apply -n ${openShiftProject} -f -"
+        } else {
+            sh "oc apply -n ${openShiftProject} -f ./snapshot.yml"
+        }
 
         sleep 10
         // ok bad bad but there's a delay between DC's being applied and new pods being started.  lets find a better way to do this looking at teh new DC perhaps?
