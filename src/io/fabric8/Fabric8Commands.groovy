@@ -641,7 +641,7 @@ def getUrlAsString(urlString) {
     def url = new URL(urlString)
     def scan
     def response
-
+    echo "getting string from URL: ${url}"
     try {
         scan = new Scanner(url.openStream(), "UTF-8")
         response = scan.useDelimiter("\\A").next()
