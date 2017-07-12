@@ -22,11 +22,12 @@ def call(body) {
 
     container('clients') {
         // get the latest released yaml
+        
         def yamlReleaseVersion = flow.getReleaseVersionFromMavenMetadata("${mavenRepo}/maven-metadata.xml")
         yaml = flow.getUrlAsString("${mavenRepo}/${yamlReleaseVersion}/${deploymentName}-${yamlReleaseVersion}-openshift.yml")
-
         yaml = flow.swizzleImageName(yaml, originalImageName, newImageName)
-        if (yaml.contains(originalImageName)){
+
+        if (!yaml.contains(newImageName)){
             error "original image ${originalImageName} not replaced with ${newImageName} in yaml: \n ${yaml}"
         }
     }
