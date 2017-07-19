@@ -54,18 +54,28 @@ def call(body) {
     def s2iMode = flow.isOpenShiftS2I()
     echo "s2i mode: ${s2iMode}"
 
-    if (!s2iMode){
-        if (flow.isSingleNode()){
+    def registryHost = env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST
+    def registryPort = env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT
+
+    if (!s2iMode) {
+        if (flow.isSingleNode()) {
             echo 'Running on a single node, skipping docker push as not needed'
             def m = readMavenPom file: 'pom.xml'
-            def groupId = m.groupId.split( '\\.' )
-            def user = groupId[groupId.size()-1].trim()
+            def groupId = m.groupId.split('\\.')
+            def user = groupId[groupId.size() - 1].trim()
             def artifactId = m.artifactId
-            sh "docker tag ${user}/${artifactId}:${config.version} ${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}/${user}/${artifactId}:${config.version}"
-
-        }else{
-            retry(3){
-                sh "mvn fabric8:push -Ddocker.push.registry=${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}"
+            if (registryHost && registryPort) {
+                sh "docker tag ${user}/${artifactId}:${config.version} ${registryHost}:${registryPort}/${user}/${artifactId}:${config.version}"
+            } else {
+                echo "WARNING: cannot tag the docker image ${user}/${artifactId}:${config.version} as there is no FABRIC8_DOCKER_REGISTRY_SERVICE_HOST or FABRIC8_DOCKER_REGISTRY_SERVICE_PORT environment variable!"
+            }
+        } else {
+            if (registryHost && registryPort) {
+                retry(3) {
+                    sh "mvn fabric8:push -Ddocker.push.registry=${registryHost}:${registryPort}"
+                }
+            } else {
+                error "Cannot push the docker image ${user}/${artifactId}:${config.version} as there is no FABRIC8_DOCKER_REGISTRY_SERVICE_HOST or FABRIC8_DOCKER_REGISTRY_SERVICE_PORT environment variables\nTry run the fabric8-docker-registry?"
             }
         }
     }

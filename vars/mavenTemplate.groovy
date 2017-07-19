@@ -42,6 +42,8 @@ def call(Map parameters = [:], body) {
             )
         }
     } else {
+        echo "building using the docker socket"
+        
         podTemplate(cloud: cloud, label: label, inheritFrom: "${inheritFrom}",
                 containers: [
                         //[name: 'jnlp', image: "${jnlpImage}", args: '${computer.jnlpmac} ${computer.name}'],
