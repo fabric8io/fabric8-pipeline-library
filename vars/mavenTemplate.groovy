@@ -15,7 +15,7 @@ def call(Map parameters = [:], body) {
 
     def cloud = flow.getCloudConfig()
 
-    if (util.isUseOpenShiftS2IForBuilds()) {
+    if (utils.isUseOpenShiftS2IForBuilds()) {
         podTemplate(cloud: cloud, label: label, inheritFrom: "${inheritFrom}", serviceAccount: 'jenkins', restartPolicy: 'OnFailure',
                 containers: [
                         [name: 'jnlp', image: "${jnlpImage}", args: '${computer.jnlpmac} ${computer.name}', workingDir: '/home/jenkins/',
