@@ -4,6 +4,7 @@ import io.fabric8.Utils
 
 def call(Map parameters = [:], body) {
     def flow = new Fabric8Commands()
+    def utils = new Utils()
 
     def defaultLabel = buildId('maven')
     def label = parameters.get('label', defaultLabel)
@@ -14,7 +15,7 @@ def call(Map parameters = [:], body) {
 
     def cloud = flow.getCloudConfig()
 
-    if (flow.isUseOpenShiftS2IForBuilds()) {
+    if (util.isUseOpenShiftS2IForBuilds()) {
         podTemplate(cloud: cloud, label: label, inheritFrom: "${inheritFrom}", serviceAccount: 'jenkins', restartPolicy: 'OnFailure',
                 containers: [
                         [name: 'jnlp', image: "${jnlpImage}", args: '${computer.jnlpmac} ${computer.name}', workingDir: '/home/jenkins/',

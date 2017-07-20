@@ -818,51 +818,6 @@ def isOpenShift() {
     return new DefaultOpenShiftClient().isAdaptable(OpenShiftClient.class)
 }
 
-/**
- * Returns true if we should use S2I to build docker images
- */
-@NonCPS
-def isUseOpenShiftS2IForBuilds() {
-    return !isUseDockerSocket()
-}
-
-/**
- * Returns true if the current cluster can support S2I
- */
-@NonCPS
-def supportsOpenShiftS2I() {
-    DefaultOpenShiftClient client = new DefaultOpenShiftClient();
-    if (client.isAdaptable(OpenShiftClient.class)) {
-        try {
-            if (client.supportsOpenShiftAPIGroup("image.openshift.io")) {
-                return true
-            }
-        } catch (e) {
-          echo "WARNING: Failed to use the OpenShiftClient.supportsOpenShiftAPIGroup() API: ${e}"
-          e.printStackTrace()
-          return true
-        }
-    }
-    return false
-}
-
-/**
- * Returns true if we should mount the docker socket for docker builds
- */
-@NonCPS
-boolean isUseDockerSocket() {
-  try {
-    def config = pipelineConfiguration()
-    echo "Loaded PipelineConfiguration ${config}"
-    return config.isUseDockerSocket()
-  } catch (e) {
-    echo "WARNING: Failed to find the flag on the PipelineConfiguration object - probably due to the jenkins plugin `kubernetes-pipeline-plugin` version: ${e}"
-    e.printStackTrace()
-  }
-  return supportsOpenShiftS2I() ? false : true;
-}
-
-
 @NonCPS
 def getCloudConfig() {
     def openshiftCloudConfig = Jenkins.getInstance().getCloud('openshift')
