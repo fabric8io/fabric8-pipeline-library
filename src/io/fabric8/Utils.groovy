@@ -156,9 +156,13 @@ boolean isUseDockerSocket() {
   try {
     def config = pipelineConfiguration()
     echo "Loaded PipelineConfiguration ${config}"
-    return config.isUseDockerSocket()
+    def flag = config.getUseDockerSocketFlag()
+    if (flag != null) {
+      echo "Loaded the useDockerSocket flag ${flag}"
+      return flag ? true : false
+    }
   } catch (e) {
-    echo "WARNING: Failed to find the flag on the PipelineConfiguration object - probably due to the jenkins plugin `kubernetes-pipeline-plugin` version: ${e}"
+    echo "WARNING: Failed to find the getUseDockerSocketFlag() flag on the PipelineConfiguration object - probably due to the jenkins plugin `kubernetes-pipeline-plugin` version: ${e}"
     e.printStackTrace()
   }
   return supportsOpenShiftS2I() ? false : true;
