@@ -818,7 +818,6 @@ def isOpenShift() {
     return new DefaultOpenShiftClient().isAdaptable(OpenShiftClient.class)
 }
 
-
 @NonCPS
 def getCloudConfig() {
     def openshiftCloudConfig = Jenkins.getInstance().getCloud('openshift')
