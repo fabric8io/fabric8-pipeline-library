@@ -106,7 +106,7 @@ def call(body) {
         waitUntil {
             // wait until the pods are running has been deleted
             try {
-                sh "oc get pod -l project=${deploymentName},provider=${providerLabel} -n ${openShiftProject} | grep Running"
+                sh "oc get pod -l app=${deploymentName},provider=${providerLabel} -n ${openShiftProject} | grep Running"
                 echo "${deploymentName} pod is running"
                 return true
             } catch (err) {
