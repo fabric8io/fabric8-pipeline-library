@@ -86,13 +86,17 @@ def call(body) {
                         sh "git config --global user.email fabric8-admin@googlegroups.com"
                         sh "git config --global user.name fabric8-release"
 
-                        def githubToken = flow.getGitHubToken()
                         def message = "\"Update pom property versions\""
                         sh "cd ${repo} && git add ${pomLocation}"
                         sh "cd ${repo} && git commit -m ${message}"
                         sh "cd ${repo} && git push origin versionUpdate${uid}"
                         retry(5) {
-                            sh "export GITHUB_TOKEN=${githubToken} && cd ${repo} && hub pull-request -m ${message} > pr.txt"
+                            String ghToken = readFile '/home/jenkins/.apitoken/hub'
+                            wrap([$class: 'MaskPasswordsBuildWrapper', varPasswordPairs: [
+                                [password: ghToken, var: 'GH_PASSWORD']]]) {
+
+                                sh "export GITHUB_TOKEN=${ghToken} && cd ${repo} && hub pull-request -m ${message} > pr.txt"
+                            }   
                         }
                     }
                     pr = readFile("${repo}/pr.txt")

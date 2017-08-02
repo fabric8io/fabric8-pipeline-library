@@ -53,9 +53,12 @@ def call(body) {
                 } else {
                     version = getNewVersion {}
                 }
+                String ghToken = readFile '/home/jenkins/.apitoken/hub'
+                wrap([$class: 'MaskPasswordsBuildWrapper', varPasswordPairs: [
+                    [password: ghToken, var: 'GH_PASSWORD']]]) {
 
-                def token = new io.fabric8.Fabric8Commands().getGitHubToken()
-                sh "export GITHUB_ACCESS_TOKEN=${token}; make -e BRANCH=master release"
+                    sh "export GITHUB_ACCESS_TOKEN=${ghToken}; make -e BRANCH=master release"
+                }
             }
         }
 
