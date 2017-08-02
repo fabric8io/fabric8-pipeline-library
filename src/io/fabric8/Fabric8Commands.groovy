@@ -761,7 +761,7 @@ def getServiceURL(String serviceName, String namespace = null, String protocol =
     return KubernetesHelper.getServiceURL(kubernetes, serviceName, namespace, protocol, external)
 }
 
-def isOpenShiftS2I() {
+def hasOpenShiftYaml() {
   def openshiftYaml = findFiles(glob: '**/openshift.yml')
     try {
         if (openshiftYaml) {

@@ -38,7 +38,7 @@ def call(body) {
             sh "mvn clean -e -U deploy -Dmaven.test.skip=${skipTests} ${profile}"
         }
 
-        def s2iMode = flow.isOpenShiftS2I()
+        def s2iMode = utils.supportsOpenShiftS2I()
         echo "s2i mode: ${s2iMode}"
         def m = readMavenPom file: 'pom.xml'
         def version = m.version
