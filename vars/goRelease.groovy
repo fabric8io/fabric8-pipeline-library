@@ -57,7 +57,7 @@ def call(body) {
                 wrap([$class: 'MaskPasswordsBuildWrapper', varPasswordPairs: [
                     [password: ghToken, var: 'GH_PASSWORD']]]) {
 
-                    sh "export GITHUB_ACCESS_TOKEN=${ghToken}; make -e BRANCH=master release"
+                    sh "export GITHUB_ACCESS_TOKEN=${ghToken} make -e BRANCH=master release"
                 }
             }
         }
