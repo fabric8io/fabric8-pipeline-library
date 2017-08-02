@@ -51,7 +51,7 @@ def call(body) {
     sonarQubeScanner(body);
 
 
-    def s2iMode = flow.isOpenShiftS2I()
+    def s2iMode = utils.supportsOpenShiftS2I()
     echo "s2i mode: ${s2iMode}"
 
     def registryHost = env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST
