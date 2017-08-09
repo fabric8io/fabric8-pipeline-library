@@ -6,5 +6,8 @@
  * @return
  */
 def call(String prefix = '') {
-    return  "${prefix}${env.JOB_NAME}_${env.BUILD_NUMBER}".replaceAll('-', '_').replaceAll('/', '_').replaceAll(' ', '_')
+    def repo = new io.fabric8.Utils().getRepoName()
+    def buildID = "${prefix}${repo}_${env.BUILD_NUMBER}".replaceAll('-', '_').replaceAll('/', '_').replaceAll(' ', '_')
+    // kubernetes has a max 63 chars for labels
+    return buildID.substring(buildID.length() - 63, buildID.length());
 }
