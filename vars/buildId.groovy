@@ -6,5 +6,6 @@
  * @return
  */
 def call(String prefix = '') {
-    return  "${prefix}${env.JOB_NAME}_${env.BUILD_NUMBER}".replaceAll('-', '_').replaceAll('/', '_').replaceAll(' ', '_')
+    def repo = new io.fabric8.Utils().getRepoName()
+    return "${prefix}${repo}_${env.BUILD_NUMBER}".replaceAll('-', '_').replaceAll('/', '_').replaceAll(' ', '_')
 }

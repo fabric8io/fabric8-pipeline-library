@@ -430,11 +430,11 @@ def getIssueComments(project, id, githubToken = null) {
     def code = 0
     try {
         code = connection.getResponseCode()
-    } catch (org.jenkinsci.plugins.scriptsecurity.sandbox.RejectedAccessException ex){
-        echo "${ex} will try to continue"
+    // } catch (org.jenkinsci.plugins.scriptsecurity.sandbox.RejectedAccessException ex){
+    //     echo "${ex} will try to continue"
+    } finally {
+        connection.disconnect()
     }
-
-    connection.disconnect()
 
     if (code != 0 && code != 200) {
         error "Cannot get ${project} PR ${id} comments.  ${connection.getResponseMessage()}"
@@ -455,21 +455,72 @@ def mergePR(project, id) {
     connection.setDoOutput(true)
     connection.connect()
 
-    // execute the POST request
-    def rs = new JsonSlurper().parse(new InputStreamReader(connection.getInputStream(), "UTF-8"))
+    // execute the request
+    def rs
+    try{
+        rs = new JsonSlurper().parse(new InputStreamReader(connection.getInputStream(), "UTF-8"))
 
-    def code = connection.getResponseCode()
+        def code = connection.getResponseCode()
 
-    if (code != 200) {
-        if (code == 405) {
-            error "${project} PR ${id} not merged.  ${rs.message}"
+        if (code != 200) {
+            if (code == 405) {
+                error "${project} PR ${id} not merged.  ${rs.message}"
+            } else {
+                error "${project} PR ${id} not merged.  GitHub API Response code: ${code}"
+            }
         } else {
-            error "${project} PR ${id} not merged.  GitHub API Response code: ${code}"
+            echo "${project} PR ${id} ${rs.message}"
         }
-    } else {
-        echo "${project} PR ${id} ${rs.message}"
+    } catch (err) {
+        // if merge failed try to squash and merge
+        connection = null
+        rs = null
+        squashAndMerge(project, id)
+    } finally {
+        if (connection){
+            connection.disconnect()
+            connection = null
+        }
+        rs = null
     }
-    connection.disconnect()
+}
+
+def squashAndMerge(project, id) {
+    def githubToken = getGitHubToken()
+    def apiUrl = new URL("https://api.github.com/repos/${project}/pulls/${id}/merge")
+
+    def HttpURLConnection connection = apiUrl.openConnection()
+    if (githubToken.length() > 0) {
+        connection.setRequestProperty("Authorization", "Bearer ${githubToken}")
+    }
+    connection.setRequestMethod("PUT")
+    connection.setDoOutput(true)
+    connection.connect()
+    def body = "{\"merge_method\":\"squash\"}"
+
+    def rs
+    try{
+        OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream())
+        writer.write(body)
+        writer.flush()
+
+        rs = new JsonSlurper().parse(new InputStreamReader(connection.getInputStream(), "UTF-8"))
+        def code = connection.getResponseCode()
+
+        if (code != 200) {
+            if (code == 405) {
+                error "${project} PR ${id} not merged.  ${rs.message}"
+            } else {
+                error "${project} PR ${id} not merged.  GitHub API Response code: ${code}"
+            }
+        } else {
+            echo "${project} PR ${id} ${rs.message}"
+        }
+    } finally {
+        connection.disconnect()
+        connection = null
+        rs = null
+    }
 }
 
 def addCommentToPullRequest(comment, pr, project) {
@@ -590,7 +641,7 @@ def getUrlAsString(urlString) {
     def url = new URL(urlString)
     def scan
     def response
-
+    echo "getting string from URL: ${url}"
     try {
         scan = new Scanner(url.openStream(), "UTF-8")
         response = scan.useDelimiter("\\A").next()
@@ -710,7 +761,7 @@ def getServiceURL(String serviceName, String namespace = null, String protocol =
     return KubernetesHelper.getServiceURL(kubernetes, serviceName, namespace, protocol, external)
 }
 
-def isOpenShiftS2I() {
+def hasOpenShiftYaml() {
   def openshiftYaml = findFiles(glob: '**/openshift.yml')
     try {
         if (openshiftYaml) {
@@ -766,7 +817,6 @@ def deleteNamespace(String name) {
 def isOpenShift() {
     return new DefaultOpenShiftClient().isAdaptable(OpenShiftClient.class)
 }
-
 
 @NonCPS
 def getCloudConfig() {

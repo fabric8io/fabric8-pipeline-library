@@ -43,53 +43,42 @@ def call(body) {
             utils.addAnnotationToBuild('fabric8.io/jenkins.changeUrl', changeUrl)
         }
 
-        if (flow.hasService("bayesian-link")) {
-            try {
-                sh 'mvn io.github.stackinfo:stackinfo-maven-plugin:0.2:prepare'
-                def response = bayesianAnalysis url: 'https://bayesian-link'
-                if (response.success) {
-                    utils.addAnnotationToBuild('fabric8.io/bayesian.analysisUrl', response.getAnalysisUrl())
-                } else {
-                    error "Bayesian analysis failed ${response}"
-                }
-            } catch (err) {
-                echo "Unable to run Bayesian analysis: ${err}"
-            }
-        }
+        bayesianScanner(body);
     }
 
-    //try sonarQube
+
+
     sonarQubeScanner(body);
 
 
-    def s2iMode = flow.isOpenShiftS2I()
+    def s2iMode = utils.supportsOpenShiftS2I()
     echo "s2i mode: ${s2iMode}"
 
-    if (!s2iMode){
-        if (flow.isSingleNode()){
+    def registryHost = env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST
+    def registryPort = env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT
+
+    if (!s2iMode) {
+        if (flow.isSingleNode()) {
             echo 'Running on a single node, skipping docker push as not needed'
             def m = readMavenPom file: 'pom.xml'
-            def groupId = m.groupId.split( '\\.' )
-            def user = groupId[groupId.size()-1].trim()
+            def groupId = m.groupId.split('\\.')
+            def user = groupId[groupId.size() - 1].trim()
             def artifactId = m.artifactId
-            sh "docker tag ${user}/${artifactId}:${config.version} ${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}/${user}/${artifactId}:${config.version}"
-
-        }else{
-            retry(3){
-                sh "mvn fabric8:push -Ddocker.push.registry=${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}"
+            if (registryHost && registryPort) {
+                sh "docker tag ${user}/${artifactId}:${config.version} ${registryHost}:${registryPort}/${user}/${artifactId}:${config.version}"
+            } else {
+                echo "WARNING: cannot tag the docker image ${user}/${artifactId}:${config.version} as there is no FABRIC8_DOCKER_REGISTRY_SERVICE_HOST or FABRIC8_DOCKER_REGISTRY_SERVICE_PORT environment variable!"
+            }
+        } else {
+            if (registryHost && registryPort) {
+                retry(3) {
+                    sh "mvn fabric8:push -Ddocker.push.registry=${registryHost}:${registryPort}"
+                }
+            } else {
+                error "Cannot push the docker image ${user}/${artifactId}:${config.version} as there is no FABRIC8_DOCKER_REGISTRY_SERVICE_HOST or FABRIC8_DOCKER_REGISTRY_SERVICE_PORT environment variables\nTry run the fabric8-docker-registry?"
             }
         }
     }
 
-    if (flow.hasService("content-repository")) {
-      try {
-        //sh 'mvn site site:deploy'
-        echo 'mvn site disabled'
-      } catch (err) {
-        // lets carry on as maven site isn't critical
-        echo 'unable to generate maven site'
-      }
-    } else {
-      echo 'no content-repository service so not deploying the maven site report'
-    }
+    contentRepository(body);
   }

@@ -73,7 +73,7 @@
     <maven.compiler.source>1.7</maven.compiler.source>
     <maven.compiler.target>1.7</maven.compiler.target>
 
-    <fabric8.devops.version>2.2.331</fabric8.devops.version>
+    <fabric8.devops.version>2.2.335</fabric8.devops.version>
     <fabric8.version>2.2.209</fabric8.version>
     <fabric8.maven.plugin.version>3.1.66</fabric8.maven.plugin.version>
     <workflow-job.verion>2.10</workflow-job.verion>

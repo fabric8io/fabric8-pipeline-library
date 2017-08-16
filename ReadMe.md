@@ -10,6 +10,7 @@
       - [Approve](#approve)
       - [Deploy Project](#deploy-project)
       - [Drop Project](#drop-project)
+      - [Get Deployment Resources](#get-deployment-resources)
       - [Get Kubernetes JSON](#get-kubernetes-json)
       - [Get New Version](#get-new-version)
       - [Maven Canary Release](#maven-canary-release)
@@ -29,16 +30,16 @@
       - [Git Tag](#git-tag)
       - [Deploy Remote OpenShift](#deploy-remote-openshift)
       - [Deploy Remote Kubernetes](#deploy-remote-kubernetes)
+      - [Add Annotation To Build](#add-annotation-to-build)
   - [Understanding how it works](#understanding-how-it-works)
-      - [Templates vs Nodes](#templates-vs-nodes)
-        - [Maven Node](#maven-node)
-        - [Docker Node](#docker-node)
-        - [Clients Node](#clients-node)
-        - [Release Node](#release-node)
-      - [Mixing and Matching](#mixing-and-matching)        
-      - [Creating and using your own templates](#creating-and-using-your-own-templates)
-        - [Using the Jenkins Administration Console](#using the jenkins administration console)
-
+    - [Template vs Node](#template-vs-node)
+      - [Maven Node](#maven-node)
+      - [Docker Node](#docker-node)
+      - [Clients Node](#clients-node)
+      - [Release Node](#release-node)
+    - [Mixing and matching](#mixing-and-matching)
+    - [Creating and using your own templates](#creating-and-using-your-own-templates)
+      - [Using the Jenkins Administration Console](#using-the-jenkins-administration-console)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -372,7 +373,7 @@ Now that we don't store the next release version in the poms we need to figure i
 
 Deploys the staged fabric8 release to a remote OpenShift cluster
 
-__NOTE__ in order for images to be found by the the remote OpenShift instance it must be able to pull images from the staging docker registry.  Noting private networks and insecure-registry flags.
+__NOTE__ in order for images to be found by the remote OpenShift instance it must be able to pull images from the staging docker registry.  Noting private networks and insecure-registry flags.
 
 ```groovy
     node{
@@ -388,7 +389,7 @@ __NOTE__ in order for images to be found by the the remote OpenShift instance it
 
 Deploys the staged fabric8 release to a remote Kubernetes cluster  
 
-__NOTE__ in order for images to be found by the the remote OpenShift instance it must be able to pull images from the staging docker registry.  Noting private networks and insecure-registry flags.    
+__NOTE__ in order for images to be found by the remote OpenShift instance it must be able to pull images from the staging docker registry.  Noting private networks and insecure-registry flags.    
 
 ```groovy
     node{
@@ -455,7 +456,7 @@ A template defines how the jenkins slave pod will look like, but the pod is not 
 When a node is requested the matching template will be selected and pod from the template will be created.
 
 The library provides shortcut function both to nodes and templates. In most cases you will just need to use the node.
-The only exception is when you need to mix and match (see [mixing and mathcing](#mixing-and-matching)).
+The only exception is when you need to mix and match (see [mixing and matching](#mixing-and-matching)).
 
 
 The provided node / template pairs are the following:
@@ -597,7 +598,7 @@ Templates can be created either by using the Jenkins administration console or b
 #### Using the Jenkins Administration Console
 
 In the console choose `Manage Jenkins` -> `Configure System` and scroll down until you find the section `Cloud` -> `Kubernetes`.
-There you can click to `Add Pod Template` to create your own using the wizzard.
+There you can click to `Add Pod Template` to create your own using the wizard.
 
 Then you can just instantiate the template by creating a node that references the label to the template:
 

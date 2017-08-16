@@ -10,6 +10,7 @@ def call(body) {
     def ghOrg =  config.githubOrganisation
     def dockerOrg = config.dockerOrganisation
     def prj = config.project
+    def makeCommand = config.makeCommand ?: 'make'
 
     if (!ghOrg){
         error 'no github organisation defined'
@@ -30,7 +31,7 @@ def call(body) {
 
         container(name: 'go') {
             stage ('build binary'){
-                sh "make"
+                sh "${makeCommand}"
             }
         }
 
