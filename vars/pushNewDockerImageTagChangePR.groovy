@@ -32,7 +32,7 @@ def call(body) {
     def dockerfile = readFile file: "${repo}/${dockerfileLocation}"
     sh "cat ${repo}/${dockerfileLocation}"
 
-    sh "sed -i 's/FROM.*fabric8-openshift-nginx:.*$/fabric8-openshift-nginx:'"${config.version}"'/' ${repo}/${dockerfileLocation}"
+    sh "sed -i 's/FROM.*'"${config.propertyName}"':.*$/FROM '"${config.propertyName}"':'"${config.version}"'/' ${repo}/${dockerfileLocation}"
 
     sh "cat ${repo}/${dockerfileLocation}"
 
