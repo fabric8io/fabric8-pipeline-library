@@ -19,6 +19,8 @@ def call(body) {
     def items = project.split('/')
     def org = items[0]
     def repo = items[1]
+    def dockerImage = config.propertyName
+    def tag = config.version
     def id
 
     stage "Updating ${project}"
@@ -32,7 +34,7 @@ def call(body) {
     def dockerfile = readFile file: "${repo}/${dockerfileLocation}"
     sh "cat ${repo}/${dockerfileLocation}"
 
-    sh -c "sed -i 's/FROM.*${config.propertyName}:.*$/FROM ${config.propertyName}:${config.version}/' ${repo}/${dockerfileLocation}"
+    sh "sed -i -r 's/FROM.*${dockerImage}:.*$/FROM ${dockerImage}:${tag}/g' ${repo}/${dockerfileLocation}"
 
     sh "cat ${repo}/${dockerfileLocation}"
 
