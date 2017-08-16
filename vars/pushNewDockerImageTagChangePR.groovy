@@ -29,12 +29,12 @@ def call(body) {
     sh "cd ${repo} && git remote set-url origin git@github.com:${project}.git"
 
     def uid = UUID.randomUUID().toString()
-    sh "cd ${repo} && git checkout -b versionUpdate${uid}"
+    sh "cd ${repo} && git checkout -b updateOpenshiftNginxTag${uid}"
 
     def dockerfile = readFile file: "${repo}/${dockerfileLocation}"
     sh "cat ${repo}/${dockerfileLocation}"
 
-    sh "sed -i 's/FROM.*${config.propertyName}.*/FROM fabric8\\/${config.propertyName}:${config.version}/g' ${repo}/${dockerfileLocation}"
+    sh "sed -i 's/FROM.*${dockerImage}.*/FROM ${dockerImage}:${tag}/g' ${repo}/${dockerfileLocation}"
 
     sh "cat ${repo}/${dockerfileLocation}"
 
@@ -57,9 +57,9 @@ def call(body) {
         def message = "Update Dockerfile base image tag ${config.propertyName} to ${config.version}"
         sh "cd ${repo} && git add ${dockerfileLocation}"
         sh "cd ${repo} && git commit -m \"${message}\""
-        sh "cd ${repo} && git push origin versionUpdate${uid}"
+        sh "cd ${repo} && git push origin updateOpenshiftNginxTag${uid}"
 
-        id = flow.createPullRequest("${message}","${project}","versionUpdate${uid}")
+        id = flow.createPullRequest("${message}","${project}","updateOpenshiftNginxTag${uid}")
       }
       echo "received Pull Request Id: ${id}"
 
