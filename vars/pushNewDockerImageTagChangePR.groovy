@@ -34,7 +34,7 @@ def call(body) {
     def dockerfile = readFile file: "${repo}/${dockerfileLocation}"
     sh "cat ${repo}/${dockerfileLocation}"
 
-    sh "sed -i 's/FROM.*\"${dockerImage}\":.*$/FROM \"${dockerImage}\":\"${tag}\"/' ${repo}/${dockerfileLocation}"
+    sh "sed -i 's/FROM.*${config.propertyName}.*/FROM ${config.propertyName}:${config.version}/g' ${repo}/${dockerfileLocation}"
 
     sh "cat ${repo}/${dockerfileLocation}"
 
