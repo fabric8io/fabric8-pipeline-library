@@ -22,13 +22,13 @@ def call(Map parameters = [:], body) {
                         resourceLimitMemory: '512Mi'], // needs to be high to work on OSO
                         [name: 'maven', image: "${mavenImage}", command: '/bin/sh -c', args: 'cat', ttyEnabled: true, workingDir: '/home/jenkins/',
                          envVars: [
-                                 [key: 'MAVEN_OPTS', value: '-Duser.home=/root/ -XX:+UseParallelGC \
+                                 [key: '_JAVA_OPTIONS', value: '-Duser.home=/root/ -XX:+UseParallelGC \
          -XX:MinHeapFreeRatio=20 \
          -XX:MaxHeapFreeRatio=40 \
          -XX:GCTimeRatio=4 \
          -XX:AdaptiveSizePolicyWeight=90 \
-         -Xms512m -Xmx512m']],
-                         resourceLimitMemory: '768Mi']],
+         -Xmx256m']],
+                         resourceLimitMemory: '1024Mi']],
                 volumes: [secretVolume(secretName: 'jenkins-maven-settings', mountPath: '/root/.m2'),
                           persistentVolumeClaim(claimName: 'jenkins-mvn-local-repo', mountPath: '/root/.mvnrepository'),
                           secretVolume(secretName: 'jenkins-release-gpg', mountPath: '/home/jenkins/.gnupg'),
