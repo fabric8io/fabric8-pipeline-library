@@ -10,7 +10,7 @@ def call(body) {
 
   def flow = new io.fabric8.Fabric8Commands()
 
-  def dockerfileLocation = config.parentDockerfileLocation ?: 'Dockerfile.deploy'
+  def dockerfileLocation = config.parentDockerfileLocation ?: 'Dockerfile'
   def containerName = config.containerName ?: 'clients'
   def autoMerge = config.autoMerge ?: false
 
@@ -29,7 +29,7 @@ def call(body) {
     sh "cd ${repo} && git remote set-url origin git@github.com:${project}.git"
 
     def uid = UUID.randomUUID().toString()
-    sh "cd ${repo} && git checkout -b updateOpenshiftNginxTag${uid}"
+    sh "cd ${repo} && git checkout -b updateDockerfileFromTag${uid}"
 
     def dockerfile = readFile file: "${repo}/${dockerfileLocation}"
     sh "cat ${repo}/${dockerfileLocation}"
@@ -57,9 +57,9 @@ def call(body) {
         def message = "Update Dockerfile base image tag ${config.propertyName} to ${config.version}"
         sh "cd ${repo} && git add ${dockerfileLocation}"
         sh "cd ${repo} && git commit -m \"${message}\""
-        sh "cd ${repo} && git push origin updateOpenshiftNginxTag${uid}"
+        sh "cd ${repo} && git push origin updateDockerfileFromTag${uid}"
 
-        id = flow.createPullRequest("${message}","${project}","updateOpenshiftNginxTag${uid}")
+        id = flow.createPullRequest("${message}","${project}","updateDockerfileFromTag${uid}")
       }
       echo "received Pull Request Id: ${id}"
 
