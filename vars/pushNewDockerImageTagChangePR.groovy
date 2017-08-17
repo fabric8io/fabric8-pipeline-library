@@ -11,7 +11,7 @@ def call(body) {
   def flow = new io.fabric8.Fabric8Commands()
 
   def dockerfileLocation = config.parentDockerfileLocation ?: 'Dockerfile.deploy'
-  def containerName = config.containerName ?: 'ui'
+  def containerName = config.containerName ?: 'clients'
   def autoMerge = config.autoMerge ?: false
 
   for (int i = 0; i < config.projects.size(); i++) {
