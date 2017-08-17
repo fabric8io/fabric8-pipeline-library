@@ -18,7 +18,6 @@ def call(body) {
     def project = config.projects[i]
     def items = project.split('/')
     def org = items[0]
-    def repo = items[1]
     def dockerImage = config.propertyName
     def tag = config.version
     def id
@@ -32,19 +31,19 @@ def call(body) {
       def uid = UUID.randomUUID().toString()
       sh "git checkout -b updateDockerfileFromTag${uid}"
 
-      def dockerfile = readFile file: "${repo}/${dockerfileLocation}"
-      sh "cat ${repo}/${dockerfileLocation}"
+      def dockerfile = readFile file: "${dockerfileLocation}"
+      sh "cat ${dockerfileLocation}"
 
-      sh "sed -i 's/FROM.*${dockerImage}.*/FROM ${dockerImage}:${tag}/g' ${repo}/${dockerfileLocation}"
+      sh "sed -i 's/FROM.*${dockerImage}.*/FROM ${dockerImage}:${tag}/g' ${dockerfileLocation}"
 
-      sh "cat ${repo}/${dockerfileLocation}"
+      sh "cat ${dockerfileLocation}"
 
-      def newDockerfile = readFile file: "${repo}/${dockerfileLocation}"
+      def newDockerfile = readFile file: "${dockerfileLocation}"
 
       if (newDockerfile != null) {
-        writeFile file: "${repo}/${dockerfileLocation}", text: newDockerfile
+        writeFile file: "${dockerfileLocation}", text: newDockerfile
 
-        sh "cat ${repo}/${dockerfileLocation}"
+        sh "cat ${dockerfileLocation}"
 
         container(name: containerName) {
 
@@ -56,9 +55,9 @@ def call(body) {
           sh "git config --global user.name fabric8-release"
 
           def message = "Update Dockerfile base image tag ${config.propertyName} to ${config.version}"
-          sh "cd ${repo} && git add ${dockerfileLocation}"
-          sh "cd ${repo} && git commit -m \"${message}\""
-          sh "cd ${repo} && git push origin updateDockerfileFromTag${uid}"
+          sh "git add ${dockerfileLocation}"
+          sh "git commit -m \"${message}\""
+          sh "git push origin updateDockerfileFromTag${uid}"
 
           id = flow.createPullRequest("${message}","${project}","updateDockerfileFromTag${uid}")
         }
