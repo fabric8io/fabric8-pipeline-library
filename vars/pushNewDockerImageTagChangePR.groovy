@@ -25,13 +25,12 @@ def call(body) {
 
     ws{
       stage "Updating ${project}"
-      sh "rm -rf ${repo}"
-  
+
       git "https://github.com/${project}.git"
       sh "git remote set-url origin git@github.com:${project}.git"
 
       def uid = UUID.randomUUID().toString()
-      sh "cd ${repo} && git checkout -b updateDockerfileFromTag${uid}"
+      sh "git checkout -b updateDockerfileFromTag${uid}"
 
       def dockerfile = readFile file: "${repo}/${dockerfileLocation}"
       sh "cat ${repo}/${dockerfileLocation}"
