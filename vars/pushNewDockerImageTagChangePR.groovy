@@ -23,54 +23,56 @@ def call(body) {
     def tag = config.version
     def id
 
-    stage "Updating ${project}"
-    sh "rm -rf ${repo}"
-    sh "git clone https://github.com/${project}.git"
-    sh "cd ${repo} && git remote set-url origin git@github.com:${project}.git"
+    ws{
+      stage "Updating ${project}"
+      sh "rm -rf ${repo}"
+      sh "git clone https://github.com/${project}.git"
+      sh "cd ${repo} && git remote set-url origin git@github.com:${project}.git"
 
-    def uid = UUID.randomUUID().toString()
-    sh "cd ${repo} && git checkout -b updateDockerfileFromTag${uid}"
+      def uid = UUID.randomUUID().toString()
+      sh "cd ${repo} && git checkout -b updateDockerfileFromTag${uid}"
 
-    def dockerfile = readFile file: "${repo}/${dockerfileLocation}"
-    sh "cat ${repo}/${dockerfileLocation}"
+      def dockerfile = readFile file: "${repo}/${dockerfileLocation}"
+      sh "cat ${repo}/${dockerfileLocation}"
 
-    sh "sed -i 's/FROM.*${dockerImage}.*/FROM ${dockerImage}:${tag}/g' ${repo}/${dockerfileLocation}"
-
-    sh "cat ${repo}/${dockerfileLocation}"
-
-    def newDockerfile = readFile file: "${repo}/${dockerfileLocation}"
-
-    if (newDockerfile != null) {
-      writeFile file: "${repo}/${dockerfileLocation}", text: newDockerfile
+      sh "sed -i 's/FROM.*${dockerImage}.*/FROM ${dockerImage}:${tag}/g' ${repo}/${dockerfileLocation}"
 
       sh "cat ${repo}/${dockerfileLocation}"
 
-      container(name: containerName) {
+      def newDockerfile = readFile file: "${repo}/${dockerfileLocation}"
 
-        sh 'chmod 600 /root/.ssh-git/ssh-key'
-        sh 'chmod 600 /root/.ssh-git/ssh-key.pub'
-        sh 'chmod 700 /root/.ssh-git'
+      if (newDockerfile != null) {
+        writeFile file: "${repo}/${dockerfileLocation}", text: newDockerfile
 
-        sh "git config --global user.email fabric8-admin@googlegroups.com"
-        sh "git config --global user.name fabric8-release"
+        sh "cat ${repo}/${dockerfileLocation}"
 
-        def message = "Update Dockerfile base image tag ${config.propertyName} to ${config.version}"
-        sh "cd ${repo} && git add ${dockerfileLocation}"
-        sh "cd ${repo} && git commit -m \"${message}\""
-        sh "cd ${repo} && git push origin updateDockerfileFromTag${uid}"
+        container(name: containerName) {
 
-        id = flow.createPullRequest("${message}","${project}","updateDockerfileFromTag${uid}")
-      }
-      echo "received Pull Request Id: ${id}"
+          sh 'chmod 600 /root/.ssh-git/ssh-key'
+          sh 'chmod 600 /root/.ssh-git/ssh-key.pub'
+          sh 'chmod 700 /root/.ssh-git'
 
-      if (autoMerge){
-        sleep 5 // give a bit of time for GitHub to get itself in order after the new PR
-        flow.mergePR(project, id)
-      } else {
-        flow.addMergeCommentToPullRequest(id, project)
-        waitUntilPullRequestMerged{
-          name = project
-          prId = id
+          sh "git config --global user.email fabric8-admin@googlegroups.com"
+          sh "git config --global user.name fabric8-release"
+
+          def message = "Update Dockerfile base image tag ${config.propertyName} to ${config.version}"
+          sh "cd ${repo} && git add ${dockerfileLocation}"
+          sh "cd ${repo} && git commit -m \"${message}\""
+          sh "cd ${repo} && git push origin updateDockerfileFromTag${uid}"
+
+          id = flow.createPullRequest("${message}","${project}","updateDockerfileFromTag${uid}")
+        }
+        echo "received Pull Request Id: ${id}"
+
+        if (autoMerge){
+          sleep 5 // give a bit of time for GitHub to get itself in order after the new PR
+          flow.mergePR(project, id)
+        } else {
+          flow.addMergeCommentToPullRequest(id, project)
+          waitUntilPullRequestMerged{
+            name = project
+            prId = id
+          }
         }
       }
     }
