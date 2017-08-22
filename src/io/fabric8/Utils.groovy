@@ -168,27 +168,7 @@ boolean isUseDockerSocket() {
   return supportsOpenShiftS2I() ? false : true;
 }
 
-@NonCPS
-String getDockerRegistry() {
 
-    // first lets check if we have the new pipeliens configmap in the users home namespace
-    KubernetesClient client = new DefaultKubernetesClient()
-    def r = client.configMaps().inNamespace(getUsersNamespace()).withName('fabric8-pipelines').get()
-
-    def d = r.getData()
-    def externalDockerRegistryURL = d['external-docker-registry-url']
-    if (externalDockerRegistryURL){
-      return externalDockerRegistryURL
-    }
-
-    // fall back to the old < 4.x when the registry was in the same namespace
-    def registryHost = env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST
-    def registryPort = env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT
-    if (!registryHost || !registryPort){
-       error "No external-docker-registry found in Jenkins configmap or no FABRIC8_DOCKER_REGISTRY_SERVICE_HOST FABRIC8_DOCKER_REGISTRY_SERVICE_PORT environment variables"
-    }
-    return registryHost + ':' + registryPort
-}
 
 @NonCPS
 String getNamespace() {
@@ -578,14 +558,6 @@ def getOpenShiftBuildName(){
     }
   }
   return null
-}
-
-def getKubernetesPluginVersion(){
-    def object = new org.csanchez.jenkins.plugins.kubernetes.PodAnnotation('dummy','dummy')
-    def objPackage = object.getClass().getPackage()
-    def version = objPackage.getImplementationVersion()
-    // we could be using a custom built jar so remove any -SNAPSHOT from the version
-    return Double.parseDouble(version.replaceAll("-SNAPSHOT",""));
 }
 
 return this
