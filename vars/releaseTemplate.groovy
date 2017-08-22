@@ -13,32 +13,85 @@ def call(Map parameters = [:], body) {
     def jnlpImage = (flow.isOpenShift()) ? 'fabric8/jenkins-slave-base-centos7:0.0.1' : 'jenkinsci/jnlp-slave:2.62'
     def cloud = flow.getCloudConfig()
 
-    podTemplate(cloud: cloud, label: label, inheritFrom: "${inheritFrom}",
-            containers: [
-                    //[name: 'jnlp', image: "${jnlpImage}", args: '${computer.jnlpmac} ${computer.name}',  workingDir: '/home/jenkins/'],
-                    [name: 'maven', image: "${mavenImage}", command: 'cat', ttyEnabled: true,
-                     envVars: [[key: 'MAVEN_OPTS', value: '-Duser.home=/root/']]],
+    def utils = io.fabric8.Utils()
+    // 0.13 introduces a breaking change when defining pod env vars so check version before creating build pod
+    if (utils.getKubernetesPluginVersion() >= 0.13) {
+        podTemplate(cloud: cloud, label: label, inheritFrom: "${inheritFrom}",
+                containers: [
+                        containerTemplate(
+                                name: 'maven',
+                                image: "${mavenImage}",
+                                command: 'cat',
+                                ttyEnabled: true,
+                                envVars: [
+                                        envVar(key: 'MAVEN_OPTS', value: '-Duser.home=/root/')
+                                ]
+                        ),
+                        containerTemplate(
+                                name   : 'clients',
+                                image: "${clientsImage}",
+                                command: 'cat',
+                                ttyEnabled: true,
+                                workingDir: '/home/jenkins/',
+                                envVars: [
+                                        envVar(key: 'TERM', value: 'dumb')
+                                ]),
+                        containerTemplate(
+                                name: 'docker',
+                                image: "${dockerImage}",
+                                command: 'cat',
+                                ttyEnabled: true,
+                                workingDir: '/home/jenkins/',
+                                envVars: [
+                                        envVar(key: 'DOCKER_CONFIG', value: '/home/jenkins/.docker/'),
+                                        envVar(key: 'DOCKER_HOST', value: 'unix:/var/run/docker.sock'),
+                                        envVar(key: 'DOCKER_CONFIG', value: '/home/jenkins/.docker/')
+                                ])
+                ],
+                volumes: [secretVolume(secretName: 'jenkins-maven-settings', mountPath: '/root/.m2'),
+                          persistentVolumeClaim(claimName: 'jenkins-mvn-local-repo', mountPath: '/root/.mvnrepository'),
+                          secretVolume(secretName: 'jenkins-docker-cfg', mountPath: '/home/jenkins/.docker'),
+                          secretVolume(secretName: 'jenkins-release-gpg', mountPath: '/home/jenkins/.gnupg'),
+                          secretVolume(secretName: 'jenkins-hub-api-token', mountPath: '/home/jenkins/.apitoken'),
+                          secretVolume(secretName: 'jenkins-ssh-config', mountPath: '/root/.ssh'),
+                          secretVolume(secretName: 'jenkins-git-ssh', mountPath: '/root/.ssh-git'),
+                          secretVolume(secretName: 'gke-service-account', mountPath: '/root/home/.gke'),
+                          hostPathVolume(hostPath: '/var/run/docker.sock', mountPath: '/var/run/docker.sock')]
+        ) {
 
-                    [name   : 'clients', image: "${clientsImage}", command: 'cat', ttyEnabled: true,  workingDir: '/home/jenkins/',
-                     envVars: [[key: 'TERM', value: 'dumb']]],
+            body(
 
-                    [name: 'docker', image: "${dockerImage}", command: 'cat', ttyEnabled: true,  workingDir: '/home/jenkins/',
-                     envVars: [[key: 'DOCKER_CONFIG', value: '/home/jenkins/.docker/']]]
-            ],
-            volumes: [secretVolume(secretName: 'jenkins-maven-settings', mountPath: '/root/.m2'),
-                      persistentVolumeClaim(claimName: 'jenkins-mvn-local-repo', mountPath: '/root/.mvnrepository'),
-                      secretVolume(secretName: 'jenkins-docker-cfg', mountPath: '/home/jenkins/.docker'),
-                      secretVolume(secretName: 'jenkins-release-gpg', mountPath: '/home/jenkins/.gnupg'),
-                      secretVolume(secretName: 'jenkins-hub-api-token', mountPath: '/home/jenkins/.apitoken'),
-                      secretVolume(secretName: 'jenkins-ssh-config', mountPath: '/root/.ssh'),
-                      secretVolume(secretName: 'jenkins-git-ssh', mountPath: '/root/.ssh-git'),
-                      secretVolume(secretName: 'gke-service-account', mountPath: '/root/home/.gke'),
-                      hostPathVolume(hostPath: '/var/run/docker.sock', mountPath: '/var/run/docker.sock')],
-            envVars: [[key: 'DOCKER_HOST', value: 'unix:/var/run/docker.sock'], [key: 'DOCKER_CONFIG', value: '/home/jenkins/.docker/']]
-    ) {
+            )
+        }
+    } else {
+        podTemplate(cloud: cloud, label: label, inheritFrom: "${inheritFrom}",
+                containers: [
+                        //[name: 'jnlp', image: "${jnlpImage}", args: '${computer.jnlpmac} ${computer.name}',  workingDir: '/home/jenkins/'],
+                        [name: 'maven', image: "${mavenImage}", command: 'cat', ttyEnabled: true,
+                         envVars: [[key: 'MAVEN_OPTS', value: '-Duser.home=/root/']]],
 
-        body(
+                        [name   : 'clients', image: "${clientsImage}", command: 'cat', ttyEnabled: true,  workingDir: '/home/jenkins/',
+                         envVars: [[key: 'TERM', value: 'dumb']]],
 
-        )
+                        [name: 'docker', image: "${dockerImage}", command: 'cat', ttyEnabled: true,  workingDir: '/home/jenkins/',
+                         envVars: [[key: 'DOCKER_CONFIG', value: '/home/jenkins/.docker/']]]
+                ],
+                volumes: [secretVolume(secretName: 'jenkins-maven-settings', mountPath: '/root/.m2'),
+                          persistentVolumeClaim(claimName: 'jenkins-mvn-local-repo', mountPath: '/root/.mvnrepository'),
+                          secretVolume(secretName: 'jenkins-docker-cfg', mountPath: '/home/jenkins/.docker'),
+                          secretVolume(secretName: 'jenkins-release-gpg', mountPath: '/home/jenkins/.gnupg'),
+                          secretVolume(secretName: 'jenkins-hub-api-token', mountPath: '/home/jenkins/.apitoken'),
+                          secretVolume(secretName: 'jenkins-ssh-config', mountPath: '/root/.ssh'),
+                          secretVolume(secretName: 'jenkins-git-ssh', mountPath: '/root/.ssh-git'),
+                          secretVolume(secretName: 'gke-service-account', mountPath: '/root/home/.gke'),
+                          hostPathVolume(hostPath: '/var/run/docker.sock', mountPath: '/var/run/docker.sock')],
+                envVars: [[key: 'DOCKER_HOST', value: 'unix:/var/run/docker.sock'], [key: 'DOCKER_CONFIG', value: '/home/jenkins/.docker/']]
+        ) {
+
+            body(
+
+            )
+        }
     }
+
 }
