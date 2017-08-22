@@ -54,20 +54,28 @@ def call(body) {
     def s2iMode = utils.supportsOpenShiftS2I()
     echo "s2i mode: ${s2iMode}"
 
+    def registryHost = env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST
+    def registryPort = env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT
+
     if (!s2iMode) {
-        def registry = utils.getDockerRegistry()
         if (flow.isSingleNode()) {
             echo 'Running on a single node, skipping docker push as not needed'
             def m = readMavenPom file: 'pom.xml'
             def groupId = m.groupId.split('\\.')
             def user = groupId[groupId.size() - 1].trim()
             def artifactId = m.artifactId
-
-            sh "docker tag ${user}/${artifactId}:${config.version} ${registry}/${user}/${artifactId}:${config.version}"
-
+            if (registryHost && registryPort) {
+                sh "docker tag ${user}/${artifactId}:${config.version} ${registryHost}:${registryPort}/${user}/${artifactId}:${config.version}"
+            } else {
+                echo "WARNING: cannot tag the docker image ${user}/${artifactId}:${config.version} as there is no FABRIC8_DOCKER_REGISTRY_SERVICE_HOST or FABRIC8_DOCKER_REGISTRY_SERVICE_PORT environment variable!"
+            }
         } else {
-            retry(5) {
-                sh "mvn fabric8:push -Ddocker.push.registry=${registry}"
+            if (registryHost && registryPort) {
+                retry(3) {
+                    sh "mvn fabric8:push -Ddocker.push.registry=${registryHost}:${registryPort}"
+                }
+            } else {
+                error "Cannot push the docker image ${user}/${artifactId}:${config.version} as there is no FABRIC8_DOCKER_REGISTRY_SERVICE_HOST or FABRIC8_DOCKER_REGISTRY_SERVICE_PORT environment variables\nTry run the fabric8-docker-registry?"
             }
         }
     }
