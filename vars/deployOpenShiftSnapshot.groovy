@@ -60,7 +60,7 @@ def call(body) {
             export PROXIED_K8S_API_SERVER="${WS_K8S_API_SERVER}"
             export OAUTH_ISSUER="https://${WS_K8S_API_SERVER}"
             export PROXY_PASS_URL="https://${WS_K8S_API_SERVER}"
-            export K8S_API_SERVER_BASE_PATH=""
+            export K8S_API_SERVER_BASE_PATH="/"
             export OAUTH_AUTHORIZE_URI="https://${WS_K8S_API_SERVER}/oauth/authorize"
             export AUTH_LOGOUT_URI="https://${WS_K8S_API_SERVER}/connect/endsession?id_token={{id_token}}"
 
