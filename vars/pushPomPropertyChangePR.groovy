@@ -62,7 +62,7 @@ def call(body) {
       
       if (autoMerge){
         sleep 5 // give a bit of time for GitHub to get itself in order after the new PR
-        flow.mergePR(project, id)
+        flow.mergePR(project, id, "versionUpdate${uid}")
       } else {
         flow.addMergeCommentToPullRequest(id, project)
         waitUntilPullRequestMerged{
