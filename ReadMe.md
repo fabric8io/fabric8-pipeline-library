@@ -62,7 +62,7 @@ This library is intended to be used with fabric8's Jenkins image that is deploye
 To use the functions in this library just add the following to the top of your `Jenkinsfile`:
 
 ```groovy
-@Library('github.com/fabric8io/fabric8-pipeline-library@master')
+@Library('github.com/fabric8io/fabric8-pipeline-library@master') _
 ```
 
 That will use the master branch of this library. You can if you wish pick a specific [tag](https://github.com/fabric8io/fabric8-pipeline-library/tags) or [commit SHA](https://github.com/fabric8io/fabric8-pipeline-library/commits/master) of this repository too.
