@@ -443,7 +443,51 @@ def getIssueComments(project, id, githubToken = null) {
     return rs
 }
 
-def mergePR(project, id) {
+def waitUntilSuccessStatus(project, ref) {
+    
+    def githubToken = getGitHubToken()
+    
+    def apiUrl = new URL("https://api.github.com/repos/${project}/commits/${ref}/status")
+    waitUntil {
+        def HttpURLConnection connection = apiUrl.openConnection()
+        if (githubToken != null && githubToken.length() > 0) {
+            connection.setRequestProperty("Authorization", "Bearer ${githubToken}")
+        }
+
+        connection.setRequestMethod("GET")
+        connection.setDoOutput(true)
+        connection.connect()
+
+        def rs
+        def code
+
+        try {
+            rs = new JsonSlurper().parse(new InputStreamReader(connection.getInputStream(), "UTF-8"))
+
+            code = connection.getResponseCode()
+        } catch (err){
+            echo "CI checks have not passed yet so waiting before merging"
+        } finally {
+            connection.disconnect()
+        }
+
+        if (rs == null){
+            echo "Error getting commit status, are CI builds enabled for this PR?"
+            return false
+        } 
+        if (rs != null && rs.state == 'success') {
+            return true
+        } else {
+            echo "Commit status is ${rs.state}.  Waiting to merge"
+            return false
+        }
+    }
+}
+
+def mergePR(project, id, branch) {
+
+    waitUntilSuccessStatus(project, branch)
+    
     def githubToken = getGitHubToken()
     def apiUrl = new URL("https://api.github.com/repos/${project}/pulls/${id}/merge")
 
