@@ -444,9 +444,9 @@ def getIssueComments(project, id, githubToken = null) {
 }
 
 def waitUntilSuccessStatus(project, ref) {
-    
+
     def githubToken = getGitHubToken()
-    
+
     def apiUrl = new URL("https://api.github.com/repos/${project}/commits/${ref}/status")
     waitUntil {
         def HttpURLConnection connection = apiUrl.openConnection()
@@ -474,7 +474,7 @@ def waitUntilSuccessStatus(project, ref) {
         if (rs == null){
             echo "Error getting commit status, are CI builds enabled for this PR?"
             return false
-        } 
+        }
         if (rs != null && rs.state == 'success') {
             return true
         } else {
@@ -484,11 +484,36 @@ def waitUntilSuccessStatus(project, ref) {
     }
 }
 
-def mergePR(project, id, branch) {
+def getGithubBranch(project, id, githubToken){
 
-    waitUntilSuccessStatus(project, branch)
-    
+    def apiUrl = new URL("https://api.github.com/repos/${project}/pulls/${id}")
+    def HttpURLConnection connection = apiUrl.openConnection()
+    if (githubToken != null && githubToken.length() > 0) {
+        connection.setRequestProperty("Authorization", "Bearer ${githubToken}")
+    }
+
+    connection.setRequestMethod("GET")
+    connection.setDoOutput(true)
+    connection.connect()
+    try{
+        def rs = new JsonSlurper().parse(new InputStreamReader(connection.getInputStream(), "UTF-8"))
+        branch = rs.head.ref
+        echo "${branch}"
+        return branch
+    }catch(err){
+        echo "Error while fetching the github branch"
+    }finally {
+        if (connection){
+            connection.disconnect()
+        }
+    }
+}
+
+def mergePR(project, id) {
     def githubToken = getGitHubToken()
+    def branch = getGithubBranch(project, id, githubToken)
+    waitUntilSuccessStatus(project, branch)
+
     def apiUrl = new URL("https://api.github.com/repos/${project}/pulls/${id}/merge")
 
     def HttpURLConnection connection = apiUrl.openConnection()
