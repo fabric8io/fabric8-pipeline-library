@@ -43,8 +43,6 @@ def call(Map parameters = [:], body) {
                                 ttyEnabled: true,
                                 workingDir: '/home/jenkins/',
                                 envVars: [
-                                        envVar(key: 'DOCKER_CONFIG', value: '/home/jenkins/.docker/'),
-                                        envVar(key: 'DOCKER_HOST', value: 'unix:/var/run/docker.sock'),
                                         envVar(key: 'DOCKER_CONFIG', value: '/home/jenkins/.docker/')
                                 ])
                 ],

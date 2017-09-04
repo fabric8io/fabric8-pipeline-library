@@ -54,8 +54,6 @@ def call(Map parameters = [:], body) {
                                     workingDir: '/home/jenkins/',
                                     ttyEnabled: true,
                                     envVars: [
-                                            envVar(key: 'DOCKER_CONFIG', value: '/home/jenkins/.docker/'),
-                                            envVar(key: 'DOCKER_HOST', value: 'unix:/var/run/docker.sock'),
                                             envVar(key: 'DOCKER_CONFIG', value: '/home/jenkins/.docker/')
                                     ]
                             )
@@ -99,7 +97,4 @@ def call(Map parameters = [:], body) {
             }
         }
     }
-
-
-
 }

@@ -15,7 +15,7 @@ def call(Map parameters = [:], body) {
     def utils = new io.fabric8.Utils()
     // 0.13 introduces a breaking change when defining pod env vars so check version before creating build pod
     if (utils.isKubernetesPluginVersion013()) {
-        if (flow.isOpenShift()) {
+        if (utils.isUseOpenShiftS2IForBuilds()) {
             echo 'Runnning on openshift so using S2I binary source and Docker strategy'
             podTemplate(cloud: cloud, label: label, serviceAccount: 'jenkins', inheritFrom: "${inheritFrom}",
                     containers: [
@@ -54,8 +54,6 @@ def call(Map parameters = [:], body) {
                                     workingDir: '/home/jenkins/',
                                     ttyEnabled: true,
                                     envVars: [
-                                            envVar(key: 'DOCKER_CONFIG', value: '/home/jenkins/.docker/'),
-                                            envVar(key: 'DOCKER_HOST', value: 'unix:/var/run/docker.sock'),
                                             envVar(key: 'DOCKER_CONFIG', value: '/home/jenkins/.docker/')
                                     ])
                     ],
@@ -69,7 +67,7 @@ def call(Map parameters = [:], body) {
             }
         }
     } else {
-        if (flow.isOpenShift()) {
+        if (utils.isUseOpenShiftS2IForBuilds()) {
             echo 'Runnning on openshift so using S2I binary source and Docker strategy'
             podTemplate(cloud: cloud, label: label, serviceAccount: 'jenkins', inheritFrom: "${inheritFrom}",
                     containers: [
