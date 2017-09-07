@@ -171,12 +171,7 @@ boolean isUseDockerSocket() {
 @NonCPS
 String getDockerRegistry() {
 
-    // first lets check if we have the new pipeliens configmap in the users home namespace
-    KubernetesClient client = new DefaultKubernetesClient()
-    def r = client.configMaps().inNamespace(getUsersNamespace()).withName('fabric8-pipelines').get()
-
-    def d = r.getData()
-    def externalDockerRegistryURL = d['external-docker-registry-url']
+    def externalDockerRegistryURL = getUsersPipelineConfig('external-docker-registry-url')
     if (externalDockerRegistryURL){
       return externalDockerRegistryURL
     }
@@ -188,6 +183,24 @@ String getDockerRegistry() {
        error "No external-docker-registry found in Jenkins configmap or no FABRIC8_DOCKER_REGISTRY_SERVICE_HOST FABRIC8_DOCKER_REGISTRY_SERVICE_PORT environment variables"
     }
     return registryHost + ':' + registryPort
+}
+
+@NonCPS
+String getUsersPipelineConfig(k) {
+
+    // first lets check if we have the new pipeliens configmap in the users home namespace
+    KubernetesClient client = new DefaultKubernetesClient()
+    def ns = getUsersNamespace()
+    def r = client.configMaps().inNamespace(ns).withName('fabric8-pipelines').get()
+    if (!r){
+      error "no fabric8-pipelines configmap found in namespace ${ns}"
+    }
+    def d = r.getData()
+    def v = d[k]
+    if (!v){
+      error "no value for key ${k} found in ${ns}/fabric8-pipelines configmap"
+    }
+    return v
 }
 
 @NonCPS
