@@ -34,7 +34,7 @@ def call(body) {
             profile = '-P kubernetes'
         }
 
-        def version = getNewVersion{} + "-SNAPSHOT"
+        def version = 'PR-' + getNewVersion{} + "-${env.BUILD_NUMBER}"
 
         stage ('Build + Unit test'){
             // set a unique temp version so we can download artifacts from nexus and run acceptance tests

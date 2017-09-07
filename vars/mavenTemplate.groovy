@@ -17,6 +17,7 @@ def call(Map parameters = [:], body) {
 
     // 0.13 introduces a breaking change when defining pod env vars so check version before creating build pod
     if (utils.isKubernetesPluginVersion013()) {
+        echo "Kubernetes Plugin Version 013"
         if (utils.isUseOpenShiftS2IForBuilds()) {
             podTemplate(cloud: cloud, label: label, inheritFrom: "${inheritFrom}", serviceAccount: 'jenkins',
                     containers: [
