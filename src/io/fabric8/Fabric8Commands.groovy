@@ -133,11 +133,11 @@ def setupWorkspaceForRelease(String project, Boolean useGitTagForNextVersion, St
     if (useGitTagForNextVersion) {
         def newVersion = getNewVersionFromTag(currentVersion)
         echo "New release version ${newVersion}"
-        sh "mvn -U versions:set -DnewVersion=${newVersion} " + mvnExtraArgs
+        sh "mvn -B -U versions:set -DnewVersion=${newVersion} " + mvnExtraArgs
         sh "git commit -a -m 'release ${newVersion}'"
         pushTag(newVersion)
     } else {
-        sh 'mvn build-helper:parse-version versions:set -DnewVersion=\\\${parsedVersion.majorVersion}.\\\${parsedVersion.minorVersion}.\\\${parsedVersion.nextIncrementalVersion} ' + mvnExtraArgs
+        sh 'mvn -B build-helper:parse-version versions:set -DnewVersion=\\\${parsedVersion.majorVersion}.\\\${parsedVersion.minorVersion}.\\\${parsedVersion.nextIncrementalVersion} ' + mvnExtraArgs
     }
 
     def releaseVersion = getProjectVersion()
@@ -249,7 +249,7 @@ def stageSonartypeRepo() {
 def releaseSonartypeRepo(String repoId) {
     try {
         // release the sonartype staging repo
-        sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-release -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoId} -Ddescription=\"Next release is ready\" -DstagingProgressTimeoutMinutes=60"
+        sh "mvn -B org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-release -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoId} -Ddescription=\"Next release is ready\" -DstagingProgressTimeoutMinutes=60"
 
     } catch (err) {
         sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-drop -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoId} -Ddescription=\"Error during release: ${err}\" -DstagingProgressTimeoutMinutes=60"
@@ -266,8 +266,8 @@ def dropStagingRepo(String repoId) {
 def helm() {
     def pluginVersion = getReleaseVersion("io/fabric8/fabric8-maven-plugin")
     try {
-        sh "mvn io.fabric8:fabric8-maven-plugin:${pluginVersion}:helm"
-        sh "mvn io.fabric8:fabric8-maven-plugin:${pluginVersion}:helm-push"
+        sh "mvn -B io.fabric8:fabric8-maven-plugin:${pluginVersion}:helm"
+        sh "mvn -B io.fabric8:fabric8-maven-plugin:${pluginVersion}:helm-push"
     } catch (err) {
         error "ERROR with helm push ${err}"
     }
@@ -286,7 +286,7 @@ def updateGithub() {
 
 def updateNextDevelopmentVersion(String releaseVersion, String mvnExtraArgs = "") {
     // update poms back to snapshot again
-    sh 'mvn build-helper:parse-version versions:set -DnewVersion=\\\${parsedVersion.majorVersion}.\\\${parsedVersion.minorVersion}.\\\${parsedVersion.nextIncrementalVersion}-SNAPSHOT ' + mvnExtraArgs
+    sh 'mvn -B build-helper:parse-version versions:set -DnewVersion=\\\${parsedVersion.majorVersion}.\\\${parsedVersion.minorVersion}.\\\${parsedVersion.nextIncrementalVersion}-SNAPSHOT ' + mvnExtraArgs
     def snapshotVersion = getProjectVersion()
     sh "git commit -a -m '[CD] prepare for next development iteration ${snapshotVersion}'"
     sh "git push origin release-v${releaseVersion}"
