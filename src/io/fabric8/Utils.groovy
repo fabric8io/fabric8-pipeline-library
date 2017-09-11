@@ -420,15 +420,14 @@ def getExistingPR(project, pair){
     }
 
     if (rs == null || rs.isEmpty()){
-      return false
+      return null
     }
     for(int i = 0; i < rs.size(); i++){
       def pr = rs[i]
-
-      if (pr.state == 'open' && pr.title.contains("fix(version): update ${property}")){
-        if (!pr.title.contains("fix(version): update ${property} to ${version}")){
-          return pr.number
-        }
+      echo "checking PR ${pr.number}"
+      if (pr.state == 'open' && pr.title.contains("fix(version): update ${property} to ${version}")){
+        echo 'matched'
+        return pr.number
       }
     }
     return null

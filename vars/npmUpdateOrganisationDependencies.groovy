@@ -61,57 +61,59 @@ def call(body) {
                         existingPR = utils.getExistingPR(project, pair)
                     }
 
-                    stage "Updating ${project}"
-                    sh "rm -rf ${repo}"
-                    sh "git clone https://github.com/${project}.git"
-                    dir(repo) {
-                        sh "git remote set-url origin git@github.com:${project}.git"
+                    if (!existingPR) {
+                        stage ("Updating ${project}"){
 
-                        def uid = UUID.randomUUID().toString()
-                        sh "git checkout -b versionUpdate${uid}"
-                        utils.replacePackageVersion("${packageLocation}", pair)
+                            sh "rm -rf ${repo}"
+                            sh "git clone https://github.com/${project}.git"
+                            dir(repo) {
+                                sh "git remote set-url origin git@github.com:${project}.git"
 
-                        def gitStatus = sh(script: "git status", returnStdout: true).toString().trim()
+                                def uid = UUID.randomUUID().toString()
+                                sh "git checkout -b versionUpdate${uid}"
+                                utils.replacePackageVersion("${packageLocation}", pair)
 
-                        if (gitStatus != null && !gitStatus.contains('nothing to commit')) {
+                                def gitStatus = sh(script: "git status", returnStdout: true).toString().trim()
 
-                            container(name: containerName) {
+                                if (gitStatus != null && !gitStatus.contains('nothing to commit')) {
 
-                                sh 'chmod 600 /root/.ssh-git/ssh-key'
-                                sh 'chmod 600 /root/.ssh-git/ssh-key.pub'
-                                sh 'chmod 700 /root/.ssh-git'
+                                    container(name: containerName) {
 
-                                sh "git config --global user.email fabric8-admin@googlegroups.com"
-                                sh "git config --global user.name fabric8-release"
+                                        sh 'chmod 600 /root/.ssh-git/ssh-key'
+                                        sh 'chmod 600 /root/.ssh-git/ssh-key.pub'
+                                        sh 'chmod 700 /root/.ssh-git'
 
-                                def message = "fix(version): update ${property} to ${version}"
-                                sh "git add ${packageLocation}"
+                                        sh "git config --global user.email fabric8-admin@googlegroups.com"
+                                        sh "git config --global user.name fabric8-release"
 
-                                sh "git commit -m \"${message}\""
+                                        def message = "fix(version): update ${property} to ${version}"
+                                        sh "git add ${packageLocation}"
 
-                                try {
-                                    sh "git push origin versionUpdate${uid}"
-                                    newPRID = flow.createPullRequest("${message}", "${project}", "versionUpdate${uid}")
+                                        sh "git commit -m \"${message}\""
 
-                                } catch (err) {
-                                    def msg = """
-                                    Skipping NPM version update for ${project}
+                                        try {
+                                            sh "git push origin versionUpdate${uid}"
+                                            newPRID = flow.createPullRequest("${message}", "${project}", "versionUpdate${uid}")
 
-                                    ERROR: ${err}
-                                    """
-                                    hubot room: 'release', message: msg
-                                    echo "${msg}"
+                                        } catch (err) {
+                                            def msg = """
+                                            Skipping NPM version update for ${project}
+
+                                            ERROR: ${err}
+                                            """
+                                            hubot room: 'release', message: msg
+                                            echo "${msg}"
+                                        }
+                                    }
+                                } else {
+                                    echo "No changes found skipping"
                                 }
                             }
-                        } else {
-                            echo "No changes found skipping"
                         }
+                    } else {
+                        echo "found existing PR ${existingPR} so skipping"
                     }
 
-                    if (existingPR) {
-                        // delete existing PR
-                        flow.closePR(project, existingPR, version, newPRID)
-                    }
                 } else {
                     println "Ignoring project ${project} as it has no package.json"
                 }
