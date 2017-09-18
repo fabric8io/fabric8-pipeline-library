@@ -6,8 +6,8 @@ def call(Map parameters = [:], body) {
     def defaultLabel = buildId('clients')
     def label = parameters.get('label', defaultLabel)
 
-    def clientsImage = parameters.get('clientsImage', 'fabric8/builder-clients:0.9')
-    def mavenImage = parameters.get('mavenImage', 'fabric8/maven-builder:2.2.297')
+    def clientsImage = parameters.get('clientsImage', 'fabric8/builder-clients:vf422ab0')
+    def mavenImage = parameters.get('mavenImage', 'fabric8/maven-builder:v7973e33')
     def inheritFrom = parameters.get('inheritFrom', 'base')
 
     def cloud = flow.getCloudConfig()
