@@ -203,6 +203,36 @@ String getUsersPipelineConfig(k) {
     return v
 }
 
+// returns a map of the configmap data in a given namepspace
+@NonCPS
+String getConfigMap(ns, cm, key) {
+
+    // first lets check if we have the new pipeliens configmap in the users home namespace
+    KubernetesClient client = new DefaultKubernetesClient()
+    if (!ns){
+      ns = getNamespace()
+    }
+
+    def r = client.configMaps().inNamespace(ns).withName(cm).get()
+    if (!r){
+      error "no ${cm} configmap found in namespace ${ns}"
+    }
+    if (key){
+      return r.getData()[key]
+    }
+    return r.getData()
+}
+
+@NonCPS
+private Map<String, String> parseConfigMapData(final String input) {
+    final Map<String, String> map = new HashMap<String, String>();
+    for (String pair : input.split("\n")) {
+        String[] kv = pair.split(":");
+        map.put(kv[0].trim(), kv[1].trim());
+    }
+    return map;
+}
+
 @NonCPS
 String getNamespace() {
   KubernetesClient client = new DefaultKubernetesClient()
