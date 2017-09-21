@@ -12,26 +12,6 @@ def call(body) {
         error 'no environment specified'
     }
 
+    // TODO lets add a default timeout loaded from the fabric8-pipelines ConfigMap
     kubernetesApply(environment: environment)
-
-    def utils = new Utils()
-    if (!utils.isUseOpenShiftS2IForBuilds()) {
-        def data = utils.getConfigMap(null, 'exposecontroller', 'config.yml')
-        def configYAML = utils.parseConfigMapData(data)
-        def http = configYAML['http']
-        def exposer = configYAML['exposer']
-        def domain = configYAML['domain']
-
-        if (!http){
-            error "no value for key http found in exposecontroller configmap"
-        }
-        if (!exposer){
-            error "no value for key exposer found in exposecontroller configmap"
-        }
-        if (!domain){
-            error "no value for key domain found in exposecontroller configmap"
-        }
-
-        sh "exposecontroller --watch-namespace ${environment} --http ${http} --exposer ${exposer} --domain ${domain}"
-    }
 }
