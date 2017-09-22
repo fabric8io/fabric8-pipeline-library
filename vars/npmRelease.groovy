@@ -12,6 +12,8 @@ def call(body) {
 
     sh "git config user.email ${gitEmail}"
     sh "git config user.name ${gitUserName}"
+    // ensure we're not in a detacheh HEAD and avoid semantic-release error: 'ENOTINHISTORY Commit not in history'
+    sh "git checkout master"
 
     sh 'chmod 600 /root/.ssh-git/ssh-key'
     sh 'chmod 600 /root/.ssh-git/ssh-key.pub'
@@ -31,7 +33,7 @@ def call(body) {
             npm run semantic-release
             """
         } catch (err) {
-            echo "ERROR publishing: ${err}"
+            echo "ERROR publishing: ${err.getMessage()}"
             echo "No artifacts published so skip updating downstream projects"
             return false
         }
