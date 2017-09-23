@@ -25,6 +25,10 @@ def updatePackageJSONVersion(f, p, v) {
     sh "sed -i -r 's/\"${p}\": \"[0-9][0-9]{0,2}.[0-9][0-9]{0,2}(.[0-9][0-9]{0,2})?(.[0-9][0-9]{0,2})?(-development)?\"/\"${p}\": \"${v}\"/g' ${f}"
 }
 
+def updateDockerfileEnvVar(f, p, v) {
+    sh "sed -i -r 's/ENV ${p}.*/ENV ${p} ${v}/g' ${f}"
+}
+
 def getProjectVersion() {
     def file = readFile('pom.xml')
     def project = new XmlSlurper().parseText(file)
