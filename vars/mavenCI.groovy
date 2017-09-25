@@ -27,19 +27,12 @@ def call(body) {
 
         def skipTests = config.skipTests ?: false
 
-        def profile
-        if (flow.isOpenShift()) {
-            profile = '-P openshift'
-        } else {
-            profile = '-P kubernetes'
-        }
-
         def version = 'PR-' + getNewVersion{} + "-${env.BUILD_NUMBER}"
 
         stage ('Build + Unit test'){
             // set a unique temp version so we can download artifacts from nexus and run acceptance tests
             sh "mvn -U versions:set -DnewVersion=${version}"
-            sh "mvn clean -B -e -U deploy -Dmaven.test.skip=${skipTests} ${profile}"
+            sh "mvn clean -B -e -U deploy -Dmaven.test.skip=${skipTests} -P openshift"
         }
 
         def s2iMode = utils.supportsOpenShiftS2I()
