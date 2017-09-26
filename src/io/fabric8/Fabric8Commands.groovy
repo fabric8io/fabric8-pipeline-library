@@ -671,14 +671,19 @@ def getGitHubProject(){
     return url.trim()
 }
 
-def isAuthorCollaborator(githubToken) {
+def isAuthorCollaborator(githubToken, project) {
+
     if (!githubToken){
+
         githubToken = getGitHubToken()
+
         if (!githubToken){
             echo "No GitHub api key found so trying annonynous GitHub api call"
         }
     }
-    def project = getGitHubProject()
+    if (!project){
+        project = getGitHubProject()
+    }
 
     def changeAuthor = env.CHANGE_AUTHOR
     if (!changeAuthor){
@@ -901,7 +906,6 @@ def getCloudConfig() {
  * Should be called after checkout scm
  */
 @NonCPS
-
 def getScmPushUrl() {
     def url = sh(returnStdout: true, script: 'git config --get remote.origin.url').trim()
 

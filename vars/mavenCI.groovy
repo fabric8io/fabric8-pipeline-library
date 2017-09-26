@@ -16,7 +16,7 @@ def call(body) {
 
     container(name: 'maven') {
 
-        if (!flow.isAuthorCollaborator(token)){
+        if (!flow.isAuthorCollaborator(token, "")){
             error 'Change author is not a collaborator on the project, failing build until we support the [test] comment'
         }
         

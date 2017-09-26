@@ -14,15 +14,20 @@ def call(body) {
     def newImageName = config.newImageName
     def deploymentName = config.githubRepo
     def providerLabel = config.providerLabel ?: 'fabric8'
+    def project = config.githubProject
 
     def flow = new io.fabric8.Fabric8Commands()
     def utils = new io.fabric8.Utils()
 
     openShiftProject = openShiftProject + '-' + utils.getRepoName()
-
     container('clients') {
+        if (!flow.isAuthorCollaborator("", project)){
+            currentBuild.result = 'ABORTED'
+            error 'Change author is not a collaborator on the project, aborting build until we support the [test] comment'
+        }
+
         // get the latest released yaml
-        
+
         def yamlReleaseVersion = flow.getReleaseVersionFromMavenMetadata("${mavenRepo}/maven-metadata.xml")
         yaml = flow.getUrlAsString("${mavenRepo}/${yamlReleaseVersion}/${deploymentName}-${yamlReleaseVersion}-openshift.yml")
         yaml = flow.swizzleImageName(yaml, originalImageName, newImageName)
