@@ -49,7 +49,7 @@ def call(body) {
         // TODO share this code with buildSnapshotFabric8UI.groovy!
         // this is only when deploying fabric8-ui, need to figure out a better way
         sh '''
-            export FABRIC8_WIT_API_URL="https://api.openshift.io/api/"
+            export FABRIC8_WIT_API_URL="https://api.prod-preview.openshift.io/api"
             export FABRIC8_RECOMMENDER_API_URL="https://recommender.api.openshift.io"
             export FABRIC8_FORGE_API_URL="https://forge.api.openshift.io"
             export FABRIC8_SSO_API_URL="https://sso.openshift.io/"
