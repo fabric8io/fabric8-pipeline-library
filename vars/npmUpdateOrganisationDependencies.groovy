@@ -101,7 +101,7 @@ def call(body) {
 
                                             ERROR: ${err}
                                             """
-                                            hubot room: 'release', message: msg
+                                            hubotSend message: msg, failOnError: false
                                             echo "${msg}"
                                         }
                                     }

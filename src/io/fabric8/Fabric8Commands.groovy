@@ -242,7 +242,7 @@ def stageSonartypeRepo() {
         //step([$class: 'ArtifactArchiver', artifacts: '**/target/*.jar', fingerprint: true])
 
     } catch (err) {
-        hubot room: 'release', message: "Release failed when building and deploying to Nexus ${err}"
+        hubotSend room: 'release', message: "Release failed when building and deploying to Nexus ${err}", failOnError: false
         currentBuild.result = 'FAILURE'
         error "ERROR Release failed when building and deploying to Nexus ${err}"
     }

@@ -16,6 +16,6 @@ def call(body) {
     }
 
     message = "${config.artifactId} ${config.version} released and available in maven central"
-    hubot room: 'release', message: message
+    hubotSend message: message, failOnError: false
 
 }
