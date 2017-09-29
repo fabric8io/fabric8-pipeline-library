@@ -70,7 +70,7 @@ git push origin fixPR${id}:${branchName}
 ```
 """
 
-       hubot room: 'release', message: message
+       hubotSend message: message, failOnError: false
             def shouldWeWait = requestResolve()
 
             if (!shouldWeWait){
@@ -102,10 +102,8 @@ Alternatively you can skip this conflict.  This is highly discouraged but maybe 
 To do this chose the abort option below, note this particular action will not abort the release and only skip this conflict.
 '''
 
-    hubotApprove message: proceedMessage, room: 'release'
-
-    try {
-        input id: 'Proceed', message: "\n${proceedMessage}"
+    try{
+        hubotApprove message: proceedMessage, failOnError: false
         return true
     } catch (err) {
         echo 'Skipping conflict'

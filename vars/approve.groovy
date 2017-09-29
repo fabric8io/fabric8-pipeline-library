@@ -11,12 +11,10 @@ def call(body) {
     def proceedMessage = """Would you like to promote version ${config.version} to the next environment?
 """
 
-    hubotApprove message: proceedMessage, room: config.room
-    def id = approveRequestedEvent(app: "${env.JOB_NAME}", environment: config.environment)
-
     try {
         timeout(time: timeoutTime, unit: 'HOURS') {
-            input id: 'Proceed', message: "\n${proceedMessage}"
+            hubotApprove message: proceedMessage, failOnError: false
+            def id = approveRequestedEvent(app: "${env.JOB_NAME}", environment: config.environment)
         }
     } catch (err) {
         approveReceivedEvent(id: id, approved: false)

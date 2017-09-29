@@ -67,7 +67,7 @@ EOF
             error "${e}"
         }
 
-        hubot room: 'release', message: "fabric8 deployed and system tests about to start, to follow along visit ${consoleURL}"
+        hubotSend message: "fabric8 deployed and system tests about to start, to follow along visit ${consoleURL}", failOnError: false
 
         try {
             stage('Running system tests')
@@ -107,10 +107,9 @@ EOF
         try {
             stage('Notification')
             if (failed) {
-                hubotApprove message: msg, room: 'release'
-                input id: 'Proceed', message: msg
+                hubotApprove message: msg, failOnError: false
             } else {
-                hubot room: 'release', message: msg
+                hubotSend message: msg, failOnError: false
             }
 
         } catch (e1) {

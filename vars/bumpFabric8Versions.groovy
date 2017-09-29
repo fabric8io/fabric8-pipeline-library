@@ -40,7 +40,7 @@ def call(body) {
       return flow.createPullRequest("[CD] Update release dependencies","${project}","versionUpdate${uid}")
     } else {
       message = "fabric8 already on the latest release versions"
-      hubot room: 'release', message: message
+      hubotSend message: message, failOnError: false
       return
     }
   }
