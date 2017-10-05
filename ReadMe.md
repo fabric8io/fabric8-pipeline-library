@@ -127,7 +127,7 @@ in the case of an aborted approval
 - can be used in conjunction with [kubernetesApply](https://github.com/jenkinsci/kubernetes-pipeline-plugin/blob/master/devops-steps/readme.md#applying-kubernetes-configuration)
 ```groovy
     node {
-        def resources = geDeploymemtResources {
+        def resources = getDeploymentResources {
           port = 8080
           label = 'node'
           icon = 'https://cdn.rawgit.com/fabric8io/fabric8/dc05040/website/src/images/logos/nodejs.svg'
