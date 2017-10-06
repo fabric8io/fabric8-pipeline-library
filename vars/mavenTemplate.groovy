@@ -35,12 +35,9 @@ def call(Map parameters = [:], body) {
                                     ttyEnabled: true,
                                     workingDir: '/home/jenkins/',
                                     envVars: [
-                                            envVar(key: '_JAVA_OPTIONS', value: '-Duser.home=/root/ -XX:+UseParallelGC \
-                                -XX:MinHeapFreeRatio=20 \
-                                -XX:MaxHeapFreeRatio=40 \
-                                -XX:GCTimeRatio=4 \
-                                -XX:AdaptiveSizePolicyWeight=90 \
-                                -Xmx256m')],
+                                            envVar(key: '_JAVA_OPTIONS', value: '-Duser.home=/root/ -XX:+UseParallelGC -XX:MinHeapFreeRatio=20 -XX:MaxHeapFreeRatio=40 -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -Xmx256m'),
+                                            envVar(key: 'MAVEN_OPTS', value: '-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn')
+                                            ],
                                     resourceLimitMemory: '1024Mi')],
                     volumes: [
                             secretVolume(secretName: 'jenkins-maven-settings', mountPath: '/root/.m2'),
@@ -71,7 +68,7 @@ def call(Map parameters = [:], body) {
                                     alwaysPullImage: false,
                                     workingDir: '/home/jenkins/',
                                     envVars: [
-                                            envVar(key: 'MAVEN_OPTS', value: '-Duser.home=/root/'),
+                                            envVar(key: 'MAVEN_OPTS', value: '-Duser.home=/root/ -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn'),
                                             envVar(key: 'DOCKER_CONFIG', value: '/home/jenkins/.docker/')])],
                     volumes: [
                             secretVolume(secretName: 'jenkins-maven-settings', mountPath: '/root/.m2'),
@@ -96,12 +93,9 @@ def call(Map parameters = [:], body) {
                              resourceLimitMemory: '512Mi'], // needs to be high to work on OSO
                             [name: 'maven', image: "${mavenImage}", command: '/bin/sh -c', args: 'cat', ttyEnabled: true, workingDir: '/home/jenkins/',
                              envVars: [
-                                     [key: '_JAVA_OPTIONS', value: '-Duser.home=/root/ -XX:+UseParallelGC \
-         -XX:MinHeapFreeRatio=20 \
-         -XX:MaxHeapFreeRatio=40 \
-         -XX:GCTimeRatio=4 \
-         -XX:AdaptiveSizePolicyWeight=90 \
-         -Xmx256m']],
+                                     [key: '_JAVA_OPTIONS', value: '-Duser.home=/root/ -XX:+UseParallelGC -XX:MinHeapFreeRatio=20 -XX:MaxHeapFreeRatio=40 -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -Xmx256m'],
+                                     [key: 'MAVEN_OPTS', value: '-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn']
+                                     ],
                              resourceLimitMemory: '1024Mi']],
                     volumes: [secretVolume(secretName: 'jenkins-maven-settings', mountPath: '/root/.m2'),
                               persistentVolumeClaim(claimName: 'jenkins-mvn-local-repo', mountPath: '/root/.mvnrepository'),
@@ -123,7 +117,7 @@ def call(Map parameters = [:], body) {
                             //[name: 'jnlp', image: "${jnlpImage}", args: '${computer.jnlpmac} ${computer.name}'],
                             [name: 'maven', image: "${mavenImage}", command: '/bin/sh -c', args: 'cat', ttyEnabled: true,
                              envVars: [
-                                     [key: 'MAVEN_OPTS', value: '-Duser.home=/root/']]]],
+                                     [key: 'MAVEN_OPTS', value: '-Duser.home=/root/ -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn']]]],
                     volumes: [secretVolume(secretName: 'jenkins-maven-settings', mountPath: '/root/.m2'),
                               persistentVolumeClaim(claimName: 'jenkins-mvn-local-repo', mountPath: '/root/.mvnrepository'),
                               secretVolume(secretName: 'jenkins-docker-cfg', mountPath: '/home/jenkins/.docker'),
