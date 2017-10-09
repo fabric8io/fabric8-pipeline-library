@@ -131,6 +131,14 @@ def setupWorkspaceForRelease(String project, Boolean useGitTagForNextVersion, St
     sh "git config user.email fabric8-admin@googlegroups.com"
     sh "git config user.name fabric8-release"
 
+    sh 'chmod 600 /root/.ssh-git/ssh-key'
+    sh 'chmod 600 /root/.ssh-git/ssh-key.pub'
+    sh 'chmod 700 /root/.ssh-git'
+    sh 'chmod 600 /home/jenkins/.gnupg/pubring.gpg'
+    sh 'chmod 600 /home/jenkins/.gnupg/secring.gpg'
+    sh 'chmod 600 /home/jenkins/.gnupg/trustdb.gpg'
+    sh 'chmod 700 /home/jenkins/.gnupg'
+
     sh "git tag -d \$(git tag)"
     sh "git fetch --tags"
 
