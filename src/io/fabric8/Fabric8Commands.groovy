@@ -85,7 +85,6 @@ def isFileAvailableInRepo(String repo, String path, String version, String artif
     version = removeTrailingSlash(version)
 
     def url = new URL("${repo}/${path}/${version}/${artifact}")
-    echo "waiting for file at ${url}"
 
     HttpURLConnection connection = url.openConnection()
 
@@ -95,6 +94,7 @@ def isFileAvailableInRepo(String repo, String path, String version, String artif
     try {
         connection.connect()
         new InputStreamReader(connection.getInputStream(), "UTF-8")
+        echo "File is available at: ${url.toString()}"
         return true
     } catch (FileNotFoundException e1) {
         echo "File not yet available: ${url.toString()}"
