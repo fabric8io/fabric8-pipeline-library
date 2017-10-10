@@ -79,6 +79,31 @@ def isArtifactAvailableInRepo(String repo, String groupId, String artifactId, St
     }
 }
 
+def isFileAvailableInRepo(String repo, String path, String version, String artifact) {
+    repo = removeTrailingSlash(repo)
+    path = removeTrailingSlash(path)
+    version = removeTrailingSlash(version)
+
+    def url = new URL("${repo}/${path}/${version}/${artifact}")
+    echo "waiting for file at ${url}"
+
+    HttpURLConnection connection = url.openConnection()
+
+    connection.setRequestMethod("GET")
+    connection.setDoInput(true)
+
+    try {
+        connection.connect()
+        new InputStreamReader(connection.getInputStream(), "UTF-8")
+        return true
+    } catch (FileNotFoundException e1) {
+        echo "File not yet available: ${url.toString()}"
+        return false
+    } finally {
+        connection.disconnect()
+    }
+}
+
 def removeTrailingSlash(String myString) {
     if (myString.endsWith("/")) {
         return myString.substring(0, myString.length() - 1)
