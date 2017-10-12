@@ -6,7 +6,7 @@ def call(Map parameters = [:], body) {
     def defaultLabel = buildId('clients')
     def label = parameters.get('label', defaultLabel)
 
-    def clientsImage = parameters.get('clientsImage', 'fabric8/builder-clients:vf422ab0')
+    def clientsImage = parameters.get('clientsImage', 'fabric8/builder-clients:v703b6d9')
     def inheritFrom = parameters.get('inheritFrom', 'base')
     def jnlpImage = (flow.isOpenShift()) ? 'fabric8/jenkins-slave-base-centos7:0.0.1' : 'jenkinsci/jnlp-slave:2.62'
     def openshiftConfigSecretName = parameters.get('openshiftConfigSecretName', 'remote-openshift-config')

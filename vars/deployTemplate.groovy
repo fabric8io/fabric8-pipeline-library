@@ -6,7 +6,7 @@ def call(Map parameters = [:], body) {
     def defaultLabel = buildId('clients')
     def label = parameters.get('label', defaultLabel)
 
-    def clientsImage = parameters.get('clientsImage', 'fabric8/builder-clients:vf422ab0')
+    def clientsImage = parameters.get('clientsImage', 'fabric8/builder-clients:v703b6d9')
     def mavenImage = parameters.get('mavenImage', 'fabric8/maven-builder:v7973e33')
     def inheritFrom = parameters.get('inheritFrom', 'base')
 
