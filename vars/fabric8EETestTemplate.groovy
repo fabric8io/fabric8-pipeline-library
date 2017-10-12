@@ -18,6 +18,7 @@ def call(Map parameters = [:], body) {
     def testEnvVars = [
       secretEnvVar(secretName: userSecret, key: 'USERNAME', secretKey: 'user'),
       secretEnvVar(secretName: userSecret, key: 'PASSWORD', secretKey: 'password'),
+      secretEnvVar(secretName: userSecret, key: 'TOKEN', secretKey: 'os-token'),
       secretEnvVar(secretName: userSecret, key: 'GITHUB_USERNAME', secretKey: 'github-user'),
       secretEnvVar(secretName: userSecret, key: 'GITHUB_PASSWORD', secretKey: 'github-password'),
         
