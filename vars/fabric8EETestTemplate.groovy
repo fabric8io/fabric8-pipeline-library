@@ -6,12 +6,24 @@ def call(Map parameters = [:], body) {
     def defaultLabel = buildId('test')
     def label = parameters.get('label', defaultLabel)
 
+    def userSecret = parameters.get('userSecret', "fabric8-ui-pr-user")
+    echo "using the userSecret ${userSecret} to run the E2E tests"
+
     def uiImage = parameters.get('uiImage', 'fabric8/fabric8-test-ee:latest')
     def inheritFrom = parameters.get('inheritFrom', 'base')
     def jnlpImage = (flow.isOpenShift()) ? 'fabric8/jenkins-slave-base-centos7:0.0.1' : 'jenkinsci/jnlp-slave:2.62'
 
     def cloud = flow.getCloudConfig()
 
+    def testEnvVars = [
+      secretEnvVar(secretName: userSecret, key: 'USERNAME', secretKey: 'user'),
+      secretEnvVar(secretName: userSecret, key: 'PASSWORD', secretKey: 'password'),
+      secretEnvVar(secretName: userSecret, key: 'GITHUB_USERNAME', secretKey: 'github-user'),
+      secretEnvVar(secretName: userSecret, key: 'GITHUB_PASSWORD', secretKey: 'github-password'),
+        
+      envVar(key: 'DOCKER_CONFIG', value: '/home/jenkins/.docker/')]
+    )]
+                            
     def utils = new io.fabric8.Utils()
     // 0.13 introduces a breaking change when defining pod env vars so check version before creating build pod
     if (utils.isKubernetesPluginVersion013()) {
@@ -32,9 +44,7 @@ def call(Map parameters = [:], body) {
                                     args: 'cat',
                                     ttyEnabled: true,
                                     workingDir: '/home/jenkins/',
-                                    envVars: [
-                                            envVar(key: 'DOCKER_CONFIG', value: '/home/jenkins/.docker/')]
-                            )],
+                                    envVars: testEnvVars,
                     volumes: [
                             secretVolume(secretName: 'jenkins-docker-cfg', mountPath: '/home/jenkins/.docker'),
                             secretVolume(secretName: 'npm-npmrc', mountPath: '/home/jenkins/.npm-npmrc'),
@@ -55,9 +65,7 @@ def call(Map parameters = [:], body) {
                                     privileged: true,
                                     workingDir: '/home/jenkins/',
                                     ttyEnabled: true,
-                                    envVars: [
-                                            envVar(key: 'DOCKER_CONFIG', value: '/home/jenkins/.docker/')
-                                    ])
+                                    envVars: testEnvVars)
                     ],
                     volumes: [
                             secretVolume(secretName: 'jenkins-docker-cfg', mountPath: '/home/jenkins/.docker'),
@@ -88,7 +96,7 @@ def call(Map parameters = [:], body) {
             echo 'Mounting docker socket to build docker images'
             podTemplate(cloud: cloud, label: label, serviceAccount: 'jenkins', inheritFrom: "${inheritFrom}",
                     containers: [
-                            [name: 'test', image: "${uiImage}", command: '/bin/sh -c', args: 'cat', privileged: true,  workingDir: '/home/jenkins/', ttyEnabled: true, envVars: [[key: 'DOCKER_CONFIG', value: '/home/jenkins/.docker/']]]],
+                            [name: 'test', image: "${uiImage}", command: '/bin/sh -c', args: 'cat', privileged: true,  workingDir: '/home/jenkins/', ttyEnabled: true, envVars: testEnvVars],
                     volumes: [
                             secretVolume(secretName: 'jenkins-docker-cfg', mountPath: '/home/jenkins/.docker'),
                             secretVolume(secretName: 'jenkins-hub-api-token', mountPath: '/home/jenkins/.apitoken'),
