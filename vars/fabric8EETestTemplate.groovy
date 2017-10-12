@@ -27,6 +27,7 @@ def call(Map parameters = [:], body) {
                             containerTemplate(
                                     name: 'test',
                                     image: "${uiImage}",
+                                    alwaysPullImage: true,
                                     command: '/bin/sh -c',
                                     args: 'cat',
                                     ttyEnabled: true,
@@ -48,6 +49,7 @@ def call(Map parameters = [:], body) {
                             containerTemplate(
                                     name: 'test',
                                     image: "${uiImage}",
+                                    alwaysPullImage: true,
                                     command: '/bin/sh -c',
                                     args: 'cat',
                                     privileged: true,
@@ -74,7 +76,7 @@ def call(Map parameters = [:], body) {
             podTemplate(cloud: cloud, label: label, serviceAccount: 'jenkins', inheritFrom: "${inheritFrom}",
                     containers: [
                             [name: 'jnlp', image: "${jnlpImage}", args: '${computer.jnlpmac} ${computer.name}',  workingDir: '/home/jenkins/'],
-                            [name: 'test', image: "${uiImage}", command: '/bin/sh -c', args: 'cat', ttyEnabled: true,  workingDir: '/home/jenkins/', envVars: [[key: 'DOCKER_CONFIG', value: '/home/jenkins/.docker/']]]],
+                            [name: 'test', image: "${uiImage}", alwaysPullImage: true, command: '/bin/sh -c', args: 'cat', ttyEnabled: true,  workingDir: '/home/jenkins/', envVars: [[key: 'DOCKER_CONFIG', value: '/home/jenkins/.docker/']]]],
                     volumes: [
                             secretVolume(secretName: 'jenkins-docker-cfg', mountPath: '/home/jenkins/.docker'),
                             secretVolume(secretName: 'npm-npmrc', mountPath: '/home/jenkins/.npm-npmrc'),
