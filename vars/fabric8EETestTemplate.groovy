@@ -16,15 +16,16 @@ def call(Map parameters = [:], body) {
     def cloud = flow.getCloudConfig()
 
     def testEnvVars = [
-      secretEnvVar(secretName: userSecret, key: 'USERNAME', secretKey: 'user'),
-      secretEnvVar(secretName: userSecret, key: 'PASSWORD', secretKey: 'password'),
-      secretEnvVar(secretName: userSecret, key: 'TOKEN', secretKey: 'os-token'),
-      secretEnvVar(secretName: userSecret, key: 'GITHUB_USERNAME', secretKey: 'github-user'),
-      secretEnvVar(secretName: userSecret, key: 'GITHUB_PASSWORD', secretKey: 'github-password'),
-        
-      envVar(key: 'DOCKER_CONFIG', value: '/home/jenkins/.docker/')
+            secretEnvVar(secretName: userSecret, key: 'USERNAME', secretKey: 'user'),
+            secretEnvVar(secretName: userSecret, key: 'PASSWORD', secretKey: 'password'),
+            secretEnvVar(secretName: userSecret, key: 'OS_USERNAME', secretKey: 'os-user'),
+            secretEnvVar(secretName: userSecret, key: 'TOKEN', secretKey: 'os-token'),
+            secretEnvVar(secretName: userSecret, key: 'GITHUB_USERNAME', secretKey: 'github-user'),
+            secretEnvVar(secretName: userSecret, key: 'GITHUB_PASSWORD', secretKey: 'github-password'),
+
+            envVar(key: 'DOCKER_CONFIG', value: '/home/jenkins/.docker/')
     ]
-                            
+
     def utils = new io.fabric8.Utils()
     // 0.13 introduces a breaking change when defining pod env vars so check version before creating build pod
     if (utils.isKubernetesPluginVersion013()) {
