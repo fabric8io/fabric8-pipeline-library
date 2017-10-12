@@ -30,7 +30,7 @@ def call(Map parameters = [:], body) {
                                     command: '/bin/sh -c',
                                     args: 'cat',
                                     ttyEnabled: true,
-                                    workingDir: '/test/ee_tests',
+                                    workingDir: '/home/jenkins/',
                                     envVars: [
                                             envVar(key: 'DOCKER_CONFIG', value: '/home/jenkins/.docker/')]
                             )],
@@ -51,7 +51,7 @@ def call(Map parameters = [:], body) {
                                     command: '/bin/sh -c',
                                     args: 'cat',
                                     privileged: true,
-                                    workingDir: '/test/ee_tests',
+                                    workingDir: '/home/jenkins/',
                                     ttyEnabled: true,
                                     envVars: [
                                             envVar(key: 'DOCKER_CONFIG', value: '/home/jenkins/.docker/')
@@ -74,7 +74,7 @@ def call(Map parameters = [:], body) {
             podTemplate(cloud: cloud, label: label, serviceAccount: 'jenkins', inheritFrom: "${inheritFrom}",
                     containers: [
                             [name: 'jnlp', image: "${jnlpImage}", args: '${computer.jnlpmac} ${computer.name}',  workingDir: '/home/jenkins/'],
-                            [name: 'test', image: "${uiImage}", command: '/bin/sh -c', args: 'cat', ttyEnabled: true,  workingDir: '/test/ee_tests', envVars: [[key: 'DOCKER_CONFIG', value: '/home/jenkins/.docker/']]]],
+                            [name: 'test', image: "${uiImage}", command: '/bin/sh -c', args: 'cat', ttyEnabled: true,  workingDir: '/home/jenkins/', envVars: [[key: 'DOCKER_CONFIG', value: '/home/jenkins/.docker/']]]],
                     volumes: [
                             secretVolume(secretName: 'jenkins-docker-cfg', mountPath: '/home/jenkins/.docker'),
                             secretVolume(secretName: 'npm-npmrc', mountPath: '/home/jenkins/.npm-npmrc'),
