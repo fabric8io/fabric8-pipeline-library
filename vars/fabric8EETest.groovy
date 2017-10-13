@@ -2,6 +2,8 @@
 
 def call(Map parameters = [:], body) {
 
+  echo "invoked fabric8EETest with parameters ${parameters}"
+
   def beforeTest = parameters.get('beforeTest', "")
   def afterTest = parameters.get('afterTest', "")
 
