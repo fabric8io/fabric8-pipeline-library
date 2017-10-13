@@ -1,9 +1,7 @@
 #!/usr/bin/groovy
 
 def call(Map parameters = [:]) {
-
-  echo "invoked fabric8EETest with parameters ${parameters}"
-
+  
   def beforeTest = parameters.get('beforeTest', "")
   def afterTest = parameters.get('afterTest', "")
 
