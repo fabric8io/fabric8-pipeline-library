@@ -1,6 +1,6 @@
 #!/usr/bin/groovy
 
-def call(Map parameters = [:], body) {
+def call(Map parameters = [:]) {
 
   echo "invoked fabric8EETest with parameters ${parameters}"
 
