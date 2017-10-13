@@ -1,12 +1,17 @@
 #!/usr/bin/groovy
 import io.fabric8.Fabric8Commands
 def call(Map parameters = [:], body) {
+
+    echo "invoked fabric8EETestTemplate with parameters ${parameters}"
+
     def flow = new Fabric8Commands()
 
     def defaultLabel = buildId('test')
     def label = parameters.get('label', defaultLabel)
 
     def userSecret = parameters.get('userSecret', "defaultUserSecret")
+    echo "found the userSecret ${userSecret}"
+    userSecret = "fabric8-ui-pr-user"
     echo "using the userSecret ${userSecret} to run the E2E tests"
 
     def uiImage = parameters.get('uiImage', 'fabric8/fabric8-test-ee:latest')
