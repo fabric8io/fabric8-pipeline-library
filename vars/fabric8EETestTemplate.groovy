@@ -6,7 +6,7 @@ def call(Map parameters = [:], body) {
     def defaultLabel = buildId('test')
     def label = parameters.get('label', defaultLabel)
 
-    def userSecret = parameters.get('userSecret', "fabric8-ui-pr-user")
+    def userSecret = parameters.get('userSecret', "defaultUserSecret")
     echo "using the userSecret ${userSecret} to run the E2E tests"
 
     def uiImage = parameters.get('uiImage', 'fabric8/fabric8-test-ee:latest')
