@@ -9,8 +9,8 @@ def call(Map parameters = [:], body) {
     def defaultLabel = buildId('maven')
     def label = parameters.get('label', defaultLabel)
 
-    def mavenImage = parameters.get('mavenImage', 'fabric8/maven-builder:v7973e33')
-    def jnlpImage = (flow.isOpenShift()) ? 'fabric8/jenkins-slave-base-centos7:0.0.1' : 'jenkinsci/jnlp-slave:2.62'
+    def mavenImage = parameters.get('mavenImage', 'fabric8/maven-builder:vd81dedb')
+    def jnlpImage = (flow.isOpenShift()) ? 'fabric8/jenkins-slave-base-centos7:vb0268ae' : 'jenkinsci/jnlp-slave:2.62'
     def inheritFrom = parameters.get('inheritFrom', 'base')
 
     def cloud = flow.getCloudConfig()
@@ -26,7 +26,7 @@ def call(Map parameters = [:], body) {
                                     image: "${jnlpImage}",
                                     args: '${computer.jnlpmac} ${computer.name}',
                                     workingDir: '/home/jenkins/',
-                                    resourceLimitMemory: '512Mi'), // needs to be high to work on OSO
+                                    resourceLimitMemory: '256Mi'),
                             containerTemplate(
                                     name: 'maven',
                                     image: "${mavenImage}",
@@ -35,10 +35,10 @@ def call(Map parameters = [:], body) {
                                     ttyEnabled: true,
                                     workingDir: '/home/jenkins/',
                                     envVars: [
-                                            envVar(key: '_JAVA_OPTIONS', value: '-Duser.home=/root/ -XX:+UseParallelGC -XX:MinHeapFreeRatio=20 -XX:MaxHeapFreeRatio=40 -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -Xmx256m'),
+                                            envVar(key: '_JAVA_OPTIONS', value: '-Duser.home=/root/ -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -Dsun.zip.disableMemoryMapping=true -XX:+UseParallelGC -XX:MinHeapFreeRatio=5 -XX:MaxHeapFreeRatio=10 -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -Xms10m -Xmx192m'),
                                             envVar(key: 'MAVEN_OPTS', value: '-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn')
                                             ],
-                                    resourceLimitMemory: '1024Mi')],
+                                    resourceLimitMemory: '640Mi')],
                     volumes: [
                             secretVolume(secretName: 'jenkins-maven-settings', mountPath: '/root/.m2'),
                             persistentVolumeClaim(claimName: 'jenkins-mvn-local-repo', mountPath: '/root/.mvnrepository'),
