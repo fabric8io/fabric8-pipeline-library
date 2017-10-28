@@ -180,7 +180,7 @@ String getDockerRegistry() {
     def registryHost = env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST
     def registryPort = env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT
     if (!registryHost || !registryPort){
-       error "No external-docker-registry found in Jenkins configmap or no FABRIC8_DOCKER_REGISTRY_SERVICE_HOST FABRIC8_DOCKER_REGISTRY_SERVICE_PORT environment variables"
+       error "No external-docker-registry-url found in Jenkins configmap or no FABRIC8_DOCKER_REGISTRY_SERVICE_HOST FABRIC8_DOCKER_REGISTRY_SERVICE_PORT environment variables"
     }
     return registryHost + ':' + registryPort
 }
