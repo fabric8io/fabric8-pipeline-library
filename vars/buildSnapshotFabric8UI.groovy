@@ -21,7 +21,7 @@ def call(body) {
 
     sh "git clone https://github.com/${downstreamfabric8UIOrg}/fabric8-ui"
     sh 'cd fabric8-ui && npm install'
-    sh "cd fabric8-ui && npm install --save  ${runtimeDir}/dist"
+    sh "cd fabric8-ui && npm install ${runtimeDir}/*0.0.0-development.tgz"
     sh '''
         export FABRIC8_WIT_API_URL="https://api.prod-preview.openshift.io/api/"
         export FABRIC8_RECOMMENDER_API_URL="https://recommender.api.openshift.io"
