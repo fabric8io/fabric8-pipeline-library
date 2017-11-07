@@ -27,6 +27,7 @@ def call(body) {
         export FABRIC8_RECOMMENDER_API_URL="https://recommender.api.openshift.io"
         export FABRIC8_FORGE_API_URL="https://forge.api.openshift.io"
         export FABRIC8_SSO_API_URL="https://sso.openshift.io/"
+        export FABRIC8_AUTH_API_URL="https://auth.openshift.io/api/"
         
         export OPENSHIFT_CONSOLE_URL="https://console.starter-us-east-2.openshift.com/console/"
         export WS_K8S_API_SERVER="api.starter-us-east-2.openshift.com:443"
