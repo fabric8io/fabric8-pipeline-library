@@ -18,6 +18,7 @@ def call(body) {
     def flow = new Fabric8Commands()
     def utils = new Utils()
 
+    def resourceName = utils.getResourceName()
     def expose = config.exposeApp ?: 'true'
     def requestCPU = config.resourceRequestCPU ?: '0'
     def requestMemory = config.resourceRequestMemory ?: '0'
@@ -27,7 +28,7 @@ def call(body) {
 
     def isSha = ''
     if (flow.isOpenShift()){
-        isSha = utils.getImageStreamSha(env.JOB_NAME)
+        isSha = utils.getImageStreamSha(resourceName)
     }
 
     def fabric8Registry = ''
@@ -51,18 +52,18 @@ def service = """
       fabric8.io/iconUrl: ${config.icon}
     labels:
       provider: fabric8
-      project: ${env.JOB_NAME}
+      project: ${}
       expose: '${expose}'
       version: ${config.version}
       group: quickstart
-    name: ${env.JOB_NAME}
+    name: ${resourceName}
   spec:
     ports:
     - port: 80
       protocol: TCP
       targetPort: ${config.port}
     selector:
-      project: ${env.JOB_NAME}
+      project: ${resourceName}
       provider: fabric8
       group: quickstart
 """
@@ -75,22 +76,22 @@ def deployment = """
       fabric8.io/iconUrl: ${config.icon}
     labels:
       provider: fabric8
-      project: ${env.JOB_NAME}
+      project: ${resourceName}
       version: ${config.version}
       group: quickstart
-    name: ${env.JOB_NAME}
+    name: ${resourceName}
   spec:
     replicas: 1
     selector:
       matchLabels:
         provider: fabric8
-        project: ${env.JOB_NAME}
+        project: ${resourceName}
         group: quickstart
     template:
       metadata:
         labels:
           provider: fabric8
-          project: ${env.JOB_NAME}
+          project: ${resourceName}
           version: ${config.version}
           group: quickstart
       spec:
@@ -102,7 +103,7 @@ def deployment = """
                 fieldPath: metadata.namespace
           image: ${fabric8Registry}${env.KUBERNETES_NAMESPACE}/${env.JOB_NAME}:${config.version}
           imagePullPolicy: IfNotPresent
-          name: ${env.JOB_NAME}
+          name: ${resourceName}
           ports:
           - containerPort: ${config.port}
             name: http
@@ -124,21 +125,21 @@ def deploymentConfig = """
       fabric8.io/iconUrl: ${config.icon}
     labels:
       provider: fabric8
-      project: ${env.JOB_NAME}
+      project: ${resourceName}
       version: ${config.version}
       group: quickstart
-    name: ${env.JOB_NAME}
+    name: ${resourceName}
   spec:
     replicas: 1
     selector:
       provider: fabric8
-      project: ${env.JOB_NAME}
+      project: ${resourceName}
       group: quickstart
     template:
       metadata:
         labels:
           provider: fabric8
-          project: ${env.JOB_NAME}
+          project: ${resourceName}
           version: ${config.version}
           group: quickstart
       spec:
@@ -148,9 +149,9 @@ def deploymentConfig = """
             valueFrom:
               fieldRef:
                 fieldPath: metadata.namespace
-          image: ${env.JOB_NAME}:${config.version}
+          image: ${resourceName}:${config.version}
           imagePullPolicy: IfNotPresent
-          name: ${env.JOB_NAME}
+          name: ${resourceName}
           ports:
           - containerPort: ${config.port}
             name: http
@@ -167,10 +168,10 @@ def deploymentConfig = """
     - imageChangeParams:
         automatic: true
         containerNames:
-        - ${env.JOB_NAME}
+        - ${resourceName}
         from:
           kind: ImageStreamTag
-          name: ${env.JOB_NAME}:${config.version}
+          name: ${resourceName}:${config.version}
       type: ImageChange
 """
 
@@ -178,12 +179,12 @@ def deploymentConfig = """
 - apiVersion: v1
   kind: ImageStream
   metadata:
-    name: ${env.JOB_NAME}
+    name: ${resourceName}
   spec:
     tags:
     - from:
         kind: ImageStreamImage
-        name: ${env.JOB_NAME}@${isSha}
+        name: ${resourceName}@${isSha}
         namespace: ${utils.getNamespace()}
       name: ${config.version}
 """
