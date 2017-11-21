@@ -46,38 +46,39 @@ def s2iBuild(version){
 
     def utils = new Utils()
     def ns = utils.namespace
-    def is = getImageStream(ns)
-    def bc = getBuildConfig(version, ns)
+    def resourceName = utils.getResourceName()
+    def is = getImageStream(ns, resourceName)
+    def bc = getBuildConfig(ns, resourceName, version)
 
-    sh "oc delete is ${env.JOB_NAME} -n ${ns}"
+    sh "oc delete is ${resourceName} -n ${ns} || true"
     kubernetesApply(file: is, environment: ns)
     kubernetesApply(file: bc, environment: ns)
-    sh "oc start-build ${env.JOB_NAME}-s2i --from-dir ../${env.JOB_NAME} --follow -n ${ns}"
+    sh "oc start-build ${resourceName}-s2i --from-dir ./ --follow -n ${ns}"
 
 }
 
-def getImageStream(ns){
+def getImageStream(ns, resourceName){
     return """
 apiVersion: v1
 kind: ImageStream
 metadata:
-  name: ${env.JOB_NAME}
+  name: ${resourceName}
   namespace: ${ns}
 """
 }
 
-def getBuildConfig(version, ns){
+def getBuildConfig(ns, resourceName, version){
     return """
 apiVersion: v1
 kind: BuildConfig
 metadata:
-  name: ${env.JOB_NAME}-s2i
+  name: ${resourceName}-s2i
   namespace: ${ns}
 spec:
   output:
     to:
       kind: ImageStreamTag
-      name: ${env.JOB_NAME}:${version}
+      name: ${resourceName}:${version}
   runPolicy: Serial
   source:
     type: Binary
