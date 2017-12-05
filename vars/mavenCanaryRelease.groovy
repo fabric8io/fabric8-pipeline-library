@@ -49,18 +49,17 @@ def call(body) {
 
     if (!s2iMode) {
         def registry = utils.getDockerRegistry()
-        if (flow.isSingleNode()) {
+        def m = readMavenPom file: 'pom.xml'
+        def groupId = m.groupId.split('\\.')
+        def user = groupId[groupId.size() - 1].trim()
+        def artifactId = m.artifactId
+
+        sh "docker tag ${user}/${artifactId}:${config.version} ${registry}/${user}/${artifactId}:${config.version}"
+        if (!flow.isSingleNode()) {
             echo 'Running on a single node, skipping docker push as not needed'
-            def m = readMavenPom file: 'pom.xml'
-            def groupId = m.groupId.split('\\.')
-            def user = groupId[groupId.size() - 1].trim()
-            def artifactId = m.artifactId
-
-            sh "docker tag ${user}/${artifactId}:${config.version} ${registry}/${user}/${artifactId}:${config.version}"
-
-        } else {
             retry(5) {
-                sh "mvn fabric8:push -Ddocker.push.registry=${registry}"
+                sh "docker tag ${user}/${artifactId}:${config.version} ${registry}/${user}/${artifactId}:${config.version}"
+                sh "docker push ${registry}/${user}/${artifactId}:${config.version}"
             }
         }
     }
