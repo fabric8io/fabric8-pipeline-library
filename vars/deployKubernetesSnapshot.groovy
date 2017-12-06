@@ -70,7 +70,9 @@ def call(body) {
 
         if (extraYAML){
             writeFile file: "./extra.yml", text: extraYAML
-            sh "kubectl apply -n ${namespace} -f ./extra.yml"
+            retry |3| {
+                sh "kubectl apply -n ${namespace} -f ./extra.yml"
+            }
         }
 
         sleep 10
