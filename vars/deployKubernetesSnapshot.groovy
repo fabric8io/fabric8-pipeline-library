@@ -65,12 +65,16 @@ def call(body) {
         if (templateParameters){
             sh "oc process -n ${namespace} --param-file=./values.txt -f ./snapshot.yml --local | kubectl apply -n ${namespace} -f -"
         } else {
-            sh "kubectl apply -n ${namespace} -f ./snapshot.yml"
+            retry (3) {
+                sh "kubectl apply -n ${namespace} -f ./snapshot.yml"
+            }
         }
 
         if (extraYAML){
             writeFile file: "./extra.yml", text: extraYAML
-            sh "kubectl apply -n ${namespace} -f ./extra.yml"
+            retry (3) {
+                sh "kubectl apply -n ${namespace} -f ./extra.yml"
+            }
         }
 
         sleep 10
@@ -92,7 +96,11 @@ def call(body) {
                 return false
             }
         }
-        return sh(script: "kubectl get ing ${appToDeploy} -o jsonpath=\"{.spec.rules[0].host}\" -n ${namespace}", returnStdout: true).toString().trim()
+        def ing
+        retry (3) {
+            ing = sh(script: "kubectl get ing ${appToDeploy} -o jsonpath=\"{.spec.rules[0].host}\" -n ${namespace}", returnStdout: true).toString().trim()
+        }
+        return ing
     }
 }
 
