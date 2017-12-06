@@ -608,9 +608,9 @@ def isKubernetesPluginVersion013(){
       def objPackage = object.getClass().getPackage()
       def version = objPackage.getImplementationVersion()
       // we could be using a custom built jar so remove any -SNAPSHOT from the version
-      def v = Double.parseDouble(version.replaceAll("-SNAPSHOT",""));
+      def v = version.replaceAll("-SNAPSHOT","");
 
-      if (v >= 0.13) {
+      if (v >= '0.13') {
         isNewVersion = true
       }
     } catch (err) {
