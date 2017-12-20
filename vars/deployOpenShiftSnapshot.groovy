@@ -60,8 +60,8 @@ def call(body) {
             export FABRIC8_SSO_API_URL="https://sso.prod-preview.openshift.io/"
             export FABRIC8_AUTH_API_URL="https://auth.prod-preview.openshift.io/api/"
 
-            export OPENSHIFT_CONSOLE_URL="https://api.free-int.openshift.com/console/"
-            export WS_K8S_API_SERVER="api.free-int.openshift.com:443"
+            export OPENSHIFT_CONSOLE_URL="https://api.free-stg.openshift.com/console/"
+            export WS_K8S_API_SERVER="api.free-stg.openshift.com:443"
             
             export PROXIED_K8S_API_SERVER="${WS_K8S_API_SERVER}"
             export OAUTH_ISSUER="https://${WS_K8S_API_SERVER}"
@@ -95,8 +95,8 @@ def call(body) {
             export FABRIC8_FORGE_API_URL="https://forge.api.prod-preview.openshift.io"
             export FABRIC8_SSO_API_URL="https://sso.prod-preview.openshift.io/"
 
-            export OPENSHIFT_CONSOLE_URL="https://console.free-int.openshift.com/console/"
-            export WS_K8S_API_SERVER="api.free-int.openshift.com:443"
+            export OPENSHIFT_CONSOLE_URL="https://console.free-stg.openshift.com/console/"
+            export WS_K8S_API_SERVER="api.free-stg.openshift.com:443"
 
             cd fabric8-ui && npm run build:prod
             '''
