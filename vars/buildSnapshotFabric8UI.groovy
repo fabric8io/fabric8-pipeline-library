@@ -30,7 +30,7 @@ def call(body) {
         export FABRIC8_AUTH_API_URL="https://auth.prod-preview.openshift.io/api/"
         
         export OPENSHIFT_CONSOLE_URL="https://console.starter-us-east-2.openshift.com/console/"
-        export WS_K8S_API_SERVER="api.starter-us-east-2.openshift.com:443"
+        export WS_K8S_API_SERVER="f8osoproxy-test-dsaas-preview.b6ff.rh-idev.openshiftapps.com:443"
         
         export PROXIED_K8S_API_SERVER="${WS_K8S_API_SERVER}"
         export OAUTH_ISSUER="https://${WS_K8S_API_SERVER}"
