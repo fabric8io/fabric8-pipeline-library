@@ -16,7 +16,7 @@ def call(body) {
         try {
             def ns = utils.environmentNamespace(envName)
             if (ns) {
-                kubeNS = "-Dkubernetes.namespace=${ns} -Dfabric8.use.existing=${ns}"
+                kubeNS = "-Dnamespace.use.existing=${ns}"
                 echo "Running the integration tests in the namespace: ${ns}"
             }
         } catch (e) {
