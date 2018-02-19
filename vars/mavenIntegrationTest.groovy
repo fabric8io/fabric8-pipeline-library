@@ -16,7 +16,7 @@ def call(body) {
         try {
             def ns = utils.environmentNamespace(envName)
             if (ns) {
-                kubeNS = "-Dkubernetes.namespace=${ns} -Dfabric8.use.existing=${ns}"
+                kubeNS = "-Dnamespace.use.existing=${ns}"
                 echo "Running the integration tests in the namespace: ${ns}"
             }
         } catch (e) {
@@ -29,7 +29,7 @@ def call(body) {
         echo "WARNING: Integration tests are current DISABLED for these pipelines!"
 
     } else {
-        sh "mvn org.apache.maven.plugins:maven-failsafe-plugin:2.18.1:integration-test ${kubeNS} -Dit.test=${config.itestPattern} -DfailIfNoTests=${config.failIfNoTests} org.apache.maven.plugins:maven-failsafe-plugin:2.18.1:verify"
+        sh "mvn org.apache.maven.plugins:maven-failsafe-plugin:integration-test ${kubeNS} -P openshift-it -Dit.test=${config.itestPattern} -DfailIfNoTests=${config.failIfNoTests} org.apache.maven.plugins:maven-failsafe-plugin:verify"
 
         junitResults(body);
     }

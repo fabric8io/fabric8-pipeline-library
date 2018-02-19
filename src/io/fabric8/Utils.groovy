@@ -113,9 +113,6 @@ boolean isDisabledITests() {
     e.printStackTrace()
   }
 
-  // TODO lets just disable ITests for now until this issue is fixed:
-  echo "Due to this issue: https://github.com/openshiftio/booster-common/issues/8 we are temporary disabling integration tests OOTB"
-  answer = true
   return answer;
 }
 
