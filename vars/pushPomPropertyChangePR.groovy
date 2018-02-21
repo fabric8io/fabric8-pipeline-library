@@ -20,7 +20,6 @@ def call(body) {
   for (int i = 0; i < config.projects.size(); i++) {
     def project = config.projects[i]
     def items = project.split('/')
-    def org = items[0]
     def repo = items[1]
     def id
 

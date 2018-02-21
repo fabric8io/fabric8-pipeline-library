@@ -50,7 +50,7 @@ def call(body) {
                 def hasPackage = false
                 try {
                     hasPackage = !packageUrl.text.isEmpty()
-                } catch (FileNotFoundException e1) {
+                } catch (FileNotFoundException ignored) {
                     // ignore
                 }
 
@@ -157,6 +157,5 @@ def splitRepoNames(repoNames) {
         echo "project to process ${name}"
         list << name
     }
-    repos = null
     return list
 }

@@ -33,9 +33,7 @@ def call(body) {
       }
     }
     // only make a pull request if we've updated a version
-    def rs
     if (updated) {
-
       container(name: 'clients') {
 
         sh 'chmod 600 /root/.ssh-git/ssh-key'
@@ -43,11 +41,7 @@ def call(body) {
         sh 'chmod 700 /root/.ssh-git'
 
         sh "git push origin versionUpdate${uid}"
-
-        rs = flow.createPullRequest("[CD] Update release dependencies","${config.project}","versionUpdate${uid}")
-
       }
-      return rs
+      return flow.createPullRequest("[CD] Update release dependencies","${config.project}","versionUpdate${uid}")
     }
-
 }

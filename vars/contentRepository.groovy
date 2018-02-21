@@ -4,7 +4,7 @@ def call(body) {
     def config = [:]
     body.delegate = config
     body()
-    def serviceName = config.serviceName ?: "content-repository";
+    def serviceName = config.serviceName ?: "content-repository"
     def useContentRepository = config.useContentRepository ?: "true"
 
 
@@ -15,7 +15,7 @@ def call(body) {
             try {
                 //sh 'mvn site site:deploy'
                 echo 'mvn site disabled'
-            } catch (err) {
+            } catch (ignored) {
                 // lets carry on as maven site isn't critical
                 echo 'unable to generate maven site'
             }

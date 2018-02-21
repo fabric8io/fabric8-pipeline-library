@@ -16,8 +16,6 @@ def call(body) {
 
   for (int i = 0; i < config.projects.size(); i++) {
     def project = config.projects[i]
-    def items = project.split('/')
-    def org = items[0]
     def dockerImage = config.propertyName
     def tag = config.version
     def id
@@ -31,7 +29,6 @@ def call(body) {
       def uid = UUID.randomUUID().toString()
       sh "git checkout -b updateDockerfileFromTag${uid}"
 
-      def dockerfile = readFile file: "${dockerfileLocation}"
       sh "cat ${dockerfileLocation}"
 
       sh "sed -i 's/FROM.*${dockerImage}.*/FROM ${dockerImage}:${tag}/g' ${dockerfileLocation}"

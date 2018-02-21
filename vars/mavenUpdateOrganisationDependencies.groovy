@@ -30,7 +30,7 @@ def call(body) {
     if (replaceVersions.size() > 0) {
         println "Now updating all projects within organisation: ${organisation}"
 
-        def repos;
+        def repos
         if (repoNames?.trim()){
             repos = repoNames.split(',')
         }else {
@@ -46,9 +46,7 @@ def call(body) {
             def hasPom = false
             try {
                 hasPom = !pomUrl.text.isEmpty()
-            } catch( FileNotFoundException e1 ) {
-                // ignore
-
+            } catch(ignored) {
             }
 
             if (hasPom) {
@@ -123,8 +121,6 @@ def loadPomPropertyVersions(String xml, replaceVersions) {
     println "Finding property versions from XML"
 
     try {
-        def index = xml.indexOf('<project')
-        def header = xml.take(index)
         def xmlDom = DOMBuilder.newInstance().parseText(xml)
         def propertiesList = xmlDom.getElementsByTagName("properties")
         if (propertiesList.length == 0) {

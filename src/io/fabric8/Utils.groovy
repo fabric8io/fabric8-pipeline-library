@@ -14,7 +14,7 @@ String environmentNamespace(String environment) {
   try {
     def answer = io.fabric8.kubernetes.api.environments.Environments.namespaceForEnvironment(environment)
     if (answer) {
-      return answer;
+      return answer
     }
   } catch (e) {
     echo "WARNING: Failed to invoke Environments.namespaceForEnvironment(environment) probably due to API whitelisting: ${e}"
@@ -113,7 +113,7 @@ boolean isDisabledITests() {
     e.printStackTrace()
   }
 
-  return answer;
+  return answer
 }
 
 /**
@@ -129,7 +129,7 @@ def isUseOpenShiftS2IForBuilds() {
  */
 @NonCPS
 def supportsOpenShiftS2I() {
-    DefaultOpenShiftClient client = new DefaultOpenShiftClient();
+    DefaultOpenShiftClient client = new DefaultOpenShiftClient()
     if (client.isAdaptable(OpenShiftClient.class)) {
         try {
             if (client.supportsOpenShiftAPIGroup("image.openshift.io")) {
@@ -149,7 +149,6 @@ def supportsOpenShiftS2I() {
  */
 @NonCPS
 boolean isUseDockerSocket() {
-  boolean answer = false
   try {
     def config = pipelineConfiguration()
     echo "Loaded PipelineConfiguration ${config}"
@@ -162,7 +161,7 @@ boolean isUseDockerSocket() {
     echo "WARNING: Failed to find the getUseDockerSocketFlag() flag on the PipelineConfiguration object - probably due to the jenkins plugin `kubernetes-pipeline-plugin` version: ${e}"
     e.printStackTrace()
   }
-  return supportsOpenShiftS2I() ? false : true;
+  return !supportsOpenShiftS2I()
 }
 
 @NonCPS
@@ -220,12 +219,12 @@ String getConfigMap(ns, cm, key) {
 
 @NonCPS
 private Map<String, String> parseConfigMapData(final String input) {
-    final Map<String, String> map = new HashMap<String, String>();
+    final Map<String, String> map = new HashMap<String, String>()
     for (String pair : input.split("\n")) {
-        String[] kv = pair.split(":");
-        map.put(kv[0].trim(), kv[1].trim());
+        String[] kv = pair.split(":")
+        map.put(kv[0].trim(), kv[1].trim())
     }
-    return map;
+    return map
 }
 
 @NonCPS
@@ -320,12 +319,12 @@ def getBranch(){
   if (!branch){
     try {
       branch = sh(script: 'git symbolic-ref --short HEAD', returnStdout: true).toString().trim()
-    } catch (err){
+    } catch (ignored){
       echo('Unable to get git branch and in a detached HEAD. You may need to select Pipeline additional behaviour and \'Check out to specific local branch\'')
       return null
     }
   }
-  echo "Using branch ${branch}" 
+  echo "Using branch ${branch}"
   return branch
 }
 
@@ -511,8 +510,6 @@ def hasPRComment(project, id, match){
 
 def getDownstreamProjectOverrides(downstreamProject, botName = '@fabric8cd'){
 
-  def flow = new Fabric8Commands()
-
   def id = env.CHANGE_ID
   if (!id){
     error 'no env.CHANGE_ID / pull request id found'
@@ -605,7 +602,7 @@ def isKubernetesPluginVersion013(){
       def objPackage = object.getClass().getPackage()
       def version = objPackage.getImplementationVersion()
       // we could be using a custom built jar so remove any -SNAPSHOT from the version
-      def v = version.replaceAll("-SNAPSHOT","");
+      def v = version.replaceAll("-SNAPSHOT","")
 
       if (v >= '0.13') {
         isNewVersion = true

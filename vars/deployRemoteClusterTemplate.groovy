@@ -13,8 +13,6 @@ def call(Map parameters = [:], body) {
     def configSecretName = parameters.get('configSecretName', 'remote-openshift-config')
     def cloud = flow.getCloudConfig()
 
-    def utils = new io.fabric8.Utils()
-
     if (flow.isOpenShift()) {
         podTemplate(cloud: cloud, label: label, serviceAccount: 'jenkins', inheritFrom: "${inheritFrom}",
                 containers: [

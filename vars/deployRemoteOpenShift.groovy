@@ -6,8 +6,6 @@ def call(body) {
   body.delegate = config
   body()
 
-  def flow = new io.fabric8.Fabric8Commands()
-
   container(name: 'clients') {
     sh "oc login ${config.url} --token=\$(cat /root/.oc/token) --insecure-skip-tls-verify=true"
     try{
@@ -24,7 +22,7 @@ def call(body) {
         }
         return false
       }
-    } catch (err) {
+    } catch (ignored) {
       // dont need to worry if there's no existing test environment to delete
     }
     sh 'oc new-project fabric8-test'

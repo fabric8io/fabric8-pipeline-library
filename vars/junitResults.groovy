@@ -17,7 +17,7 @@ def call(body) {
             if (failsafe) {
                 step([$class: 'JUnitResultArchiver', testResults: '**/failsafe-reports/*.xml', healthScaleFactor: 1.0])
             }
-        }catch(err){
+        }catch(ignored){
             echo "Failed to find test results "
         }
 

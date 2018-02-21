@@ -2,7 +2,6 @@
 import io.fabric8.Fabric8Commands
 
 @Library('github.com/fabric8io/fabric8-pipeline-library@master')
-def dummy
 clientsNode {
     ws ('pipelines'){
         git 'https://github.com/fabric8io/fabric8-pipeline-library.git'

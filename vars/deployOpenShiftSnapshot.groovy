@@ -38,10 +38,9 @@ def call(body) {
     }
     // cant use writeFile as we have long filename errors
     sh "echo '${yaml}' > snapshot.yml"
-    def template = false
-    if (yaml.contains('kind: Template')){
-        template = true
-    }
+
+    def template = yaml.contains('kind: Template')
+
     container('clients') {
 
         try {
@@ -118,7 +117,7 @@ def call(body) {
                 sh "oc get pod -l app=${deploymentName},provider=${providerLabel} -n ${openShiftProject} | grep Running"
                 echo "${deploymentName} pod is running"
                 return true
-            } catch (err) {
+            } catch (ignored) {
                 echo "waiting for ${deploymentName} to be ready..."
                 return false
             }

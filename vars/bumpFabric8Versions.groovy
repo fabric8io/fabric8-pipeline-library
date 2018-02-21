@@ -23,7 +23,7 @@ def call(body) {
       def kubernetesModelVersion = flow.getReleaseVersion 'io/fabric8/kubernetes-model'
       flow.searchAndReplaceMavenVersionProperty('<kubernetes-model.version>', kubernetesModelVersion)
       updated = true
-    } catch (err) {
+    } catch (ignored) {
       echo "Already on the latest versions of kubernetes-model"
     }
 
@@ -31,7 +31,7 @@ def call(body) {
       def kubernetesClientVersion = flow.getReleaseVersion 'io/fabric8/kubernetes-client'
       flow.searchAndReplaceMavenVersionProperty('<kubernetes-client.version>', kubernetesClientVersion)
       updated = true
-    } catch (err) {
+    } catch (ignored) {
       echo "Already on the latest versions of kubernetes-client"
     }
     // only make a pull request if we've updated a version
@@ -41,7 +41,6 @@ def call(body) {
     } else {
       message = "fabric8 already on the latest release versions"
       hubotSend message: message, failOnError: false
-      return
     }
   }
 }

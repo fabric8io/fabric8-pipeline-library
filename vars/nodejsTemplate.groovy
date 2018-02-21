@@ -8,8 +8,6 @@ def call(Map parameters = [:], body) {
 
     def nodejsImage = parameters.get('nodejsImage', 'fabric8/nodejs-builder:0.0.3')
     def inheritFrom = parameters.get('inheritFrom', 'base')
-    def jnlpImage = (flow.isOpenShift()) ? 'fabric8/jenkins-slave-base-centos7:0.0.1' : 'jenkinsci/jnlp-slave:2.62'
-
     def cloud = flow.getCloudConfig()
 
     def utils = new io.fabric8.Utils()

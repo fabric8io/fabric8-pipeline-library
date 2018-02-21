@@ -36,7 +36,6 @@ def call(body) {
         fabric8Registry = env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST+':'+env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT+'/'
     }
 
-    def sha
     def list = """
 ---
 apiVersion: v1

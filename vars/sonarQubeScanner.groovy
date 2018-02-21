@@ -4,8 +4,8 @@ def call(body) {
     def config = [:]
     body.delegate = config
     body()
-    def serviceName = config.serviceName ?: "sonarqube";
-    def port = config.servicePort ?: "9000";
+    def serviceName = config.serviceName ?: "sonarqube"
+    def port = config.servicePort ?: "9000"
     def scannerVersion = config.scannerVersion ?: "2.8"
     def runSonarScanner = config.runSonarScanner ?: "true"
 
@@ -15,7 +15,7 @@ def call(body) {
         echo "Checking ${serviceName} exists"
         if (flow.hasService(serviceName)) {
             try {
-                def srcDirectory = pwd();
+                def srcDirectory = pwd()
                 def tmpDir = pwd(tmp: true)
 
                 //work in tmpDir - as sonar scanner will download files from the server
@@ -37,7 +37,7 @@ def call(body) {
             } catch (err) {
                 echo "Failed to execute scanner:"
                 echo "Exception: ${err}"
-                throw err;
+                throw err
             }
 
         } else {

@@ -91,7 +91,7 @@ def call(body) {
                 sh "kubectl get pod -l app=${appToDeploy},provider=${providerLabel} -n ${namespace} | grep '1/1       Running'"
                 echo "${appToDeploy} pod is running"
                 return true
-            } catch (err) {
+            } catch (ignored) {
                 echo "waiting for ${appToDeploy} to be ready..."
                 return false
             }
@@ -112,7 +112,6 @@ def writeTemplateValuesToFile(map){
             sh "echo ${p.key}=${p.value} >> ./values.txt"
         }
     }
-    map = null
 }
 
 // thanks to https://stackoverflow.com/questions/40159258/impossibility-to-iterate-over-a-map-using-groovy-within-jenkins-pipeline#

@@ -36,8 +36,6 @@ def call(body) {
         def uid = UUID.randomUUID().toString()
         sh "git checkout -b versionUpdate${uid}"
 
-        def file = readFile file: "${dockerfileName}"
-
         flow.updateDockerfileEnvVar("${dockerfileName}", config.propertyName, config.version)
 
         container(name: containerName) {

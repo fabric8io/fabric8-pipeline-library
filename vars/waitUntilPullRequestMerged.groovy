@@ -1,6 +1,6 @@
 #!/usr/bin/groovy
 import com.cloudbees.groovy.cps.NonCPS
-import groovy.json.JsonSlurper;
+import groovy.json.JsonSlurper
 
 def call(body) {
     // evaluate the body block, and collect configuration into the object
@@ -105,7 +105,7 @@ To do this chose the abort option below, note this particular action will not ab
     try{
         hubotApprove message: proceedMessage, failOnError: false
         return true
-    } catch (err) {
+    } catch (ignored) {
         echo 'Skipping conflict'
         return false
     }

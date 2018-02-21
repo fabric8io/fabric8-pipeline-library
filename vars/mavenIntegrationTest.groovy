@@ -31,6 +31,6 @@ def call(body) {
     } else {
         sh "mvn org.apache.maven.plugins:maven-failsafe-plugin:integration-test ${kubeNS} -P openshift-it -Dit.test=${config.itestPattern} -DfailIfNoTests=${config.failIfNoTests} org.apache.maven.plugins:maven-failsafe-plugin:verify"
 
-        junitResults(body);
+        junitResults(body)
     }
   }

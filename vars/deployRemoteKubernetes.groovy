@@ -27,7 +27,7 @@ def call(body) {
         }
         return false
       }
-    } catch (err) {
+    } catch (ignored) {
       // dont need to worry if there's no existing test environment to delete
     }
     sh 'kubectl create namespace fabric8-test'

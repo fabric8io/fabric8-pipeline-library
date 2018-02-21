@@ -10,14 +10,7 @@ def call(body) {
     def flow = new io.fabric8.Fabric8Commands()
     def utils = new io.fabric8.Utils()
 
-    def skipTests = config.skipTests ?: false
 
-    def profile
-    if (flow.isOpenShift()) {
-        profile = '-P openshift'
-    } else {
-        profile = '-P kubernetes'
-    }
 
     sh "git checkout -b ${env.JOB_NAME}-${config.version}"
 
@@ -38,12 +31,12 @@ def call(body) {
             utils.addAnnotationToBuild('fabric8.io/jenkins.changeUrl', changeUrl)
         }
 
-        bayesianScanner(body);
+        bayesianScanner(body)
     }
 
 
 
-    sonarQubeScanner(body);
+    sonarQubeScanner(body)
 
 
     def s2iMode = utils.supportsOpenShiftS2I()
@@ -54,14 +47,10 @@ def call(body) {
         if (flow.isSingleNode()) {
             echo 'Running on a single node, skipping docker push as not needed'
             def m = readMavenPom file: 'pom.xml'
-            def groupId = m.groupId.split('\\.')
-            def user = groupId[groupId.size() - 1].trim()
-            def artifactId = m.artifactId
 
             sh "docker tag ${config.version} ${registry}/${config.version}"
-
         }
     }
 
-    contentRepository(body);
+    contentRepository(body)
   }

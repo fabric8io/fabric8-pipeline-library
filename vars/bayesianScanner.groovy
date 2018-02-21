@@ -4,7 +4,7 @@ def call(body) {
     def config = [:]
     body.delegate = config
     body()
-    def serviceName = config.serviceName ?: "bayesian-link";
+    def serviceName = config.serviceName ?: "bayesian-link"
     def runBayesianScanner = config.runBayesianScanner ?: "true"
 
     if (runBayesianScanner) {

@@ -17,7 +17,7 @@ def call(body) {
     sh "mvn clean -B -e -U deploy -Dmaven.test.skip=${skipTests} -P openshift"
 
 
-    junitResults(body);
+    junitResults(body)
 
     def buildName = ""
     try {
@@ -36,12 +36,12 @@ def call(body) {
             utils.addAnnotationToBuild('fabric8.io/jenkins.changeUrl', changeUrl)
         }
 
-        bayesianScanner(body);
+        bayesianScanner(body)
     }
 
 
 
-    sonarQubeScanner(body);
+    sonarQubeScanner(body)
 
 
     def s2iMode = utils.supportsOpenShiftS2I()
@@ -64,5 +64,5 @@ def call(body) {
         }
     }
 
-    contentRepository(body);
+    contentRepository(body)
   }

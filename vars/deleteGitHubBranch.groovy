@@ -29,7 +29,7 @@ def deleteBranch(String project, String branch, String authString){
       connection.connect()
 
       if (!isSuccessfulCode(connection.getResponseCode())) {
-        error ("DELETE was not successful: " + connection.getResponseCode() + " "+ connection.getResponseMessage());
+        error ("DELETE was not successful: " + connection.getResponseCode() + " "+ connection.getResponseMessage())
       }
 
     } finally {
@@ -39,5 +39,5 @@ def deleteBranch(String project, String branch, String authString){
 }
 
 def isSuccessfulCode(int responseCode) {
-  return responseCode >= 200 && responseCode < 300; // 2xx => successful
+  return responseCode >= 200 && responseCode < 300 // 2xx => successful
 }

@@ -27,7 +27,6 @@ def tagDownstreamRepos() {
 
         flow.pushTag(newVersion)
     }
-
 }
 
 def getJenkinsVersion() {

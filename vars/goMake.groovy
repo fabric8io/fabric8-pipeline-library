@@ -37,7 +37,6 @@ def call(body) {
 
         if (fileExists('Dockerfile')){
             container(name: 'docker') {
-                def imageName = "docker.io/${dockerOrg}/${prj}"
 
                 stage ('build image'){
                     // temporarily disable building docker image until Makefile changes merged in gofabric8

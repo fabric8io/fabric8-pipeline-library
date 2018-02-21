@@ -8,7 +8,6 @@ def call(Map parameters = [:], body) {
 
     def dockerImage = parameters.get('dockerImage', 'docker:1.11')
     def inheritFrom = parameters.get('inheritFrom', 'base')
-    def jnlpImage = (flow.isOpenShift()) ? 'fabric8/jenkins-slave-base-centos7:0.0.1' : 'jenkinsci/jnlp-slave:2.62'
 
     def cloud = flow.getCloudConfig()
 

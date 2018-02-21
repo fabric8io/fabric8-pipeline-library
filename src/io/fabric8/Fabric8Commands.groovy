@@ -71,7 +71,7 @@ def isArtifactAvailableInRepo(String repo, String groupId, String artifactId, St
         connection.connect()
         new InputStreamReader(connection.getInputStream(), "UTF-8")
         return true
-    } catch (FileNotFoundException e1) {
+    } catch (FileNotFoundException ignored) {
         echo "File not yet available: ${url.toString()}"
         return false
     } finally {
@@ -96,7 +96,7 @@ def isFileAvailableInRepo(String repo, String path, String version, String artif
         new InputStreamReader(connection.getInputStream(), "UTF-8")
         echo "File is available at: ${url.toString()}"
         return true
-    } catch (FileNotFoundException e1) {
+    } catch (FileNotFoundException ignored) {
         echo "File not yet available: ${url.toString()}"
         return false
     } finally {
@@ -130,7 +130,7 @@ def getRepoIds() {
 def getDockerHubImageTags(String image) {
     try {
         return "https://registry.hub.docker.com/v1/repositories/${image}/tags".toURL().getText()
-    } catch (err) {
+    } catch (ignored) {
         return "NO_IMAGE_FOUND"
     }
 }
@@ -182,7 +182,7 @@ def setupWorkspaceForRelease(String project, Boolean useGitTagForNextVersion, St
     // delete any previous branches of this release
     try {
         sh "git checkout -b release-v${releaseVersion}"
-    } catch (err) {
+    } catch (ignored) {
         sh "git branch -D release-v${releaseVersion}"
         sh "git checkout -b release-v${releaseVersion}"
     }
@@ -415,7 +415,7 @@ def closePR(project, id, newVersion, newPRID) {
     if (githubToken.length() > 0) {
         connection.setRequestProperty("Authorization", "Bearer ${githubToken}")
     }
-    connection.setRequestProperty("X-HTTP-Method-Override", "PATCH");
+    connection.setRequestProperty("X-HTTP-Method-Override", "PATCH")
     connection.setRequestMethod("POST")
     connection.setDoOutput(true)
     connection.connect()
@@ -453,7 +453,7 @@ def getIssueComments(project, id, githubToken = null) {
     def apiUrl = new URL("https://api.github.com/repos/${project}/issues/${id}/comments")
     echo "getting comments for ${apiUrl}"
 
-    def HttpURLConnection connection = apiUrl.openConnection()
+    HttpURLConnection connection = apiUrl.openConnection()
     if (githubToken != null && githubToken.length() > 0) {
         connection.setRequestProperty("Authorization", "Bearer ${githubToken}")
     }
@@ -486,7 +486,7 @@ def waitUntilSuccessStatus(project, ref) {
 
     def apiUrl = new URL("https://api.github.com/repos/${project}/commits/${ref}/status")
     waitUntil {
-        def HttpURLConnection connection = apiUrl.openConnection()
+        HttpURLConnection connection = apiUrl.openConnection()
         if (githubToken != null && githubToken.length() > 0) {
             connection.setRequestProperty("Authorization", "Bearer ${githubToken}")
         }
@@ -496,13 +496,11 @@ def waitUntilSuccessStatus(project, ref) {
         connection.connect()
 
         def rs
-        def code
 
         try {
             rs = new JsonSlurper().parse(new InputStreamReader(connection.getInputStream(), "UTF-8"))
 
-            code = connection.getResponseCode()
-        } catch (err){
+        } catch (ignored){
             echo "CI checks have not passed yet so waiting before merging"
         } finally {
             connection.disconnect()
@@ -524,7 +522,7 @@ def waitUntilSuccessStatus(project, ref) {
 def getGithubBranch(project, id, githubToken){
 
     def apiUrl = new URL("https://api.github.com/repos/${project}/pulls/${id}")
-    def HttpURLConnection connection = apiUrl.openConnection()
+    HttpURLConnection connection = apiUrl.openConnection()
     if (githubToken != null && githubToken.length() > 0) {
         connection.setRequestProperty("Authorization", "Bearer ${githubToken}")
     }
@@ -537,7 +535,7 @@ def getGithubBranch(project, id, githubToken){
         branch = rs.head.ref
         echo "${branch}"
         return branch
-    }catch(err){
+    }catch(ignored){
         echo "Error while fetching the github branch"
     }finally {
         if (connection){
@@ -553,7 +551,7 @@ def mergePR(project, id) {
 
     def apiUrl = new URL("https://api.github.com/repos/${project}/pulls/${id}/merge")
 
-    def HttpURLConnection connection = apiUrl.openConnection()
+    HttpURLConnection connection = apiUrl.openConnection()
     if (githubToken.length() > 0) {
         connection.setRequestProperty("Authorization", "Bearer ${githubToken}")
     }
@@ -562,10 +560,8 @@ def mergePR(project, id) {
     connection.connect()
 
     // execute the request
-    def rs
     try{
-        rs = new JsonSlurper().parse(new InputStreamReader(connection.getInputStream(), "UTF-8"))
-
+        def rs = new JsonSlurper().parse(new InputStreamReader(connection.getInputStream(), "UTF-8"))
         def code = connection.getResponseCode()
 
         if (code != 200) {
@@ -577,17 +573,14 @@ def mergePR(project, id) {
         } else {
             echo "${project} PR ${id} ${rs.message}"
         }
-    } catch (err) {
+    } catch (ignored) {
         // if merge failed try to squash and merge
         connection = null
-        rs = null
         squashAndMerge(project, id)
     } finally {
         if (connection){
             connection.disconnect()
-            connection = null
         }
-        rs = null
     }
 }
 
@@ -595,7 +588,7 @@ def squashAndMerge(project, id) {
     def githubToken = getGitHubToken()
     def apiUrl = new URL("https://api.github.com/repos/${project}/pulls/${id}/merge")
 
-    def HttpURLConnection connection = apiUrl.openConnection()
+    HttpURLConnection connection = apiUrl.openConnection()
     if (githubToken.length() > 0) {
         connection.setRequestProperty("Authorization", "Bearer ${githubToken}")
     }
@@ -624,8 +617,6 @@ def squashAndMerge(project, id) {
         }
     } finally {
         connection.disconnect()
-        connection = null
-        rs = null
     }
 }
 
@@ -634,7 +625,7 @@ def addCommentToPullRequest(comment, pr, project) {
     def apiUrl = new URL("https://api.github.com/repos/${project}/issues/${pr}/comments")
     echo "adding ${comment} to ${apiUrl}"
     try {
-        def HttpURLConnection connection = apiUrl.openConnection()
+        HttpURLConnection connection = apiUrl.openConnection()
         if (githubToken.length() > 0) {
             connection.setRequestProperty("Authorization", "Bearer ${githubToken}")
         }
@@ -662,7 +653,7 @@ def addMergeCommentToPullRequest(String pr, String project) {
     def apiUrl = new URL("https://api.github.com/repos/${project}/issues/${pr}/comments")
     echo "merge PR using comment sent to ${apiUrl}"
     try {
-        def HttpURLConnection connection = apiUrl.openConnection()
+        HttpURLConnection connection = apiUrl.openConnection()
         if (githubToken.length() > 0) {
             connection.setRequestProperty("Authorization", "Bearer ${githubToken}")
         }
@@ -726,7 +717,7 @@ def isAuthorCollaborator(githubToken, project) {
 
     def apiUrl = new URL("https://api.github.com/repos/${project}/collaborators/${changeAuthor}")
 
-    def HttpURLConnection connection = apiUrl.openConnection()
+    HttpURLConnection connection = apiUrl.openConnection()
     if (githubToken != null && githubToken.length() > 0) {
         connection.setRequestProperty("Authorization", "Bearer ${githubToken}")
     }
@@ -737,14 +728,11 @@ def isAuthorCollaborator(githubToken, project) {
         connection.connect()
         new InputStreamReader(connection.getInputStream(), "UTF-8")
         return true
-    } catch (FileNotFoundException e1) {
+    } catch (FileNotFoundException ignored) {
         return false
     } finally {
         connection.disconnect()
     }
-
-    error "Error checking if user ${changeAuthor} is a collaborator on ${project}.  GitHub API Response code: ${code}"
-
 }
 
 def getUrlAsString(urlString) {
@@ -766,7 +754,6 @@ def getUrlAsString(urlString) {
 def drop(String pr, String project) {
     def githubToken = getGitHubToken()
     def apiUrl = new URL("https://api.github.com/repos/${project}/pulls/${pr}")
-    def branch
     HttpURLConnection connection
     OutputStreamWriter writer
     echo "closing PR ${apiUrl}"
@@ -918,7 +905,7 @@ def deleteNamespace(String name) {
             return true
         }
         return false
-    } catch (e) {
+    } catch (ignored) {
         // ignore errors
         return false
     }
@@ -955,21 +942,21 @@ def openShiftImageStreamExists(String name){
             def result = sh(returnStdout: true, script: 'oc describe is ${name} --namespace openshift')
             if (result && result.contains(name)){
                 echo "ImageStream  ${name} is already installed globally"
-                return true;
+                return true
             }else {
                 //see if its already in our namespace
-                def namespace = kubernetes.getNamespace();
+                def namespace = kubernetes.getNamespace()
                 result = sh(returnStdout: true, script: 'oc describe is ${name} --namespace ${namespace}')
                 if (result && result.contains(name)){
                     echo "ImageStream  ${name} is already installed in project ${namespace}"
-                    return true;
+                    return true
                 }
             }
         }catch (e){
             echo "Warning: ${e} "
         }
     }
-    return false;
+    return false
 }
 
 @NonCPS
@@ -978,14 +965,14 @@ def openShiftImageStreamInstall(String name, String location){
         echo "ImageStream ${name} does not exist - installing ..."
         try {
             def result = sh(returnStdout: true, script: 'oc create -f  ${location}')
-            def namespace = kubernetes.getNamespace();
+            def namespace = kubernetes.getNamespace()
             echo "ImageStream ${name} now installed in project ${namespace}"
-            return true;
+            return true
         }catch (e){
             echo "Warning: ${e} "
         }
     }
-    return false;
+    return false
 }
 
 return this

@@ -33,7 +33,7 @@ def call(body) {
         withCredentials([usernamePassword(credentialsId: 'cd-github', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
             token = env.PASS
         }
-    } catch (err){
+    } catch (ignored){
         echo 'no cd-github credentials so will default to using a secret or annonymous'
     }
     
