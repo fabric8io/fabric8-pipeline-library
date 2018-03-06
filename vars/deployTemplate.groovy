@@ -40,7 +40,6 @@ def call(Map parameters = [:], body) {
                 ],
                 volumes: [
                         secretVolume(secretName: 'jenkins-maven-settings', mountPath: '/root/.m2'),
-                        persistentVolumeClaim(claimName: 'jenkins-mvn-local-repo', mountPath: '/root/.mvnrepository'),
                         secretVolume(secretName: 'gke-service-account', mountPath: '/root/home/.gke')
                 ]) {
             body()
@@ -57,7 +56,6 @@ def call(Map parameters = [:], body) {
                 ],
                 volumes: [
                         secretVolume(secretName: 'jenkins-maven-settings', mountPath: '/root/.m2'),
-                        persistentVolumeClaim(claimName: 'jenkins-mvn-local-repo', mountPath: '/root/.mvnrepository'),
                         secretVolume(secretName: 'gke-service-account', mountPath: '/root/home/.gke')
                 ]) {
             body()

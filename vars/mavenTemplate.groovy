@@ -9,7 +9,7 @@ def call(Map parameters = [:], body) {
     def defaultLabel = buildId('maven')
     def label = parameters.get('label', defaultLabel)
 
-    def mavenImage = parameters.get('mavenImage', 'fabric8/maven-builder:vd81dedb')
+    def mavenImage = parameters.get('mavenImage', 'fabric8/maven-builder:v9ff62e0')
     def jnlpImage = (flow.isOpenShift()) ? 'fabric8/jenkins-slave-base-centos7:vb0268ae' : 'jenkinsci/jnlp-slave:2.62'
     def inheritFrom = parameters.get('inheritFrom', 'base')
 
@@ -47,7 +47,6 @@ def call(Map parameters = [:], body) {
                                     resourceLimitMemory: '640Mi')],
                     volumes: [
                             secretVolume(secretName: 'jenkins-maven-settings', mountPath: '/root/.m2'),
-                            persistentVolumeClaim(claimName: 'jenkins-mvn-local-repo', mountPath: '/root/.mvnrepository'),
                             secretVolume(secretName: 'jenkins-release-gpg', mountPath: '/home/jenkins/.gnupg'),
                             secretVolume(secretName: 'jenkins-hub-api-token', mountPath: '/home/jenkins/.apitoken'),
                             secretVolume(secretName: 'jenkins-ssh-config', mountPath: '/root/.ssh'),
@@ -111,7 +110,6 @@ def call(Map parameters = [:], body) {
                                      ],
                              resourceLimitMemory: '1024Mi']],
                     volumes: [secretVolume(secretName: 'jenkins-maven-settings', mountPath: '/root/.m2'),
-                              persistentVolumeClaim(claimName: 'jenkins-mvn-local-repo', mountPath: '/root/.mvnrepository'),
                               secretVolume(secretName: 'jenkins-release-gpg', mountPath: '/home/jenkins/.gnupg'),
                               secretVolume(secretName: 'jenkins-hub-api-token', mountPath: '/home/jenkins/.apitoken'),
                               secretVolume(secretName: 'jenkins-ssh-config', mountPath: '/root/.ssh'),
@@ -134,7 +132,6 @@ def call(Map parameters = [:], body) {
                              envVars: [
                                      [key: 'MAVEN_OPTS', value: mavenOpts]]]],
                     volumes: [secretVolume(secretName: 'jenkins-maven-settings', mountPath: '/root/.m2'),
-                              persistentVolumeClaim(claimName: 'jenkins-mvn-local-repo', mountPath: '/root/.mvnrepository'),
                               secretVolume(secretName: 'jenkins-docker-cfg', mountPath: '/home/jenkins/.docker'),
                               secretVolume(secretName: 'jenkins-release-gpg', mountPath: '/home/jenkins/.gnupg'),
                               secretVolume(secretName: 'jenkins-hub-api-token', mountPath: '/home/jenkins/.apitoken'),
