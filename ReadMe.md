@@ -173,6 +173,12 @@ __WARNING this function is deprecated.  Please change to use getDeploymentResour
       version = canaryVersion
     }
 ```
+- auto updates fabric8 maven plugin in applications `pom.xml`; `true` by default.
+```groovy
+    mavenCanaryRelease{
+      autoUpdateFabric8Plugin = false // disables patching pom.xml
+    }
+```
 #### Maven Integration Test
 
 - lazily creates a test environment in kubernetes
