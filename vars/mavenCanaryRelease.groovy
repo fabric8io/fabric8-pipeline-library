@@ -22,7 +22,11 @@ def call(body) {
     sh "git checkout -b ${env.JOB_NAME}-${config.version}"
 
     if (autoUpdateFMP) {
-        patchFMPVersion()
+        try {
+            patchFMPVersion()
+        } catch (err) {
+            println "FMP patching failed due to ${err.message}"
+        }
     }
     sh "mvn org.codehaus.mojo:versions-maven-plugin:2.2:set -U -DnewVersion=${config.version}"
     sh "mvn clean -B -e -U deploy -Dmaven.test.skip=${skipTests} -P openshift"
@@ -154,10 +158,11 @@ def zeroFill(v, count) {
  * given versions strings v1 and v2 returns versions partitioned into
  * an array of strings of equal length. e.g.
  * "1.2", "3.4.5" returns [1, 2, 0], [3, 4, 5]
- * "1.2.3-5", "3.4.5" returns [1, 2, 3, 15], [3, 4, 5]
+ * "1.2.3-15", "3.4.5" returns [1, 2, 3, 15], [3, 4, 5]
+ * "1.2.3-15-rhor", "3.4.5" returns [1, 2, 3, 15, 0], [3, 4, 5, 0]
  */
 def partitionVersions(v1, v2) {
-    def delim = '[\\.-]'
+    def delim = '[a-zA-Z\\.-]'
     def v1Parts = v1.split(delim).collect { Integer.valueOf(it) }
     def v2Parts = v2.split(delim).collect { Integer.valueOf(it) }
 
