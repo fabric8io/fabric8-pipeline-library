@@ -10,12 +10,13 @@ def call(body) {
     def gitUserName = config.gitUserName ?: 'fabric8-release'
     def branch = config.branch
 
-    sh "git config user.email ${gitEmail}"
-    sh "git config user.name ${gitUserName}"
+    sh """
+       git config user.email ${gitEmail}
+       git config user.name ${gitUserName}
 
-    sh 'chmod 600 /root/.ssh-git/ssh-key'
-    sh 'chmod 600 /root/.ssh-git/ssh-key.pub'
-    sh 'chmod 700 /root/.ssh-git'
+       install -m 600 -D /root/.ssh-git-ro/ssh-key /root/.ssh-git/ssh-key
+       install -m 600 -D /root/.ssh-git-ro/ssh-key.pub /root/.ssh-git/ssh-key.pub
+       """
 
     String npmToken = readFile '/home/jenkins/.npm-token/token'
     String ghToken = readFile '/home/jenkins/.apitoken/hub'
