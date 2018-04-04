@@ -12,30 +12,30 @@ def call(Map parameters = [:], body) {
     def jnlpImage = (flow.isOpenShift()) ? 'fabric8/jenkins-slave-base-centos7:0.0.1' : 'jenkinsci/jnlp-slave:2.62'
 
     def utils = new io.fabric8.Utils()
-        podTemplate(label: label, serviceAccount: 'jenkins', inheritFrom: "${inheritFrom}",
-                containers: [
-                        containerTemplate(
-                                name: 'go',
-                                image: "${goImage}",
-                                command: '/bin/sh -c',
-                                args: 'cat',
-                                ttyEnabled: true,
-                                workingDir: '/home/jenkins/',
-                                envVars: [
-                                        envVar(key: 'GOPATH', value: '/home/jenkins/go')
-                                ]),
-                        containerTemplate(
-                                name: 'clients',
-                                image: "${clientsImage}",
-                                command: 'cat',
-                                ttyEnabled: true)
-                ],
-                volumes:
-                        [secretVolume(secretName: 'jenkins-hub-api-token', mountPath: '/home/jenkins/.apitoken'),
-                         secretVolume(secretName: 'jenkins-ssh-config', mountPath: '/root/.ssh'),
-                         secretVolume(secretName: 'jenkins-git-ssh', mountPath: '/root/.ssh-git')
-                        ]) {
-            body()
+    podTemplate(label: label, serviceAccount: 'jenkins', inheritFrom: "${inheritFrom}",
+            containers: [
+                    containerTemplate(
+                            name: 'go',
+                            image: "${goImage}",
+                            command: '/bin/sh -c',
+                            args: 'cat',
+                            ttyEnabled: true,
+                            workingDir: '/home/jenkins/',
+                            envVars: [
+                                    envVar(key: 'GOPATH', value: '/home/jenkins/go')
+                            ]),
+                    containerTemplate(
+                            name: 'clients',
+                            image: "${clientsImage}",
+                            command: 'cat',
+                            ttyEnabled: true)
+            ],
+            volumes:
+                    [secretVolume(secretName: 'jenkins-hub-api-token', mountPath: '/home/jenkins/.apitoken'),
+                     secretVolume(secretName: 'jenkins-ssh-config', mountPath: '/root/.ssh'),
+                     secretVolume(secretName: 'jenkins-git-ssh', mountPath: '/root/.ssh-git')
+                    ]) {
+        body()
 
-        }
+    }
 }

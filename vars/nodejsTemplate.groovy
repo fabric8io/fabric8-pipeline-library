@@ -1,5 +1,6 @@
 #!/usr/bin/groovy
 import io.fabric8.Fabric8Commands
+
 def call(Map parameters = [:], body) {
     def flow = new Fabric8Commands()
 
@@ -14,17 +15,17 @@ def call(Map parameters = [:], body) {
 
     def utils = new io.fabric8.Utils()
 
-        podTemplate(cloud: cloud, label: label, inheritFrom: "${inheritFrom}",
-                containers: [
-                        containerTemplate(
-                                name: 'nodejs',
-                                image: "${nodejsImage}",
-                                command: '/bin/sh -c',
-                                args: 'cat',
-                                ttyEnabled: true,
-                                workingDir: '/home/jenkins/')
-                ]
-        ) {
-            body()
-        }
+    podTemplate(cloud: cloud, label: label, inheritFrom: "${inheritFrom}",
+            containers: [
+                    containerTemplate(
+                            name: 'nodejs',
+                            image: "${nodejsImage}",
+                            command: '/bin/sh -c',
+                            args: 'cat',
+                            ttyEnabled: true,
+                            workingDir: '/home/jenkins/')
+            ]
+    ) {
+        body()
+    }
 }

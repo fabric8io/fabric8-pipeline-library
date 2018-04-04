@@ -17,25 +17,25 @@ def call(Map parameters = [:], body) {
 
     def utils = new io.fabric8.Utils()
 
-        podTemplate(cloud: cloud, label: label, inheritFrom: "${inheritFrom}",
-                containers: [
-                        containerTemplate(
-                                name: 's2i',
-                                image: "${s2iImage}",
-                                command: '/bin/sh -c',
-                                args: 'cat',
-                                ttyEnabled: true,
-                                workingDir: '/home/jenkins/',
-                                envVars: [
-                                        envVar(key: 'DOCKER_CONFIG', value: '/home/jenkins/.docker/')]
-                        )
-                ],
-                volumes: [
-                        secretVolume(secretName: 'jenkins-docker-cfg', mountPath: '/home/jenkins/.docker'),
-                        hostPathVolume(hostPath: '/var/run/docker.sock', mountPath: '/var/run/docker.sock'),
-                        secretVolume(secretName: 'jenkins-ssh-config', mountPath: '/root/.ssh'),
-                        secretVolume(secretName: 'jenkins-hub-api-token', mountPath: '/home/jenkins/.apitoken'),
-                        secretVolume(secretName: 'jenkins-git-ssh', mountPath: '/root/.ssh-git')]) {
-            body()
-        }
+    podTemplate(cloud: cloud, label: label, inheritFrom: "${inheritFrom}",
+            containers: [
+                    containerTemplate(
+                            name: 's2i',
+                            image: "${s2iImage}",
+                            command: '/bin/sh -c',
+                            args: 'cat',
+                            ttyEnabled: true,
+                            workingDir: '/home/jenkins/',
+                            envVars: [
+                                    envVar(key: 'DOCKER_CONFIG', value: '/home/jenkins/.docker/')]
+                    )
+            ],
+            volumes: [
+                    secretVolume(secretName: 'jenkins-docker-cfg', mountPath: '/home/jenkins/.docker'),
+                    hostPathVolume(hostPath: '/var/run/docker.sock', mountPath: '/var/run/docker.sock'),
+                    secretVolume(secretName: 'jenkins-ssh-config', mountPath: '/root/.ssh'),
+                    secretVolume(secretName: 'jenkins-hub-api-token', mountPath: '/home/jenkins/.apitoken'),
+                    secretVolume(secretName: 'jenkins-git-ssh', mountPath: '/root/.ssh-git')]) {
+        body()
+    }
 }
