@@ -13,8 +13,7 @@ def call(Map parameters = [:], body) {
     def cloud = flow.getCloudConfig()
 
     def utils = new io.fabric8.Utils()
-    // 0.13 introduces a breaking change when defining pod env vars so check version before creating build pod
-    if (utils.isKubernetesPluginVersion013()) {
+
         podTemplate(cloud: cloud, label: label, inheritFrom: "${inheritFrom}",
                 containers: [
                         containerTemplate(
@@ -28,13 +27,4 @@ def call(Map parameters = [:], body) {
         ) {
             body()
         }
-    } else {
-        podTemplate(cloud: cloud, label: label, inheritFrom: "${inheritFrom}",
-                containers: [
-                        //[name: 'jnlp', image: "${jnlpImage}", args: '${computer.jnlpmac} ${computer.name}',  workingDir: '/home/jenkins/'],
-                        [name: 'nodejs', image: "${nodejsImage}", command: '/bin/sh -c', args: 'cat', ttyEnabled: true,  workingDir: '/home/jenkins/']]) {
-            body()
-        }
-    }
-
 }
