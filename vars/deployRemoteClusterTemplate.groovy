@@ -9,7 +9,7 @@ def call(Map parameters = [:], body) {
     def clientsImage = parameters.get('clientsImage', 'fabric8/builder-clients:v587cb6c')
     def inheritFrom = parameters.get('inheritFrom', 'base')
     def containerName = parameters.get('containerName', 'clients')
-    def jnlpImage = (flow.isOpenShift()) ? 'fabric8/jenkins-slave-base-centos7:0.0.1' : 'jenkinsci/jnlp-slave:2.62'
+    def jnlpImage = (flow.isOpenShift()) ? 'fabric8/jenkins-slave-base-centos7:v54e55b7' : 'jenkinsci/jnlp-slave:2.62'
     def configSecretName = parameters.get('configSecretName', 'remote-openshift-config')
     def cloud = flow.getCloudConfig()
 

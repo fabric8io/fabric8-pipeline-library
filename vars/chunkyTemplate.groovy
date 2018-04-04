@@ -9,7 +9,7 @@ def call(Map parameters = [:], body) {
 
     def chunkyImage = parameters.get('chunkyImage', 'fabric8/chunky-builder:0.0.2')
     def inheritFrom = parameters.get('inheritFrom', 'base')
-    def jnlpImage = (flow.isOpenShift()) ? 'fabric8/jenkins-slave-base-centos7:0.0.1' : 'jenkinsci/jnlp-slave:2.62'
+    def jnlpImage = (flow.isOpenShift()) ? 'fabric8/jenkins-slave-base-centos7:v54e55b7' : 'jenkinsci/jnlp-slave:2.62'
 
     def cloud = flow.getCloudConfig()
 
