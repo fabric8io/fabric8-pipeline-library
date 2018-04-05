@@ -597,23 +597,4 @@ def getOpenShiftBuildName(){
   return null
 }
 
-def isKubernetesPluginVersion013(){
-    def isNewVersion = false
-
-    try{
-      def object = new org.csanchez.jenkins.plugins.kubernetes.PodAnnotation('dummy','dummy')
-      def objPackage = object.getClass().getPackage()
-      def version = objPackage.getImplementationVersion()
-      // we could be using a custom built jar so remove any -SNAPSHOT from the version
-      def v = version.replaceAll("-SNAPSHOT","");
-
-      if (v >= '0.13') {
-        isNewVersion = true
-      }
-    } catch (err) {
-      echo "caught error when checking which kubernetes-plugin version we are using; defaulting to < 0.13: ${err}"
-    }
-    return isNewVersion
-}
-
 return this
