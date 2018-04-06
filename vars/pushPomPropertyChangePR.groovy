@@ -5,93 +5,93 @@ import groovy.xml.XmlUtil
 import groovy.xml.dom.DOMCategory
 
 def call(body) {
-  // evaluate the body block, and collect configuration into the object
-  def config = [:]
-  body.resolveStrategy = Closure.DELEGATE_FIRST
-  body.delegate = config
-  body()
+    // evaluate the body block, and collect configuration into the object
+    def config = [:]
+    body.resolveStrategy = Closure.DELEGATE_FIRST
+    body.delegate = config
+    body()
 
-  def flow = new io.fabric8.Fabric8Commands()
+    def flow = new io.fabric8.Fabric8Commands()
 
-  def pomLocation = config.parentPomLocation ?: 'pom.xml'
-  def containerName = config.containerName ?: 'clients'
-  def autoMerge = config.autoMerge ?: false
+    def pomLocation = config.parentPomLocation ?: 'pom.xml'
+    def containerName = config.containerName ?: 'clients'
+    def autoMerge = config.autoMerge ?: false
 
-  for (int i = 0; i < config.projects.size(); i++) {
-    def project = config.projects[i]
-    def items = project.split('/')
-    def org = items[0]
-    def repo = items[1]
-    def id
+    for (int i = 0; i < config.projects.size(); i++) {
+        def project = config.projects[i]
+        def items = project.split('/')
+        def org = items[0]
+        def repo = items[1]
+        def id
 
-    stage "Updating ${project}"
-    sh "rm -rf ${repo}"
-    sh "git clone https://github.com/${project}.git"
-    sh "cd ${repo} && git remote set-url origin git@github.com:${project}.git"
+        stage "Updating ${project}"
+        sh "rm -rf ${repo}"
+        sh "git clone https://github.com/${project}.git"
+        sh "cd ${repo} && git remote set-url origin git@github.com:${project}.git"
 
-    def uid = UUID.randomUUID().toString()
-    sh "cd ${repo} && git checkout -b versionUpdate${uid}"
+        def uid = UUID.randomUUID().toString()
+        sh "cd ${repo} && git checkout -b versionUpdate${uid}"
 
-    def xml = readFile file: "${repo}/${pomLocation}"
-    sh "cat ${repo}/${pomLocation}"
+        def xml = readFile file: "${repo}/${pomLocation}"
+        sh "cat ${repo}/${pomLocation}"
 
-    def pom = updateVersion(xml, config.propertyName, config.version)
+        def pom = updateVersion(xml, config.propertyName, config.version)
 
-    if (pom != null) {
-      writeFile file: "${repo}/${pomLocation}", text: pom
+        if (pom != null) {
+            writeFile file: "${repo}/${pomLocation}", text: pom
 
-      sh "cat ${repo}/${pomLocation}"
+            sh "cat ${repo}/${pomLocation}"
 
-      container(name: containerName) {
+            container(name: containerName) {
 
-        sh 'chmod 600 /root/.ssh-git/ssh-key'
-        sh 'chmod 600 /root/.ssh-git/ssh-key.pub'
-        sh 'chmod 700 /root/.ssh-git'
+                sh 'chmod 600 /root/.ssh-git/ssh-key'
+                sh 'chmod 600 /root/.ssh-git/ssh-key.pub'
+                sh 'chmod 700 /root/.ssh-git'
 
-        sh "git config --global user.email fabric8-admin@googlegroups.com"
-        sh "git config --global user.name fabric8-release"
+                sh "git config --global user.email fabric8-admin@googlegroups.com"
+                sh "git config --global user.name fabric8-release"
 
-        def message = "Update pom property ${config.propertyName} to ${config.version}"
-        sh "cd ${repo} && git add ${pomLocation}"
-        sh "cd ${repo} && git commit -m \"${message}\""
-        sh "cd ${repo} && git push origin versionUpdate${uid}"
+                def message = "Update pom property ${config.propertyName} to ${config.version}"
+                sh "cd ${repo} && git add ${pomLocation}"
+                sh "cd ${repo} && git commit -m \"${message}\""
+                sh "cd ${repo} && git push origin versionUpdate${uid}"
 
-        id = flow.createPullRequest("${message}","${project}","versionUpdate${uid}")
-      }
-      echo "received Pull Request Id: ${id}"
+                id = flow.createPullRequest("${message}", "${project}", "versionUpdate${uid}")
+            }
+            echo "received Pull Request Id: ${id}"
 
-      if (autoMerge){
-        sleep 5 // give a bit of time for GitHub to get itself in order after the new PR
-        flow.mergePR(project, id)
-      } else {
-        flow.addMergeCommentToPullRequest(id, project)
-        waitUntilPullRequestMerged{
-          name = project
-          prId = id
+            if (autoMerge) {
+                sleep 5 // give a bit of time for GitHub to get itself in order after the new PR
+                flow.mergePR(project, id)
+            } else {
+                flow.addMergeCommentToPullRequest(id, project)
+                waitUntilPullRequestMerged {
+                    name = project
+                    prId = id
+                }
+            }
         }
-      }
     }
-  }
 }
 
 @NonCPS
 def updateVersion(xml, elementName, newVersion) {
-  def index = xml.indexOf('<project')
-  def header = xml.take(index)
-  def xmlDom = DOMBuilder.newInstance().parseText(xml)
-  def root = xmlDom.documentElement
-  use(DOMCategory) {
-    def versions = xmlDom.getElementsByTagName(elementName)
-    if (versions.length == 0) {
-      echo "No element found called ${elementName}"
-    } else {
-      def version = versions.item(0)
-      echo "version ${elementName} = ${version.textContent}"
-      version.textContent = newVersion
+    def index = xml.indexOf('<project')
+    def header = xml.take(index)
+    def xmlDom = DOMBuilder.newInstance().parseText(xml)
+    def root = xmlDom.documentElement
+    use(DOMCategory) {
+        def versions = xmlDom.getElementsByTagName(elementName)
+        if (versions.length == 0) {
+            echo "No element found called ${elementName}"
+        } else {
+            def version = versions.item(0)
+            echo "version ${elementName} = ${version.textContent}"
+            version.textContent = newVersion
 
-      def newXml = XmlUtil.serialize(root)
-      // need to fix this, we get errors above then next time round if this is left in
-      return header + newXml.minus('<?xml version="1.0" encoding="UTF-8"?>')
+            def newXml = XmlUtil.serialize(root)
+            // need to fix this, we get errors above then next time round if this is left in
+            return header + newXml.minus('<?xml version="1.0" encoding="UTF-8"?>')
+        }
     }
-  }
 }

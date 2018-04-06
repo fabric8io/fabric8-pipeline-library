@@ -1,4 +1,5 @@
 #!/usr/bin/groovy
+
 def call(body) {
     // evaluate the body block, and collect configuration into the object
     def config = [:]
@@ -6,11 +7,11 @@ def call(body) {
     body.delegate = config
     body()
 
-    if (!config.pullRequestProject){
+    if (!config.pullRequestProject) {
         error 'No project details provided to get Pull Request comments'
     }
 
-    if (!env.CHANGE_ID){
+    if (!env.CHANGE_ID) {
         error 'No Change ID found, is this a Pull Request?'
     }
 
@@ -55,6 +56,6 @@ def call(body) {
         cd fabric8-ui && npm run build:prod
         '''
 */
-    def tempVersion= "SNAPSHOT-${env.BRANCH_NAME}-${env.BUILD_NUMBER}"
+    def tempVersion = "SNAPSHOT-${env.BRANCH_NAME}-${env.BUILD_NUMBER}"
     return tempVersion
 }

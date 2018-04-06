@@ -1,5 +1,6 @@
 #!/usr/bin/groovy
 import com.cloudbees.groovy.cps.NonCPS
+
 def call(body) {
     // evaluate the body block, and collect configuration into the object
     def config = [:]
@@ -25,28 +26,28 @@ def call(body) {
 
     namespace = namespace + '-' + utils.getRepoName()
     container('k8s') {
-        if (!flow.isAuthorCollaborator("", project)){
+        if (!flow.isAuthorCollaborator("", project)) {
             currentBuild.result = 'ABORTED'
             error 'Change author is not a collaborator on the project, aborting build until we support the [test] comment'
         }
 
         // get the latest released yaml
         def yamlReleaseVersion = flow.getReleaseVersionFromMavenMetadata("${mavenRepo}/maven-metadata.xml")
-        if (templateParameters){
+        if (templateParameters) {
             yaml = flow.getUrlAsString("${mavenRepo}/${yamlReleaseVersion}/${appToDeploy}-${yamlReleaseVersion}-k8s-template.yml")
         } else {
             yaml = flow.getUrlAsString("${mavenRepo}/${yamlReleaseVersion}/${appToDeploy}-${yamlReleaseVersion}-kubernetes.yml")
         }
         yaml = flow.swizzleImageName(yaml, originalImageName, newImageName)
 
-        if (!yaml.contains(newImageName)){
+        if (!yaml.contains(newImageName)) {
             error "original image ${originalImageName} not replaced with ${newImageName} in yaml: \n ${yaml}"
         }
     }
 
     writeFile file: "./snapshot.yml", text: yaml
 
-    if (templateParameters){
+    if (templateParameters) {
         writeTemplateValuesToFile(templateParameters)
     }
 
@@ -62,17 +63,17 @@ def call(body) {
             sh "kubectl create ns ${namespace}"
         }
 
-        if (templateParameters){
+        if (templateParameters) {
             sh "oc process -n ${namespace} --param-file=./values.txt -f ./snapshot.yml --local | kubectl apply -n ${namespace} -f -"
         } else {
-            retry (3) {
+            retry(3) {
                 sh "kubectl apply -n ${namespace} -f ./snapshot.yml"
             }
         }
 
-        if (extraYAML){
+        if (extraYAML) {
             writeFile file: "./extra.yml", text: extraYAML
-            retry (3) {
+            retry(3) {
                 sh "kubectl apply -n ${namespace} -f ./extra.yml"
             }
         }
@@ -97,16 +98,16 @@ def call(body) {
             }
         }
         def ing
-        retry (3) {
+        retry(3) {
             ing = sh(script: "kubectl get ing ${appToDeploy} -o jsonpath=\"{.spec.rules[0].host}\" -n ${namespace}", returnStdout: true).toString().trim()
         }
         return ing
     }
 }
 
-def writeTemplateValuesToFile(map){
-    if (map){
-        for (def p in mapToList(map)){
+def writeTemplateValuesToFile(map) {
+    if (map) {
+        for (def p in mapToList(map)) {
             echo p.key
             echo p.value
             sh "echo ${p.key}=${p.value} >> ./values.txt"

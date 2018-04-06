@@ -22,8 +22,8 @@ def call(body) {
 
     }
 
-    container(name: 'docker'){
-        if (config.extraImagesToStage != null){
+    container(name: 'docker') {
+        if (config.extraImagesToStage != null) {
             stageExtraImages {
                 images = config.extraImagesToStage
                 tag = version
@@ -35,7 +35,7 @@ def call(body) {
 }
 
 @NonCPS
-def overwriteDeps(versions){
+def overwriteDeps(versions) {
     def flow = new Fabric8Commands()
     for (v in versions) {
         flow.searchAndReplaceMavenVersionPropertyNoCommit(v.key, v.value)

@@ -1,5 +1,6 @@
 #!/usr/bin/groovy
 import io.fabric8.Utils
+
 def call(body) {
     // evaluate the body block, and collect configuration into the object
     def config = [:]
@@ -8,7 +9,7 @@ def call(body) {
     body()
 
     def environment = config.environment
-    if (!environment){
+    if (!environment) {
         error 'no environment specified'
     }
 

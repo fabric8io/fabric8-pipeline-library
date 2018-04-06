@@ -1,4 +1,5 @@
 #!/usr/bin/groovy
+
 def call(body) {
     // evaluate the body block, and collect configuration into the object
     def config = [:]
@@ -7,18 +8,18 @@ def call(body) {
     body()
 
 
-    def ghOrg =  config.githubOrganisation
+    def ghOrg = config.githubOrganisation
     def dockerOrg = config.dockerOrganisation
     def prj = config.project
     def makeCommand = config.makeCommand ?: 'make'
 
-    if (!ghOrg){
+    if (!ghOrg) {
         error 'no github organisation defined'
     }
-    if (!dockerOrg){
+    if (!dockerOrg) {
         error 'no docker organisation defined'
     }
-    if (!prj){
+    if (!prj) {
         error 'no project defined'
     }
 
@@ -30,20 +31,20 @@ def call(body) {
         checkout scm
 
         container(name: 'go') {
-            stage ('build binary'){
+            stage('build binary') {
                 sh "${makeCommand}"
             }
         }
 
-        if (fileExists('Dockerfile')){
+        if (fileExists('Dockerfile')) {
             container(name: 'docker') {
                 def imageName = "docker.io/${dockerOrg}/${prj}"
 
-                stage ('build image'){
+                stage('build image') {
                     // temporarily disable building docker image until Makefile changes merged in gofabric8
                     //sh "docker build -t ${imageName}:latest ."
                 }
             }
         }
     }
-  }
+}

@@ -11,10 +11,10 @@ def call(body) {
     def repoIds = config.stagedProject[2]
 
     withEnv(["PATH+MAVEN=${tool 'maven-3.3.1'}/bin"]) {
-      for(int j = 0; j < repoIds.size(); j++){
-        echo "About to drop release repo id ${repoIds[j]}"
-        flow.dropStagingRepo(repoIds[j])
-      }
+        for (int j = 0; j < repoIds.size(); j++) {
+            echo "About to drop release repo id ${repoIds[j]}"
+            flow.dropStagingRepo(repoIds[j])
+        }
     }
     flow.drop(config.pullRequestId, config.stagedProject[0])
-  }
+}

@@ -7,7 +7,7 @@ def call(body) {
     body.delegate = config
     body()
 
-    def timeoutTime= config.timeoutTime ?: 24
+    def timeoutTime = config.timeoutTime ?: 24
     def proceedMessage = """Would you like to promote version ${config.version} to the next environment?
 """
 

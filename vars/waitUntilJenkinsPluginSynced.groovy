@@ -16,9 +16,9 @@ def call(body) {
     def name = config.name
     def path = "plugins/" + name
     def artifact = "${name}.hpi"
-    
+
     waitUntil {
-        retry(3){
+        retry(3) {
             flow.isFileAvailableInRepo(repo, path, config.version, artifact)
         }
     }

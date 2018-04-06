@@ -64,4 +64,4 @@ def call(body) {
     }
 
     contentRepository(body);
-  }
+}

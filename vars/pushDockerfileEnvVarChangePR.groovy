@@ -18,8 +18,8 @@ def call(body) {
     def containerName = config.containerName ?: 'clients'
     def autoMerge = config.autoMerge ?: false
     def project = config.project
-    
-    if (!project){
+
+    if (!project) {
         error 'no project defined'
     }
     def items = project.split('/')
@@ -29,7 +29,7 @@ def call(body) {
     stage "Updating ${project}"
     sh "rm -rf ${repo}"
     sh "git clone https://github.com/${project}.git"
-    dir("${repo}"){
+    dir("${repo}") {
 
         sh "git remote set-url origin git@github.com:${project}.git"
 
@@ -59,7 +59,7 @@ def call(body) {
             id = flow.createPullRequest("${message}", "${project}", "versionUpdate${uid}")
 
             sleep 5 // give a bit of time for GitHub to get itself in order after the new PR
-            if (autoMerge){
+            if (autoMerge) {
                 flow.mergePR(project, id)
                 sh "git push origin --delete versionUpdate${uid}"
             }

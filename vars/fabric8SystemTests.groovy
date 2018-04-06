@@ -51,7 +51,7 @@ EOF
             sh "curl -sS https://get.fabric8.io/download.txt | bash"
 
             // optionally overrite the default yaml so we can test non released versions
-            if (packageYAML != null){
+            if (packageYAML != null) {
                 writeFile file: 'packageYAML', text: packageYAML
                 sh " ~/.fabric8/bin/gofabric8 deploy --package packageYAML -y"
             } else {
@@ -124,7 +124,7 @@ EOF
     }
 }
 
-def getFailedMessage(clusterName, logs, consoleURL){
+def getFailedMessage(clusterName, logs, consoleURL) {
     return """
 system tests failed for ${clusterName}
 
@@ -136,7 +136,7 @@ shall we tear down the cluster?
 """
 }
 
-def getSuccessMessage(clusterName){
+def getSuccessMessage(clusterName) {
     return """"
 ${clusterName} deployed, system tests passed
 

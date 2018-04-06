@@ -1,4 +1,5 @@
 #!/usr/bin/groovy
+
 def call(body) {
     // evaluate the body block, and collect configuration into the object
     def config = [:]
@@ -14,7 +15,7 @@ def call(body) {
         if (flow.hasService(serviceName)) {
             try {
                 sh 'mvn io.github.stackinfo:stackinfo-maven-plugin:0.2:prepare'
-                retry (3){
+                retry(3) {
                     def response = bayesianAnalysis url: 'https://bayesian-link'
                     if (response.success) {
                         utils.addAnnotationToBuild('fabric8.io/bayesian.analysisUrl', response.getAnalysisUrl())

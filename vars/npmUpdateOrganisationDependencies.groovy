@@ -62,7 +62,7 @@ def call(body) {
                     }
 
                     if (!existingPR) {
-                        stage ("Updating ${project}"){
+                        stage("Updating ${project}") {
 
                             sh "rm -rf ${repo}"
                             sh "git clone https://github.com/${project}.git"

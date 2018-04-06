@@ -2,7 +2,7 @@
 
 /**
  * Returns the id of the build, which consists of the job name, build number and an optional prefix.
- * @param prefix    The prefix to use, defaults in empty string.
+ * @param prefix The prefix to use, defaults in empty string.
  * @return
  */
 def call(String prefix = '') {

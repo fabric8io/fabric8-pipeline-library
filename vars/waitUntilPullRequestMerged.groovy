@@ -20,42 +20,42 @@ def call(body) {
 
     // wait until the PR is merged, if there's a merge conflict the notify and wait until PR is finally merged
     waitUntil {
-      echo "https://api.github.com/repos/${config.name}/pulls/${id}"
+        echo "https://api.github.com/repos/${config.name}/pulls/${id}"
 
-      def apiUrl = new URL("https://api.github.com/repos/${config.name}/pulls/${id}")
+        def apiUrl = new URL("https://api.github.com/repos/${config.name}/pulls/${id}")
 
-      def rs = restGetURL{
-        authString = githubToken
-        url = apiUrl
-      }
+        def rs = restGetURL {
+            authString = githubToken
+            url = apiUrl
+        }
 
-      if (rs.merged == true){
-          echo "PR ${id} merged"
-          return true
-      }
+        if (rs.merged == true) {
+            echo "PR ${id} merged"
+            return true
+        }
 
-      if (rs.state == 'closed'){
-          echo "PR ${id} closed"
-          return true
-      }
+        if (rs.state == 'closed') {
+            echo "PR ${id} closed"
+            return true
+        }
 
-      branchName = rs.head.ref
-      def sha = rs.head.sha
-      echo "checking status of commit ${sha}"
+        branchName = rs.head.ref
+        def sha = rs.head.sha
+        echo "checking status of commit ${sha}"
 
-      apiUrl = new URL("https://api.github.com/repos/${config.name}/commits/${sha}/status")
-      rs = restGetURL{
-        authString = githubToken
-        url = apiUrl
-      }
+        apiUrl = new URL("https://api.github.com/repos/${config.name}/commits/${sha}/status")
+        rs = restGetURL {
+            authString = githubToken
+            url = apiUrl
+        }
 
-      echo "${config.name} Pull request ${id} state ${rs.state}"
+        echo "${config.name} Pull request ${id} state ${rs.state}"
 
         def values = config.name.split('/')
         def prj = values[1]
 
-        if (rs.state == 'failure' && !notified){
-        def message ="""
+        if (rs.state == 'failure' && !notified) {
+            def message = """
 Pull request was not automatically merged.  Please fix and update Pull Request to continue with release...
 ```
 git clone git@github.com:${config.name}.git
@@ -70,31 +70,31 @@ git push origin fixPR${id}:${branchName}
 ```
 """
 
-       hubotSend message: message, failOnError: false
+            hubotSend message: message, failOnError: false
             def shouldWeWait = requestResolve()
 
-            if (!shouldWeWait){
+            if (!shouldWeWait) {
                 return true
             }
-      notified = true
+            notified = true
+        }
+        rs.state == 'success'
     }
-    rs.state == 'success'
-  }
-  try {
-      // clean up
-      deleteGitHubBranch{
-          authString = githubToken
-          branch = branchName
-          project = prj
-      }
+    try {
+        // clean up
+        deleteGitHubBranch {
+            authString = githubToken
+            branch = branchName
+            project = prj
+        }
 
-  } catch (err) {
-    echo "not able to delete repo: ${err}"
-  }
+    } catch (err) {
+        echo "not able to delete repo: ${err}"
+    }
 }
 
 
-def requestResolve(){
+def requestResolve() {
     def proceedMessage = '''
 Would you like do resolve the conflict?  If so please reply with the proceed command.
 
@@ -102,7 +102,7 @@ Alternatively you can skip this conflict.  This is highly discouraged but maybe 
 To do this chose the abort option below, note this particular action will not abort the release and only skip this conflict.
 '''
 
-    try{
+    try {
         hubotApprove message: proceedMessage, failOnError: false
         return true
     } catch (err) {

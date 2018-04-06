@@ -28,7 +28,7 @@ def call(body) {
     }
 }
 
-def dockerBuild(version){
+def dockerBuild(version) {
     def utils = new Utils()
     def flow = new Fabric8Commands()
     def namespace = utils.getNamespace()
@@ -42,7 +42,7 @@ def dockerBuild(version){
     }
 }
 
-def s2iBuild(version){
+def s2iBuild(version) {
 
     def utils = new Utils()
     def ns = utils.namespace
@@ -57,7 +57,7 @@ def s2iBuild(version){
 
 }
 
-def getImageStream(ns, resourceName){
+def getImageStream(ns, resourceName) {
     return """
 apiVersion: v1
 kind: ImageStream
@@ -67,7 +67,7 @@ metadata:
 """
 }
 
-def getBuildConfig(ns, resourceName, version){
+def getBuildConfig(ns, resourceName, version) {
     return """
 apiVersion: v1
 kind: BuildConfig

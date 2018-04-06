@@ -1,4 +1,5 @@
 #!/usr/bin/groovy
+
 def call(body) {
     // evaluate the body block, and collect configuration into the object
     def config = [:]
@@ -17,7 +18,7 @@ def call(body) {
             if (failsafe) {
                 step([$class: 'JUnitResultArchiver', testResults: '**/failsafe-reports/*.xml', healthScaleFactor: 1.0])
             }
-        }catch(err){
+        } catch (err) {
             echo "Failed to find test results "
         }
 

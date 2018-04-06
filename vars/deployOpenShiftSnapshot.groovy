@@ -21,7 +21,7 @@ def call(body) {
 
     openShiftProject = openShiftProject + '-' + utils.getRepoName()
     container('clients') {
-        if (!flow.isAuthorCollaborator("", project)){
+        if (!flow.isAuthorCollaborator("", project)) {
             currentBuild.result = 'ABORTED'
             error 'Change author is not a collaborator on the project, aborting build until we support the [test] comment'
         }
@@ -32,14 +32,14 @@ def call(body) {
         yaml = flow.getUrlAsString("${mavenRepo}/${yamlReleaseVersion}/${deploymentName}-${yamlReleaseVersion}-openshift.yml")
         yaml = flow.swizzleImageName(yaml, originalImageName, newImageName)
 
-        if (!yaml.contains(newImageName)){
+        if (!yaml.contains(newImageName)) {
             error "original image ${originalImageName} not replaced with ${newImageName} in yaml: \n ${yaml}"
         }
     }
     // cant use writeFile as we have long filename errors
     sh "echo '${yaml}' > snapshot.yml"
     def template = false
-    if (yaml.contains('kind: Template')){
+    if (yaml.contains('kind: Template')) {
         template = true
     }
     container('clients') {
@@ -88,22 +88,22 @@ def call(body) {
             echo "AUTH_LOGOUT_URI=${AUTH_LOGOUT_URI}"  >> ./values.txt
                 
             '''
-    // TODO lets use a comment on the PR to denote whether or not to use prod or pre-prod?
-    /*
-        sh '''
-            export FABRIC8_WIT_API_URL="https://api.prod-preview.openshift.io/api/"
-            export FABRIC8_RECOMMENDER_API_URL="https://api-bayesian.dev.rdu2c.fabric8.io/api/v1/"
-            export FABRIC8_FORGE_API_URL="https://forge.api.prod-preview.openshift.io"
-            export FABRIC8_SSO_API_URL="https://sso.prod-preview.openshift.io/"
+        // TODO lets use a comment on the PR to denote whether or not to use prod or pre-prod?
+        /*
+            sh '''
+                export FABRIC8_WIT_API_URL="https://api.prod-preview.openshift.io/api/"
+                export FABRIC8_RECOMMENDER_API_URL="https://api-bayesian.dev.rdu2c.fabric8.io/api/v1/"
+                export FABRIC8_FORGE_API_URL="https://forge.api.prod-preview.openshift.io"
+                export FABRIC8_SSO_API_URL="https://sso.prod-preview.openshift.io/"
+    
+                export OPENSHIFT_CONSOLE_URL="https://console.free-stg.openshift.com/console/"
+                export WS_K8S_API_SERVER="f8osoproxy-test-dsaas-preview.b6ff.rh-idev.openshiftapps.com:443"
+    
+                cd fabric8-ui && npm run build:prod
+                '''
+        */
 
-            export OPENSHIFT_CONSOLE_URL="https://console.free-stg.openshift.com/console/"
-            export WS_K8S_API_SERVER="f8osoproxy-test-dsaas-preview.b6ff.rh-idev.openshiftapps.com:443"
-
-            cd fabric8-ui && npm run build:prod
-            '''
-    */
-
-        if (template){
+        if (template) {
             sh "oc process -n ${openShiftProject} --param-file=./values.txt -f ./snapshot.yml | oc apply -n ${openShiftProject} -f -"
         } else {
             sh "oc apply -n ${openShiftProject} -f ./snapshot.yml"

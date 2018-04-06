@@ -87,19 +87,19 @@ def patchFMPVersion() {
     }
 
     def updatedPlugin = false
-    for(profile in pomModel.profiles) {
-        if(!profile.id.equalsIgnoreCase("openshift") || !profile.build.plugins) {
+    for (profile in pomModel.profiles) {
+        if (!profile.id.equalsIgnoreCase("openshift") || !profile.build.plugins) {
             continue
         }
 
-        for(plugin in profile.build.plugins) {
-            if(plugin.artifactId != "fabric8-maven-plugin") {
+        for (plugin in profile.build.plugins) {
+            if (plugin.artifactId != "fabric8-maven-plugin") {
                 continue
             }
 
             // check FMP plugin definition has '<version>' property
             // else update FMP plugin definition <version> property according to <parent> version
-            if(plugin.version) {
+            if (plugin.version) {
                 if (compareVersions(plugin.version, FMP_STABLE_VERSION) < 0) {
                     println "patching maven plugin for fabric8-maven-plugin v" + FMP_STABLE_VERSION
                     plugin.version = FMP_STABLE_VERSION
@@ -114,7 +114,7 @@ def patchFMPVersion() {
     }
 
     // if there is no FMP plugin found in pom.xml then try to add FMP definition based on parent module
-    if(!updatedPlugin) {
+    if (!updatedPlugin) {
         updatedPlugin = patchProfileBasedOnParent(pomModel)
     }
 
@@ -130,13 +130,14 @@ def patchFMPVersion() {
 * if v2 is greater than v1 returns -ve number
 * if v1 is equal to v2 return 0
 */
+
 def compareVersions(v1, v2) {
     // not using def (v1Parts, v2Parts) = .. because UnsupportedOperationException: multiple assignments not supported
     def versions = partitionVersions(v1, v2)
     def v1Parts = versions[0]
     def v2Parts = versions[1]
     def maxParts = v1Parts.size()
-    for (int i=0; i < maxParts; i++) {
+    for (int i = 0; i < maxParts; i++) {
         if (v1Parts[i] != v2Parts[i]) {
             return v1Parts[i] - v2Parts[i]
         }
@@ -148,6 +149,7 @@ def compareVersions(v1, v2) {
 /*
 * due to Jenkins sandbox [0] * num is restricted to use
 */
+
 def zeroFill(v, count) {
     (0..count).each {
         v << 0
@@ -168,8 +170,8 @@ def partitionVersions(v1, v2) {
 
     // make the versions equal by zero filling the array
     def maxParts = Math.max(v1Parts.size(), v2Parts.size())
-    zeroFill(v1Parts, maxParts - v1Parts.size() )
-    zeroFill(v2Parts, maxParts - v2Parts.size() )
+    zeroFill(v1Parts, maxParts - v1Parts.size())
+    zeroFill(v2Parts, maxParts - v2Parts.size())
 
     return [v1Parts, v2Parts]
 }

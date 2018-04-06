@@ -447,7 +447,7 @@ def closePR(project, id, newVersion, newPRID) {
 }
 
 def getIssueComments(project, id, githubToken = null) {
-    if (!githubToken){
+    if (!githubToken) {
         githubToken = getGitHubToken()
     }
     def apiUrl = new URL("https://api.github.com/repos/${project}/issues/${id}/comments")
@@ -467,8 +467,8 @@ def getIssueComments(project, id, githubToken = null) {
     def code = 0
     try {
         code = connection.getResponseCode()
-    // } catch (org.jenkinsci.plugins.scriptsecurity.sandbox.RejectedAccessException ex){
-    //     echo "${ex} will try to continue"
+        // } catch (org.jenkinsci.plugins.scriptsecurity.sandbox.RejectedAccessException ex){
+        //     echo "${ex} will try to continue"
     } finally {
         connection.disconnect()
     }
@@ -502,13 +502,13 @@ def waitUntilSuccessStatus(project, ref) {
             rs = new JsonSlurper().parse(new InputStreamReader(connection.getInputStream(), "UTF-8"))
 
             code = connection.getResponseCode()
-        } catch (err){
+        } catch (err) {
             echo "CI checks have not passed yet so waiting before merging"
         } finally {
             connection.disconnect()
         }
 
-        if (rs == null){
+        if (rs == null) {
             echo "Error getting commit status, are CI builds enabled for this PR?"
             return false
         }
@@ -521,7 +521,7 @@ def waitUntilSuccessStatus(project, ref) {
     }
 }
 
-def getGithubBranch(project, id, githubToken){
+def getGithubBranch(project, id, githubToken) {
 
     def apiUrl = new URL("https://api.github.com/repos/${project}/pulls/${id}")
     def HttpURLConnection connection = apiUrl.openConnection()
@@ -532,15 +532,15 @@ def getGithubBranch(project, id, githubToken){
     connection.setRequestMethod("GET")
     connection.setDoOutput(true)
     connection.connect()
-    try{
+    try {
         def rs = new JsonSlurper().parse(new InputStreamReader(connection.getInputStream(), "UTF-8"))
         branch = rs.head.ref
         echo "${branch}"
         return branch
-    }catch(err){
+    } catch (err) {
         echo "Error while fetching the github branch"
-    }finally {
-        if (connection){
+    } finally {
+        if (connection) {
             connection.disconnect()
         }
     }
@@ -563,7 +563,7 @@ def mergePR(project, id) {
 
     // execute the request
     def rs
-    try{
+    try {
         rs = new JsonSlurper().parse(new InputStreamReader(connection.getInputStream(), "UTF-8"))
 
         def code = connection.getResponseCode()
@@ -583,7 +583,7 @@ def mergePR(project, id) {
         rs = null
         squashAndMerge(project, id)
     } finally {
-        if (connection){
+        if (connection) {
             connection.disconnect()
             connection = null
         }
@@ -605,7 +605,7 @@ def squashAndMerge(project, id) {
     def body = "{\"merge_method\":\"squash\"}"
 
     def rs
-    try{
+    try {
         OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream())
         writer.write(body)
         writer.flush()
@@ -685,20 +685,20 @@ def addMergeCommentToPullRequest(String pr, String project) {
     }
 }
 
-def getGitHubProject(){
+def getGitHubProject() {
     def url = getScmPushUrl()
-    if (!url.contains('github.com')){
+    if (!url.contains('github.com')) {
         error "${url} is not a GitHub URL"
     }
 
-    if (url.contains("https://github.com/")){
+    if (url.contains("https://github.com/")) {
         url = url.replaceAll("https://github.com/", '')
 
-    } else if (url.contains("git@github.com:")){
+    } else if (url.contains("git@github.com:")) {
         url = url.replaceAll("git@github.com:", '')
     }
 
-    if (url.contains(".git")){
+    if (url.contains(".git")) {
         url = url.replaceAll(".git", '')
     }
     return url.trim()
@@ -706,20 +706,20 @@ def getGitHubProject(){
 
 def isAuthorCollaborator(githubToken, project) {
 
-    if (!githubToken){
+    if (!githubToken) {
 
         githubToken = getGitHubToken()
 
-        if (!githubToken){
+        if (!githubToken) {
             echo "No GitHub api key found so trying annonynous GitHub api call"
         }
     }
-    if (!project){
+    if (!project) {
         project = getGitHubProject()
     }
 
     def changeAuthor = env.CHANGE_AUTHOR
-    if (!changeAuthor){
+    if (!changeAuthor) {
         error "No commit author found.  Is this a pull request pipeline?"
     }
     echo "Checking if user ${changeAuthor} is a collaborator on ${project}"
@@ -835,7 +835,7 @@ def deleteRemoteBranch(String branchName, containerName) {
     }
 }
 
- def getGitHubToken() {
+def getGitHubToken() {
     def tokenPath = '/home/jenkins/.apitoken/hub'
     def githubToken = readFile tokenPath
     if (!githubToken?.trim()) {
@@ -873,7 +873,7 @@ def getServiceURL(String serviceName, String namespace = null, String protocol =
 }
 
 def hasOpenShiftYaml() {
-  def openshiftYaml = findFiles(glob: '**/openshift.yml')
+    def openshiftYaml = findFiles(glob: '**/openshift.yml')
     try {
         if (openshiftYaml) {
             def contents = readFile(openshiftYaml[0].path)
@@ -942,30 +942,30 @@ def getCloudConfig() {
 def getScmPushUrl() {
     def url = sh(returnStdout: true, script: 'git config --get remote.origin.url').trim()
 
-    if (!url){
+    if (!url) {
         error "no URL found for git config --get remote.origin.url "
     }
     return url
 }
 
 @NonCPS
-def openShiftImageStreamExists(String name){
+def openShiftImageStreamExists(String name) {
     if (isOpenShift()) {
         try {
             def result = sh(returnStdout: true, script: 'oc describe is ${name} --namespace openshift')
-            if (result && result.contains(name)){
+            if (result && result.contains(name)) {
                 echo "ImageStream  ${name} is already installed globally"
                 return true;
-            }else {
+            } else {
                 //see if its already in our namespace
                 def namespace = kubernetes.getNamespace();
                 result = sh(returnStdout: true, script: 'oc describe is ${name} --namespace ${namespace}')
-                if (result && result.contains(name)){
+                if (result && result.contains(name)) {
                     echo "ImageStream  ${name} is already installed in project ${namespace}"
                     return true;
                 }
             }
-        }catch (e){
+        } catch (e) {
             echo "Warning: ${e} "
         }
     }
@@ -973,7 +973,7 @@ def openShiftImageStreamExists(String name){
 }
 
 @NonCPS
-def openShiftImageStreamInstall(String name, String location){
+def openShiftImageStreamInstall(String name, String location) {
     if (openShiftImageStreamExists(name)) {
         echo "ImageStream ${name} does not exist - installing ..."
         try {
@@ -981,7 +981,7 @@ def openShiftImageStreamInstall(String name, String location){
             def namespace = kubernetes.getNamespace();
             echo "ImageStream ${name} now installed in project ${namespace}"
             return true;
-        }catch (e){
+        } catch (e) {
             echo "Warning: ${e} "
         }
     }

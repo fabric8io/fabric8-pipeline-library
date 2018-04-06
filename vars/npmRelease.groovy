@@ -1,4 +1,5 @@
 #!/usr/bin/groovy
+
 def call(body) {
     // evaluate the body block, and collect configuration into the object
     def config = [:]
@@ -21,8 +22,8 @@ def call(body) {
     String npmToken = readFile '/home/jenkins/.npm-token/token'
     String ghToken = readFile '/home/jenkins/.apitoken/hub'
     wrap([$class: 'MaskPasswordsBuildWrapper', varPasswordPairs: [
-        [password: npmToken, var: 'NPM_PASSWORD'],
-        [password: ghToken, var: 'GH_PASSWORD']]]) {
+            [password: npmToken, var: 'NPM_PASSWORD'],
+            [password: ghToken, var: 'GH_PASSWORD']]]) {
 
         try {
             sh """
@@ -38,4 +39,4 @@ def call(body) {
         }
         return true
     }
-  }
+}

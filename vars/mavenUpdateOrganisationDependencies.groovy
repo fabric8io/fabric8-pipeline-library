@@ -31,10 +31,10 @@ def call(body) {
         println "Now updating all projects within organisation: ${organisation}"
 
         def repos;
-        if (repoNames?.trim()){
+        if (repoNames?.trim()) {
             repos = repoNames.split(',')
-        }else {
-           repos = getRepos(organisation)
+        } else {
+            repos = getRepos(organisation)
         }
 
         for (repo in repos) {
@@ -46,7 +46,7 @@ def call(body) {
             def hasPom = false
             try {
                 hasPom = !pomUrl.text.isEmpty()
-            } catch( FileNotFoundException e1 ) {
+            } catch (FileNotFoundException e1) {
                 // ignore
 
             }
@@ -93,10 +93,10 @@ def call(body) {
                         retry(5) {
                             String ghToken = readFile '/home/jenkins/.apitoken/hub'
                             wrap([$class: 'MaskPasswordsBuildWrapper', varPasswordPairs: [
-                                [password: ghToken, var: 'GH_PASSWORD']]]) {
+                                    [password: ghToken, var: 'GH_PASSWORD']]]) {
 
                                 sh "export GITHUB_TOKEN=${ghToken} && cd ${repo} && hub pull-request -m ${message} > pr.txt"
-                            }   
+                            }
                         }
                     }
                     pr = readFile("${repo}/pr.txt")
@@ -105,7 +105,7 @@ def call(body) {
                     println "received Pull Request Id: ${id}"
                     flow.addMergeCommentToPullRequest(id, project)
 
-                    waitUntilPullRequestMerged{
+                    waitUntilPullRequestMerged {
                         name = project
                         prId = id
                     }
@@ -116,7 +116,7 @@ def call(body) {
         }
     }
 
-  }
+}
 
 @NonCPS
 def loadPomPropertyVersions(String xml, replaceVersions) {
@@ -146,7 +146,7 @@ def loadPomPropertyVersions(String xml, replaceVersions) {
 }
 
 @NonCPS
-def getRepos(String organisation){
+def getRepos(String organisation) {
     repoApi = new URL("https://api.github.com/orgs/${organisation}/repos?per_page=100")
     repos = new JsonSlurper().parse(repoApi.newReader())
 

@@ -1,4 +1,5 @@
 #!/usr/bin/groovy
+
 def call(body) {
     // evaluate the body block, and collect configuration into the object
     def config = [:]
@@ -12,23 +13,23 @@ def call(body) {
     def containerName = config.containerName ?: 'maven'
 
     container(name: containerName) {
-      sh 'chmod 600 /root/.ssh-git/ssh-key'
-      sh 'chmod 600 /root/.ssh-git/ssh-key.pub'
-      sh 'chmod 700 /root/.ssh-git'
+        sh 'chmod 600 /root/.ssh-git/ssh-key'
+        sh 'chmod 600 /root/.ssh-git/ssh-key.pub'
+        sh 'chmod 700 /root/.ssh-git'
 
-      echo "About to release ${name} repo ids ${repoIds}"
-      def flow = new io.fabric8.Fabric8Commands()
-      for(int j = 0; j < repoIds.size(); j++){
-        flow.releaseSonartypeRepo(repoIds[j])
-      }
+        echo "About to release ${name} repo ids ${repoIds}"
+        def flow = new io.fabric8.Fabric8Commands()
+        for (int j = 0; j < repoIds.size(); j++) {
+            flow.releaseSonartypeRepo(repoIds[j])
+        }
 
-      if (config.helmPush) {
-        flow.helm()
-      }
+        if (config.helmPush) {
+            flow.helm()
+        }
 
-      if (!config.useGitTagForNextVersion){
-        flow.updateNextDevelopmentVersion(version, config.setVersionExtraArgs ?: "")
-        return flow.createPullRequest("[CD] Release ${version}","${config.project}","release-v${version}")
-      }
+        if (!config.useGitTagForNextVersion) {
+            flow.updateNextDevelopmentVersion(version, config.setVersionExtraArgs ?: "")
+            return flow.createPullRequest("[CD] Release ${version}", "${config.project}", "release-v${version}")
+        }
     }
-  }
+}

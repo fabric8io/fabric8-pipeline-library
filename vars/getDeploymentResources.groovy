@@ -21,13 +21,13 @@ def call(body) {
     def yaml
 
     def isSha = ''
-    if (flow.isOpenShift()){
+    if (flow.isOpenShift()) {
         isSha = utils.getImageStreamSha(resourceName)
     }
 
     def fabric8Registry = ''
-    if (env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST){
-        fabric8Registry = env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST+':'+env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT+'/'
+    if (env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST) {
+        fabric8Registry = env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST + ':' + env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT + '/'
     }
 
     def sha
@@ -38,7 +38,7 @@ kind: List
 items:
 """
 
-def service = """
+    def service = """
 - apiVersion: v1
   kind: Service
   metadata:
@@ -62,7 +62,7 @@ def service = """
       group: quickstart
 """
 
-def deployment = """
+    def deployment = """
 - apiVersion: extensions/v1beta1
   kind: Deployment
   metadata:
@@ -125,7 +125,7 @@ def deployment = """
         terminationGracePeriodSeconds: 2
 """
 
-def deploymentConfig = """
+    def deploymentConfig = """
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:
@@ -211,13 +211,13 @@ def deploymentConfig = """
       name: ${config.version}
 """
 
-  if (flow.isOpenShift()){
-    yaml = list + service + is + deploymentConfig
-  } else {
-    yaml = list + service + deployment
-  }
+    if (flow.isOpenShift()) {
+        yaml = list + service + is + deploymentConfig
+    } else {
+        yaml = list + service + deployment
+    }
 
-  echo 'using resources:\n' + yaml
-  return yaml
+    echo 'using resources:\n' + yaml
+    return yaml
 
-  }
+}

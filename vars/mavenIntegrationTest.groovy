@@ -33,4 +33,4 @@ def call(body) {
 
         junitResults(body);
     }
-  }
+}
