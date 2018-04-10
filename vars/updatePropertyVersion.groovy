@@ -9,9 +9,6 @@ def call(body) {
 
     def flow = new io.fabric8.Fabric8Commands()
 
-    sh "git config user.email fabric8-admin@googlegroups.com"
-    sh "git config user.name fabric8-cd"
-
     def uid = UUID.randomUUID().toString()
     sh "git checkout -b versionUpdate${uid}"
 
@@ -38,11 +35,7 @@ def call(body) {
     if (updated) {
 
         container(name: 'clients') {
-
-            sh 'chmod 600 /root/.ssh-git/ssh-key'
-            sh 'chmod 600 /root/.ssh-git/ssh-key.pub'
-            sh 'chmod 700 /root/.ssh-git'
-
+            flow.setupGitSSH()
             sh "git push origin versionUpdate${uid}"
 
             rs = flow.createPullRequest("[CD] Update release dependencies", "${config.project}", "versionUpdate${uid}")
@@ -50,5 +43,4 @@ def call(body) {
         }
         return rs
     }
-
 }

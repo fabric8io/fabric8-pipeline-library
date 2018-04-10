@@ -1,6 +1,4 @@
 #!/usr/bin/groovy
-import com.cloudbees.groovy.cps.NonCPS
-import groovy.json.JsonSlurper;
 
 def call(body) {
     // evaluate the body block, and collect configuration into the object

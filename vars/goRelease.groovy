@@ -31,16 +31,12 @@ def call(body) {
 
     dir(buildPath) {
         git "https://github.com/${ghOrg}/${prj}.git"
-
-        sh "git config user.email fabric8-admin@googlegroups.com"
-        sh "git config user.name fabric8-release"
         sh "git remote set-url origin git@github.com:${ghOrg}/${prj}.git"
 
         container(name: 'go') {
             stage('build binary') {
-                sh 'chmod 600 /root/.ssh-git/ssh-key'
-                sh 'chmod 600 /root/.ssh-git/ssh-key.pub'
-                sh 'chmod 700 /root/.ssh-git'
+
+                flow.setupGitSSH()
 
                 // if you want a nice N.N.N version number then use a VERSION file, if not default to short commit sha
                 if (fileExists('version/VERSION')) {

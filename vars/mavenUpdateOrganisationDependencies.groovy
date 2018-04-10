@@ -78,13 +78,7 @@ def call(body) {
                     //sh "cat ${repo}/${pomLocation}"
 
                     container(name: containerName) {
-
-                        sh 'chmod 600 /root/.ssh-git/ssh-key'
-                        sh 'chmod 600 /root/.ssh-git/ssh-key.pub'
-                        sh 'chmod 700 /root/.ssh-git'
-
-                        sh "git config --global user.email fabric8-admin@googlegroups.com"
-                        sh "git config --global user.name fabric8-release"
+                        flow.setupGitSSH()
 
                         def message = "\"Update pom property versions\""
                         sh "cd ${repo} && git add ${pomLocation}"

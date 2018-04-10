@@ -1,6 +1,6 @@
 #!/usr/bin/groovy
-import io.fabric8.Utils
 import io.fabric8.Fabric8Commands
+import io.fabric8.Utils
 
 def call(body) {
     // evaluate the body block, and collect configuration into the object

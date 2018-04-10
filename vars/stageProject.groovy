@@ -16,9 +16,7 @@ def call(body) {
 
     container(name: containerName) {
 
-        sh 'chmod 600 /root/.ssh-git/ssh-key'
-        sh 'chmod 600 /root/.ssh-git/ssh-key.pub'
-        sh 'chmod 700 /root/.ssh-git'
+        flow.setupGitSSH()
         sh 'chmod 600 /home/jenkins/.gnupg/pubring.gpg'
         sh 'chmod 600 /home/jenkins/.gnupg/secring.gpg'
         sh 'chmod 600 /home/jenkins/.gnupg/trustdb.gpg'

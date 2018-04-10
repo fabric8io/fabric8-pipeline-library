@@ -10,6 +10,7 @@ def call(body) {
     def flow = new io.fabric8.Fabric8Commands()
 
     container(name: 'clients') {
+        flow.setupK8sConfig()
         sh "oc login ${config.url} --token=\$(cat /root/.oc/token) --insecure-skip-tls-verify=true"
         try {
             sh 'oc delete project fabric8-test'

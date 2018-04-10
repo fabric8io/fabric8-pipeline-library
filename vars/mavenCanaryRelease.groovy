@@ -1,9 +1,9 @@
 #!/usr/bin/groovy
+import groovy.transform.Field
 import org.apache.maven.model.Build
 import org.apache.maven.model.Plugin
 import org.apache.maven.model.PluginExecution
 import org.apache.maven.model.Profile
-import groovy.transform.Field
 
 @Field final String FMP_STABLE_VERSION = "3.5.38"
 
