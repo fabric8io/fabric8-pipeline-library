@@ -28,7 +28,7 @@ def call(body) {
             println "FMP patching failed due to ${err.message}"
         }
     }
-    sh "mvn org.codehaus.mojo:versions-maven-plugin:2.2:set -U -DnewVersion=${config.version}"
+    sh "mvn org.codehaus.mojo:versions-maven-plugin:2.5:set -U -DnewVersion=${config.version}"
     sh "mvn clean -B -e -U deploy -Dmaven.test.skip=${skipTests} -P openshift"
 
 
