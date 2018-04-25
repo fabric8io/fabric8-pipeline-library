@@ -988,8 +988,8 @@ def openShiftImageStreamInstall(String name, String location) {
 @NonCPS
 def setupGitSSH() {
     sh """
-       git config user.email fabric8-admin@googlegroups.com
-       git config user.name fabric8-release
+       git config --global user.email fabric8-admin@googlegroups.com
+       git config --global user.name fabric8-release
 
        install -m 600 -D /root/.ssh-git-ro/ssh-key /root/.ssh-git/ssh-key
        install -m 600 -D /root/.ssh-git-ro/ssh-key.pub /root/.ssh-git/ssh-key.pub
