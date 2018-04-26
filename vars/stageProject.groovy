@@ -17,10 +17,7 @@ def call(body) {
     container(name: containerName) {
 
         flow.setupGitSSH()
-        sh 'chmod 600 /home/jenkins/.gnupg/pubring.gpg'
-        sh 'chmod 600 /home/jenkins/.gnupg/secring.gpg'
-        sh 'chmod 600 /home/jenkins/.gnupg/trustdb.gpg'
-        sh 'chmod 700 /home/jenkins/.gnupg'
+        flow.setupGPG()
 
         sh "git remote set-url origin git@github.com:${config.project}.git"
 

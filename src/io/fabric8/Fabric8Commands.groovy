@@ -154,11 +154,7 @@ def searchAndReplaceMavenSnapshotProfileVersionProperty(String property, String 
 
 def setupWorkspaceForRelease(String project, Boolean useGitTagForNextVersion, String mvnExtraArgs = "", String currentVersion = "") {
     setupGitSSH()
-
-    sh 'chmod 600 /home/jenkins/.gnupg/pubring.gpg'
-    sh 'chmod 600 /home/jenkins/.gnupg/secring.gpg'
-    sh 'chmod 600 /home/jenkins/.gnupg/trustdb.gpg'
-    sh 'chmod 700 /home/jenkins/.gnupg'
+    setupGPG()
 
     sh "git tag -d \$(git tag)"
     sh "git fetch --tags"
@@ -993,6 +989,18 @@ def setupGitSSH() {
 
        install -m 600 -D /root/.ssh-git-ro/ssh-key /root/.ssh-git/ssh-key
        install -m 600 -D /root/.ssh-git-ro/ssh-key.pub /root/.ssh-git/ssh-key.pub
+       """
+}
+
+/*
+ *  This is a temporary workaround till the secrets can be mounted with the right permissions.
+ */
+@NonCPS
+def setupGPG() {
+    sh """
+       install -m 600 -D /home/jenkins/.gnupg-ro/pubring.gpg /home/jenkins/.gnupg/pubring.gpg
+       install -m 600 -D /home/jenkins/.gnupg-ro/secring.gpg /home/jenkins/.gnupg/secring.gpg
+       install -m 600 -D /home/jenkins/.gnupg-ro/trustdb.gpg /home/jenkins/.gnupg/trustdb.gpg
        """
 }
 
