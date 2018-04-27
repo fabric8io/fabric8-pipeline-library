@@ -1,9 +1,8 @@
 #!/usr/bin/groovy
-import java.util.LinkedHashMap
-
 import com.cloudbees.groovy.cps.NonCPS
 import groovy.json.JsonSlurperClassic
 
+import java.util.LinkedHashMap
 
 def call(body) {
     // evaluate the body block, and collect configuration into the object
@@ -38,13 +37,7 @@ def call(body) {
             flow.updatePackageJSONVersion("${repo}/${packageJSON}", config.propertyName, config.version)
 
             container(name: containerName) {
-
-                sh 'chmod 600 /root/.ssh-git/ssh-key'
-                sh 'chmod 600 /root/.ssh-git/ssh-key.pub'
-                sh 'chmod 700 /root/.ssh-git'
-
-                sh "git config --global user.email fabric8-admin@googlegroups.com"
-                sh "git config --global user.name fabric8-release"
+                flow.setupGitSSH()
 
                 def message = "fix(version): update package.json ${config.propertyName} to ${config.version}"
                 sh "cd ${repo} && git add ${packageJSON}"

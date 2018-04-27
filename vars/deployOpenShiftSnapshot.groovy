@@ -43,6 +43,7 @@ def call(body) {
         template = true
     }
     container('clients') {
+        flow.setupK8sConfig()
 
         try {
             sh "oc get project ${openShiftProject} | grep Active"

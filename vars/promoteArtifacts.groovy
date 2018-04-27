@@ -7,18 +7,16 @@ def call(body) {
     body.delegate = config
     body()
 
+    def flow = new io.fabric8.Fabric8Commands()
     def name = config.projectStagingDetails[0]
     def version = config.projectStagingDetails[1]
     def repoIds = config.projectStagingDetails[2]
     def containerName = config.containerName ?: 'maven'
 
     container(name: containerName) {
-        sh 'chmod 600 /root/.ssh-git/ssh-key'
-        sh 'chmod 600 /root/.ssh-git/ssh-key.pub'
-        sh 'chmod 700 /root/.ssh-git'
+        flow.setupGitSSH()
 
         echo "About to release ${name} repo ids ${repoIds}"
-        def flow = new io.fabric8.Fabric8Commands()
         for (int j = 0; j < repoIds.size(); j++) {
             flow.releaseSonartypeRepo(repoIds[j])
         }

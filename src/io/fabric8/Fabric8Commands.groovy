@@ -153,16 +153,8 @@ def searchAndReplaceMavenSnapshotProfileVersionProperty(String property, String 
 }
 
 def setupWorkspaceForRelease(String project, Boolean useGitTagForNextVersion, String mvnExtraArgs = "", String currentVersion = "") {
-    sh "git config user.email fabric8-admin@googlegroups.com"
-    sh "git config user.name fabric8-release"
-
-    sh 'chmod 600 /root/.ssh-git/ssh-key'
-    sh 'chmod 600 /root/.ssh-git/ssh-key.pub'
-    sh 'chmod 700 /root/.ssh-git'
-    sh 'chmod 600 /home/jenkins/.gnupg/pubring.gpg'
-    sh 'chmod 600 /home/jenkins/.gnupg/secring.gpg'
-    sh 'chmod 600 /home/jenkins/.gnupg/trustdb.gpg'
-    sh 'chmod 700 /home/jenkins/.gnupg'
+    setupGitSSH()
+    setupGPG()
 
     sh "git tag -d \$(git tag)"
     sh "git fetch --tags"
@@ -828,9 +820,7 @@ def drop(String pr, String project) {
 
 def deleteRemoteBranch(String branchName, containerName) {
     container(name: containerName) {
-        sh 'chmod 600 /root/.ssh-git/ssh-key'
-        sh 'chmod 600 /root/.ssh-git/ssh-key.pub'
-        sh 'chmod 700 /root/.ssh-git'
+        setupGitSSH()
         sh "git push origin --delete ${branchName}"
     }
 }
@@ -986,6 +976,55 @@ def openShiftImageStreamInstall(String name, String location) {
         }
     }
     return false;
+}
+
+/*
+ *  This is a temporary workaround till the secrets can be mounted with the
+ *  right permissions.
+ *
+ * ~/.ssh must be a writable path for openssl to edit ~/.ssh/known_hosts; so
+ * mount the actual secret elsewhere and link the config file.
+ *
+ */
+
+@NonCPS
+def setupGitSSH() {
+    sh """
+       git config --global user.email fabric8-admin@googlegroups.com
+       git config --global user.name fabric8-release
+
+       install -m 600 -D /root/.ssh-git-ro/ssh-key /root/.ssh-git/ssh-key
+       install -m 600 -D /root/.ssh-git-ro/ssh-key.pub /root/.ssh-git/ssh-key.pub
+
+       mkdir -p /root/.ssh && ln -sf /root/.ssh-ro/config /root/.ssh/config
+       """
+}
+
+/*
+ *  This is a temporary workaround till the secrets can be mounted with the right permissions.
+ */
+@NonCPS
+def setupGPG() {
+    sh """
+       install -m 600 -D /home/jenkins/.gnupg-ro/pubring.gpg /home/jenkins/.gnupg/pubring.gpg
+       install -m 600 -D /home/jenkins/.gnupg-ro/secring.gpg /home/jenkins/.gnupg/secring.gpg
+       install -m 600 -D /home/jenkins/.gnupg-ro/trustdb.gpg /home/jenkins/.gnupg/trustdb.gpg
+       """
+}
+
+/*
+ * Move the KUBECONFIG from where it is mounted to where it should be. This is a
+ * stupid work around the fact that the secrets are mounted readonly and the
+ * config file is mutated by the oc CLI.
+ */
+@NonCPS
+def setupK8sConfig() {
+    if (fileExists('/root/home/.oc/cd.conf')) {
+        echo 'KUBECONFIG set correctly'
+    } else {
+        echo 'Copying KUBECONFIG from ~/.oc-ro to ~/.oc'
+        sh 'cp /root/home/.oc-ro/cd.conf /root/home/.oc/cd.conf'
+    }
 }
 
 return this

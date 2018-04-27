@@ -1,7 +1,8 @@
 #!/usr/bin/groovy
 import com.cloudbees.groovy.cps.NonCPS
-import groovy.xml.*
-import groovy.xml.dom.*
+import groovy.xml.DOMBuilder
+import groovy.xml.XmlUtil
+import groovy.xml.dom.DOMCategory
 
 def call(body) {
     // evaluate the body block, and collect configuration into the object
@@ -39,12 +40,7 @@ def call(body) {
 
         container(name: containerName) {
 
-            sh 'chmod 600 /root/.ssh-git/ssh-key'
-            sh 'chmod 600 /root/.ssh-git/ssh-key.pub'
-            sh 'chmod 700 /root/.ssh-git'
-
-            sh "git config --global user.email fabric8-admin@googlegroups.com"
-            sh "git config --global user.name fabric8-release"
+            flow.setupGitSSH()
 
             def message = "Update parent pom version ${config.version}"
             sh "cd ${repo} && git add ${pomLocation}"

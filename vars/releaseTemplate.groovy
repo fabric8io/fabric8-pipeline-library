@@ -48,10 +48,10 @@ def call(Map parameters = [:], body) {
             ],
             volumes: [secretVolume(secretName: 'jenkins-maven-settings', mountPath: '/root/.m2'),
                       secretVolume(secretName: 'jenkins-docker-cfg', mountPath: '/home/jenkins/.docker'),
-                      secretVolume(secretName: 'jenkins-release-gpg', mountPath: '/home/jenkins/.gnupg'),
+                      secretVolume(secretName: 'jenkins-release-gpg', mountPath: '/home/jenkins/.gnupg-ro'),
                       secretVolume(secretName: 'jenkins-hub-api-token', mountPath: '/home/jenkins/.apitoken'),
-                      secretVolume(secretName: 'jenkins-ssh-config', mountPath: '/root/.ssh'),
-                      secretVolume(secretName: 'jenkins-git-ssh', mountPath: '/root/.ssh-git'),
+                      secretVolume(secretName: 'jenkins-ssh-config', mountPath: '/root/.ssh-ro'),
+                      secretVolume(secretName: 'jenkins-git-ssh', mountPath: '/root/.ssh-git-ro'),
                       secretVolume(secretName: 'gke-service-account', mountPath: '/root/home/.gke'),
                       hostPathVolume(hostPath: '/var/run/docker.sock', mountPath: '/var/run/docker.sock')]
     ) {
