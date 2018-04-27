@@ -37,7 +37,7 @@ def call(Map parameters = [:], body) {
                         )],
                 volumes: [
                         secretVolume(secretName: 'jenkins-hub-api-token', mountPath: '/home/jenkins/.apitoken'),
-                        secretVolume(secretName: 'jenkins-ssh-config', mountPath: '/root/.ssh'),
+                        secretVolume(secretName: 'jenkins-ssh-config', mountPath: '/root/.ssh-ro'),
                         secretVolume(secretName: 'jenkins-git-ssh', mountPath: '/root/.ssh-git-ro'),
                         secretVolume(secretName: configSecretName, mountPath: '/root/home/.kube')
                 ]) {
@@ -59,7 +59,7 @@ def call(Map parameters = [:], body) {
                         )],
                 volumes: [
                         secretVolume(secretName: 'jenkins-hub-api-token', mountPath: '/home/jenkins/.apitoken'),
-                        secretVolume(secretName: 'jenkins-ssh-config', mountPath: '/root/.ssh'),
+                        secretVolume(secretName: 'jenkins-ssh-config', mountPath: '/root/.ssh-ro'),
                         secretVolume(secretName: 'jenkins-git-ssh', mountPath: '/root/.ssh-git-ro'),
                         secretVolume(secretName: configSecretName, mountPath: '/root/home/.kube')
                 ]) {

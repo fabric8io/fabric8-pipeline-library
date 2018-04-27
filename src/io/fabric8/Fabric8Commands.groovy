@@ -979,8 +979,14 @@ def openShiftImageStreamInstall(String name, String location) {
 }
 
 /*
- *  This is a temporary workaround till the secrets can be mounted with the right permissions.
+ *  This is a temporary workaround till the secrets can be mounted with the
+ *  right permissions.
+ *
+ * ~/.ssh must be a writable path for openssl to edit ~/.ssh/known_hosts; so
+ * mount the actual secret elsewhere and link the config file.
+ *
  */
+
 @NonCPS
 def setupGitSSH() {
     sh """
@@ -989,6 +995,8 @@ def setupGitSSH() {
 
        install -m 600 -D /root/.ssh-git-ro/ssh-key /root/.ssh-git/ssh-key
        install -m 600 -D /root/.ssh-git-ro/ssh-key.pub /root/.ssh-git/ssh-key.pub
+
+       mkdir -p /root/.ssh && ln -sf /root/.ssh-ro/config /root/.ssh/config
        """
 }
 
