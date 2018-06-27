@@ -111,7 +111,7 @@ example..
 
 in the case of an aborted approval
 
-- will drop the an OSS sonartype staged repository
+- will drop the OSS sonatype staged repository
 - close any pull requests that have been created based on the release
 - delete the branch relating to the PR mentioned above
 ```groovy
@@ -307,7 +307,7 @@ One other important note is on the fabric8 project we don't use the maven releas
 Now that we don't store the next release version in the poms we need to figure it out during the release.  Rather than store the version number in the repo which involves a commit and not too CD friendly (i.e. would trigger another release just for the version update) we use the `git tag`.  From this we can get the previous release version, increment it and push it back without triggering another release.  This seems a bit strange but it has been holding up and has significantly reduced unwanted SCM commits related to maven releases.
 
 #### Promote Artifacts
-- releases OSS sonartype staging repository so that artifacts are synced with maven central
+- releases OSS sonatype staging repository so that artifacts are synced with maven central
 - commits generated Helm charts to the fabric8 Helm repo
 - if useGitTagForNextVersion is set (true by default) then the next snapshot development version PR is committed
 ```groovy
@@ -319,7 +319,7 @@ Now that we don't store the next release version in the poms we need to figure i
     }
 ```
 #### Release Project
-- promotes artifacts from OSS sonartype staging repo to maven central
+- promotes artifacts from OSS sonatype staging repo to maven central
 - promotes images from internal docker registry to dockerhub
 - waits for github pull request to merge if updating next snapshot version (not used by default)
 - waits for artifacts to be synced and available in maven central
@@ -348,7 +348,7 @@ Now that we don't store the next release version in the poms we need to figure i
     }
 ```
 #### Stage Project
-- builds and stages a fabric8 java project with OSS sonartype
+- builds and stages a fabric8 java project with OSS sonatype
 - build docker images and stages them in the internal docker registry
 - stages extra images not built by docker-maven-plugin in the internal docker registry
 ```groovy

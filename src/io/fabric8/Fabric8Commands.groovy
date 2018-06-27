@@ -271,19 +271,19 @@ def stageSonartypeRepo() {
         currentBuild.result = 'FAILURE'
         error "ERROR Release failed when building and deploying to Nexus ${err}"
     }
-    // the sonartype staging repo id gets written to a file in the workspace
+    // the sonatype staging repo id gets written to a file in the workspace
     return getRepoIds()
 }
 
 def releaseSonartypeRepo(String repoId) {
     try {
-        // release the sonartype staging repo
+        // release the sonatype staging repo
         sh "mvn -B org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-release -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoId} -Ddescription=\"Next release is ready\" -DstagingProgressTimeoutMinutes=60"
 
     } catch (err) {
         sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-drop -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoId} -Ddescription=\"Error during release: ${err}\" -DstagingProgressTimeoutMinutes=60"
         currentBuild.result = 'FAILURE'
-        error "ERROR releasing sonartype repo ${repoId}: ${err}"
+        error "ERROR releasing sonatype repo ${repoId}: ${err}"
     }
 }
 
