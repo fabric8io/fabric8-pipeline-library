@@ -258,7 +258,13 @@ def getNewVersionFromTag(pomVersion = null) {
     }
 }
 
+// Misspelled legacy definition for staging sonatype repository; hopefully deprecated
 def stageSonartypeRepo() {
+
+    stageSonatypeRepo()
+}
+
+def stageSonatypeRepo() {
     try {
         sh "mvn clean -B"
         sh "mvn -V -B -e -U install org.sonatype.plugins:nexus-staging-maven-plugin:1.6.7:deploy -P release -P openshift -DnexusUrl=https://oss.sonatype.org -DserverId=oss-sonatype-staging -Ddocker.push.registry=${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}"
@@ -275,7 +281,13 @@ def stageSonartypeRepo() {
     return getRepoIds()
 }
 
+// Misspelled legacy definition for releasing sonatype repository; hopefully deprecated
 def releaseSonartypeRepo(String repoId) {
+
+    releaseSonatypeRepo(repoId)
+}
+
+def releaseSonatypeRepo(String repoId) {
     try {
         // release the sonatype staging repo
         sh "mvn -B org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-release -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoId} -Ddescription=\"Next release is ready\" -DstagingProgressTimeoutMinutes=60"

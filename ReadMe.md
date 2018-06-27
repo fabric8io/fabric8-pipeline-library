@@ -252,7 +252,7 @@ Automating this has saved us a lot of time during the release pipeline
     }
 ```
 #### Wait Until Artifact Synced With Maven Central
-When working with open source java projects we need to stage artifacts with OSS Sonartype in order to promote them into maven central.  This can take 10-30 mins depending on the size of the artifacts being synced.  
+When working with open source java projects we need to stage artifacts with OSS Sonatype in order to promote them into maven central.  This can take 10-30 mins depending on the size of the artifacts being synced.  
 
 A useful thing is to be notified in chat when artifacts are available in maven central as blocking the pipeine until we're sure the promote has worked.
 
@@ -293,7 +293,7 @@ When a project is staged an array is returned and passed around functions furthe
 
 - __config.project__ the name of the github project being released e.g. 'fabric8io/fabric8'
 - __releaseVersion__ the new version e.g. '0.0.1'
-- __repoId__ the OSS Sonartype staging repository Id used to interact with Sonartype later on
+- __repoId__ the OSS Sonatype staging repository Id used to interact with Sonatype later on
 
 ```groovy
     def stagedProject = stageProject {
