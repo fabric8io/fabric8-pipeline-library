@@ -25,7 +25,7 @@ def call(body) {
 
         flow.setupWorkspaceForRelease(config.project, config.useGitTagForNextVersion, extraSetVersionArgs, currentVersion)
 
-        repoId = flow.stageSonartypeRepo()
+        repoId = flow.stageSonatypeRepo()
         releaseVersion = flow.getProjectVersion()
 
         // lets avoide the stash / unstash for now as we're not using helm ATM

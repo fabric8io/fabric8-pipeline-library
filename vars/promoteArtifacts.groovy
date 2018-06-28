@@ -18,7 +18,7 @@ def call(body) {
 
         echo "About to release ${name} repo ids ${repoIds}"
         for (int j = 0; j < repoIds.size(); j++) {
-            flow.releaseSonartypeRepo(repoIds[j])
+            flow.releaseSonatypeRepo(repoIds[j])
         }
 
         if (config.helmPush) {

@@ -258,7 +258,13 @@ def getNewVersionFromTag(pomVersion = null) {
     }
 }
 
+// Misspelled legacy definition for staging sonatype repository; hopefully deprecated
 def stageSonartypeRepo() {
+
+    stageSonatypeRepo()
+}
+
+def stageSonatypeRepo() {
     try {
         sh "mvn clean -B"
         sh "mvn -V -B -e -U install org.sonatype.plugins:nexus-staging-maven-plugin:1.6.7:deploy -P release -P openshift -DnexusUrl=https://oss.sonatype.org -DserverId=oss-sonatype-staging -Ddocker.push.registry=${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}"
@@ -271,19 +277,25 @@ def stageSonartypeRepo() {
         currentBuild.result = 'FAILURE'
         error "ERROR Release failed when building and deploying to Nexus ${err}"
     }
-    // the sonartype staging repo id gets written to a file in the workspace
+    // the sonatype staging repo id gets written to a file in the workspace
     return getRepoIds()
 }
 
+// Misspelled legacy definition for releasing sonatype repository; hopefully deprecated
 def releaseSonartypeRepo(String repoId) {
+
+    releaseSonatypeRepo(repoId)
+}
+
+def releaseSonatypeRepo(String repoId) {
     try {
-        // release the sonartype staging repo
+        // release the sonatype staging repo
         sh "mvn -B org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-release -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoId} -Ddescription=\"Next release is ready\" -DstagingProgressTimeoutMinutes=60"
 
     } catch (err) {
         sh "mvn org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:rc-drop -DserverId=oss-sonatype-staging -DnexusUrl=https://oss.sonatype.org -DstagingRepositoryId=${repoId} -Ddescription=\"Error during release: ${err}\" -DstagingProgressTimeoutMinutes=60"
         currentBuild.result = 'FAILURE'
-        error "ERROR releasing sonartype repo ${repoId}: ${err}"
+        error "ERROR releasing sonatype repo ${repoId}: ${err}"
     }
 }
 
