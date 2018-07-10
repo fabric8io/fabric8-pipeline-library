@@ -16,7 +16,8 @@ def call(body) {
             try {
                 sh 'mvn io.github.stackinfo:stackinfo-maven-plugin:0.2:prepare'
                 retry(3) {
-                    def response = bayesianAnalysis url: 'https://bayesian-link'
+                    def project = flow.getGitHubProject()
+                    def response = bayesianAnalysis url: 'https://bayesian-link', gitUrl: "git@github.com:${project}.git"
                     if (response.success) {
                         utils.addAnnotationToBuild('fabric8.io/bayesian.analysisUrl', response.getAnalysisUrl())
                     } else {
