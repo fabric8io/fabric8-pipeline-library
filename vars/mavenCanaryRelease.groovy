@@ -5,7 +5,10 @@ import org.apache.maven.model.Plugin
 import org.apache.maven.model.PluginExecution
 import org.apache.maven.model.Profile
 
-@Field final String FMP_STABLE_VERSION = "3.5.38"
+@Field final String FMP_STABLE_VERSION = "3.5.40"
+
+// First version of FMP to include 'osio' profile. Should not be modified.
+@Field final String FMP_OSIO_PROFILE_MIN_VERSION = "3.5.40"
 
 def call(body) {
     // evaluate the body block, and collect configuration into the object
@@ -29,10 +32,6 @@ def call(body) {
         }
     }
     sh "mvn org.codehaus.mojo:versions-maven-plugin:2.5:set -U -DnewVersion=${config.version}"
-    sh "mvn clean -B -e -U deploy -Dmaven.test.skip=${skipTests} -P openshift"
-
-
-    junitResults(body);
 
     def buildName = ""
     try {
@@ -40,6 +39,26 @@ def call(body) {
     } catch (err) {
         echo "Failed to find buildName due to: ${err}"
     }
+
+    def spaceLabelArg = ""
+    if (buildName != null && !buildName.isEmpty()) {
+        try {
+            def spaceLabel = utils.getSpaceLabelFromBuild(buildName)
+            /* Space label enricher is part of 'osio' profile introduced in FMP 3.5.40.
+             * Check version before specifying the profile, as the resource goal will fail
+             * if the profile does not exist. */
+            if (!spaceLabel.isEmpty() && hasFMPProfileForOSIO()) {
+                spaceLabelArg = "-Dfabric8.profile=osio -Dfabric8.enricher.osio-space-label.space=${spaceLabel}"
+            }
+        } catch (err) {
+            echo "Failed to read space label due to: ${err}"
+        }
+    }
+
+    sh "mvn clean -B -e -U deploy -Dmaven.test.skip=${skipTests} ${spaceLabelArg} -P openshift"
+
+
+    junitResults(body);
 
     if (buildName != null && !buildName.isEmpty()) {
         def buildUrl = "${env.BUILD_URL}"
@@ -181,14 +200,14 @@ def patchPluginBasedOnParent(plugin, parent) {
         return false
     }
 
-    if (parent.artifactId == "booster-parent" && compareVersions(parent.version, "20") < 0) {
-        println "patching maven plugin for booster-parent parent v20"
+    if (parent.artifactId == "booster-parent" && compareVersions(parent.version, "23") < 0) {
+        println "patching maven plugin for booster-parent parent v23"
         plugin.version = FMP_STABLE_VERSION
         return true
     }
 
-    if (parent.artifactId == "spring-boot-booster-parent" && compareVersions(parent.version, "1.5.10-15") < 0) {
-        println "patching maven plugin for spring-boot-booster-parent v1.5.10-15"
+    if (parent.artifactId == "spring-boot-booster-parent") {
+        println "patching maven plugin for spring-boot-booster-parent"
         plugin.version = FMP_STABLE_VERSION
         return true;
     }
@@ -203,14 +222,14 @@ def patchProfileBasedOnParent(pomModel) {
         return false
     }
 
-    if (parent.artifactId == "booster-parent" && compareVersions(parent.version, "20") < 0) {
-        println "patching maven plugin for booster-parent parent v20"
+    if (parent.artifactId == "booster-parent" && compareVersions(parent.version, "23") < 0) {
+        println "patching maven plugin for booster-parent parent v23"
         addFMPDefinition(pomModel, FMP_STABLE_VERSION)
         return true
     }
 
-    if (parent.artifactId == "spring-boot-booster-parent" && compareVersions(parent.version, "1.5.10-15") < 0) {
-        println "patching maven plugin for spring-boot-booster-parent v1.5.10-15"
+    if (parent.artifactId == "spring-boot-booster-parent") {
+        println "patching maven plugin for spring-boot-booster-parent"
         addFMPDefinition(pomModel, FMP_STABLE_VERSION)
         return true;
     }
@@ -240,4 +259,28 @@ def addFMPDefinition(pomModel, fmpVersion) {
     fmpProfile.setBuild(build)
 
     pomModel.profiles += fmpProfile
+}
+
+def hasFMPProfileForOSIO() {
+    def versionPrefix = 'Version:'
+    try {
+        // maven-help-plugin 3.0.0 fixes the following bug, which occasionally caused the wrong version
+        // to be displayed: https://issues.apache.org/jira/browse/MPH-53
+        def desc = sh(script: 'mvn org.apache.maven.plugins:maven-help-plugin:3.0.0:describe -Popenshift \
+            -Dplugin=io.fabric8:fabric8-maven-plugin -Dminimal=true', returnStdout: true).toString()
+        def lines = desc.split("\n")
+        for (line in lines) {
+            if (line.startsWith(versionPrefix)) {
+                def version = line.substring(versionPrefix.length()).trim()
+                if (!version.isEmpty()) {
+                    echo "Found fabric8-maven-plugin version ${version}"
+                    return (compareVersions(version, FMP_OSIO_PROFILE_MIN_VERSION) >= 0)
+                }
+            }
+        }
+        echo "No FMP version found in output:\n${desc}"
+    } catch (err) {
+        echo "Failed to determine fabric8-maven-plugin version: ${err}"
+    }
+    return false
 }
