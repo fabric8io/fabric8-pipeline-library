@@ -55,7 +55,7 @@ def call(body) {
         }
     }
 
-    sh "mvn clean -B -e -U install -Dmaven.test.skip=${skipTests} ${spaceLabelArg} -P openshift"
+    sh "mvn clean -B -e -U deploy -Dmaven.test.skip=${skipTests} ${spaceLabelArg} -P openshift"
 
 
     junitResults(body);
