@@ -9,6 +9,7 @@ def tagDownstreamRepos() {
     newVersion = getJenkinsVersion()
     container(name: 'clients') {
 
+        println "Pushing Pipeline Library tag ${newVersion}"
         flow.pushTag(newVersion)
 
     }
@@ -25,6 +26,7 @@ def tagDownstreamRepos() {
 
         sh "git commit -a -m 'Updated Jenkinsfiles with new library version ${newVersion}'"
 
+        println "Pushing Jenkinsfile Library tag ${newVersion}"
         flow.pushTag(newVersion)
     }
 
