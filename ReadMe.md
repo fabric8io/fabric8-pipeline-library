@@ -166,13 +166,35 @@ __WARNING this function is deprecated.  Please change to use getDeploymentResour
 
 - creates a release branch
 - sets the maven pom versions using versions-maven-plugin
+  - version can be overridden as follows
+  ```groovy
+      mavenCanaryRelease{
+        version = canaryVersion
+      }
+  ```
 - runs `mvn deploy docker:build`
-- generates maven site and deploys it to the content repository
+
+- default `goal` of `"install"` can overridden
 ```groovy
     mavenCanaryRelease{
-      version = canaryVersion
+      goal = "deploy"     # executes `mvn deploy` instead of `mvn install`
     }
 ```
+- default `profile` - `"openshift"` can overridden
+```groovy
+    mavenCanaryRelease{
+      profile = "osio"    # executes `mvn install -P osio`
+    }
+```
+
+- mvn cmd can be overriden by setting `cmd` variable.
+```groovy
+    mavenCanaryRelease{
+      cmd = "mvn clean -B -e -U deploy -Dmaven.test.skip=true -P profile"
+    }
+```
+NOTE:  if `cmd` is set, `goal`, `profile`, `skipTests` will have no effect.
+
 - auto updates fabric8 maven plugin in applications `pom.xml`; `true` by default.
 ```groovy
     mavenCanaryRelease{
