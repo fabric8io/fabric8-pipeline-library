@@ -55,7 +55,11 @@ def call(body) {
         }
     }
 
-    sh "mvn clean -B -e -U deploy -Dmaven.test.skip=${skipTests} ${spaceLabelArg} -P openshift"
+
+    profile = config.profile ?: "openshift"
+    goal = config.goal ?: "install"
+    cmd = config.cmd ?: "mvn clean -B -e -U ${goal} -Dmaven.test.skip=${skipTests} ${spaceLabelArg} -P ${profile}"
+    sh cmd
 
 
     junitResults(body);
