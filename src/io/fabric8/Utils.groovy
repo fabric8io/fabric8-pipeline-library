@@ -27,6 +27,11 @@ String environmentNamespace(String environment) {
     return ns + "-${environment.toLowerCase()}"
 }
 
+@NonCPS
+String testNamespace() {
+    return getUsersNamespace();
+}
+
 /**
  * Loads the environments in the default user namespace
  */

@@ -212,6 +212,13 @@ NOTE:  if `cmd` is set, `goal`, `profile`, `skipTests` will have no effect.
       itestPattern = '*KT'
     }
 ```
+- pass `cmd` parameter to override the `mvn` command to execute in integration test
+```groovy
+    mavenIntegrationTest {
+      cmd = 'mvn -P openshift-it org.apache.maven.plugins:maven-failsafe-plugin:verify'
+    }
+```
+Note: All other flags are ignored if `mavenIntegrationTest` has `integrationTestCmd` parameter.
 #### Merge and Wait for Pull Request
 
 - adds a [merge] comment to a github pull request
@@ -248,7 +255,7 @@ NOTE:  if `cmd` is set, `goal`, `profile`, `skipTests` will have no effect.
     }
 ```
 #### Update Maven Property Version
-During a release involving multiple java projects we often need to update downstream maven poms with new versions of a dependency.  In a release pipeline we want to automate this, set up a pull request and let CI run to make sure there's no conflicts.  
+During a release involving multiple java projects we often need to update downstream maven poms with new versions of a dependency.  In a release pipeline we want to automate this, set up a pull request and let CI run to make sure there's no conflicts.
 
 - performs a search and replace in the maven pom
 - finds the latest version available in maven central (repo is configurable)
@@ -274,7 +281,7 @@ Automating this has saved us a lot of time during the release pipeline
     }
 ```
 #### Wait Until Artifact Synced With Maven Central
-When working with open source java projects we need to stage artifacts with OSS Sonatype in order to promote them into maven central.  This can take 10-30 mins depending on the size of the artifacts being synced.  
+When working with open source java projects we need to stage artifacts with OSS Sonatype in order to promote them into maven central.  This can take 10-30 mins depending on the size of the artifacts being synced.
 
 A useful thing is to be notified in chat when artifacts are available in maven central as blocking the pipeine until we're sure the promote has worked.
 
@@ -324,7 +331,7 @@ When a project is staged an array is returned and passed around functions furthe
     }
 ```
 
-One other important note is on the fabric8 project we don't use the maven release plugin or update to next SNAPSHOT versions as it causes unwanted noise and commits to our many github repos.  Instead we use a fixed development `x.x-SNAPSHOT` version so we can easily work in development on multiple projects that have maven dependencies with each other.  
+One other important note is on the fabric8 project we don't use the maven release plugin or update to next SNAPSHOT versions as it causes unwanted noise and commits to our many github repos.  Instead we use a fixed development `x.x-SNAPSHOT` version so we can easily work in development on multiple projects that have maven dependencies with each other.
 
 Now that we don't store the next release version in the poms we need to figure it out during the release.  Rather than store the version number in the repo which involves a commit and not too CD friendly (i.e. would trigger another release just for the version update) we use the `git tag`.  From this we can get the previous release version, increment it and push it back without triggering another release.  This seems a bit strange but it has been holding up and has significantly reduced unwanted SCM commits related to maven releases.
 
@@ -389,8 +396,8 @@ Now that we don't store the next release version in the poms we need to figure i
 ```
 #### Git Tag
 
-- tags the current git repo with the provided version  
-- pushes the tag to the remote repository  
+- tags the current git repo with the provided version
+- pushes the tag to the remote repository
 
 ```groovy
     gitTag {
@@ -415,9 +422,9 @@ __NOTE__ in order for images to be found by the remote OpenShift instance it mus
 
 #### Deploy Remote Kubernetes
 
-Deploys the staged fabric8 release to a remote Kubernetes cluster  
+Deploys the staged fabric8 release to a remote Kubernetes cluster
 
-__NOTE__ in order for images to be found by the remote OpenShift instance it must be able to pull images from the staging docker registry.  Noting private networks and insecure-registry flags.    
+__NOTE__ in order for images to be found by the remote OpenShift instance it must be able to pull images from the staging docker registry.  Noting private networks and insecure-registry flags.
 
 ```groovy
     node {
@@ -587,7 +594,7 @@ For this case you can combine add the docker template and the maven template tog
             node('maven-and-docker') {
                  container(name: 'maven') {
                     sh 'mvn clean package fabric8:build fabric8:push'
-                 }            
+                 }
             }
         }
     }
@@ -598,7 +605,7 @@ The above is equivalent to:
         mavenNode(label: 'maven-and-docker') {
             container(name: 'maven') {
                 sh 'mvn clean package fabric8:build fabric8:push'
-            }            
+            }
         }
     }
 
@@ -613,7 +620,7 @@ In the example above we can add release capabilities too, by adding the releaseT
                                 mvn release:clean release:prepare
                                 mvn clean release:perform
                             """
-                        }            
+                        }
                     }
                 }
             }
