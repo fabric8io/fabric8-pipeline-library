@@ -87,6 +87,7 @@
     <maven.require.version>3.1.1</maven.require.version>
     <maven.enforcer.plugin.version>1.4</maven.enforcer.plugin.version>
     <maven.javadoc.plugin.version>2.10.3</maven.javadoc.plugin.version>
+    <cps.global.lib.version>2.9</cps.global.lib.version>
   </properties>
 
   <distributionManagement>
@@ -238,6 +239,13 @@
       <groupId>io.fabric8.jenkins.plugins</groupId>
       <artifactId>openshift-sync</artifactId>
     </dependency>
+
+    <dependency>
+      <groupId>org.jenkins-ci.plugins.workflow</groupId>
+      <artifactId>workflow-cps-global-lib</artifactId>
+      <version>${cps.global.lib.version}</version>
+    </dependency>
+
     <!-- I think this is the version jenkins piplines uses? -->
     <dependency>
       <groupId>org.codehaus.groovy</groupId>
@@ -262,7 +270,7 @@
     <dependency>
       <groupId>org.csanchez.jenkins.plugins</groupId>
       <artifactId>kubernetes</artifactId>
-      <version>0.12</version>
+      <version>1.12.3</version>
     </dependency>
     <!-- https://mvnrepository.com/artifact/org.apache.maven/maven-model -->
     <dependency>
