@@ -1,44 +1,46 @@
 #!/usr/bin/groovy
 
-def call(Map params, String yamlFile = ".openshiftio/application.yaml") {
-    if (!fileExists(yamlFile)) {
-        println("File not found: ${yamlFile}")
-        currentBuild.result = 'FAILURE'
+
+def call(args=[:]) {
+    def file = args.file ?: ".openshiftio/application.yaml"
+    if (!fileExists(file)) {
+        error "Application template could not be found at $file; aborting ..."
+        currentBuild.result = 'ABORTED'
         return
     }
 
-    def args = [:]
-    params.each{k, v -> args[k.toUpperCase()] = v }
+    def params = [:]
 
-    def templateParams = prepareTemplateParams(args)
-    def templateParamString = toParamString(templateParams)
+    // sanitize input params and apply defaults
+    def inputs = args.params ?: [:]
+    inputs.each{k, v -> params[k.toUpperCase()] = v }
+    params = applyDefaults(params)
 
-    def templateString = shWithOutput("oc process -f .openshiftio/application.yaml ${templateParamString} -o yaml")
+    def yaml = shWithOutput("oc process -f $file ${stringizeParams(params)} -o yaml")
+    def resources = parseTemplate(yaml)
+    resources.tag = params.RELEASE_VERSION
 
-    def templateResources = parseTemplateResources(templateString)
-    templateResources["tag"] = args["RELEASE_VERSION"]
-
-    return templateResources
+    return resources
 }
 
-def prepareTemplateParams(templateConfig) {
-    def templateParams = templateConfig ?: [:]
-    templateParams["SUFFIX_NAME"] = templateParams["SUFFIX_NAME"] ?: "-${env.BRANCH_NAME}".toLowerCase()
-    templateParams["SOURCE_REPOSITORY_URL"] = templateParams["SOURCE_REPOSITORY_URL"] ?: shWithOutput("git config remote.origin.url")
-    templateParams["SOURCE_REPOSITORY_REF"] = templateParams["SOURCE_REPOSITORY_REF"] ?: shWithOutput("git rev-parse --short HEAD")
-    templateParams["RELEASE_VERSION"] = templateParams["RELEASE_VERSION"] ?: shWithOutput("git rev-list --count HEAD")
-    return templateParams
+def applyDefaults(override=[:]) {
+    def ret = [:]
+    ret["SUFFIX_NAME"] = override["SUFFIX_NAME"] ?: "-${env.BRANCH_NAME}".toLowerCase()
+    ret["SOURCE_REPOSITORY_URL"] = override["SOURCE_REPOSITORY_URL"] ?: shWithOutput("git config remote.origin.url")
+    ret["SOURCE_REPOSITORY_REF"] = override["SOURCE_REPOSITORY_REF"] ?: shWithOutput("git rev-parse --short HEAD")
+    ret["RELEASE_VERSION"] = override["RELEASE_VERSION"] ?: shWithOutput("git rev-list --count HEAD")
+    return ret
 }
 
-def toParamString(Map templateVars) {
-    String parameters = ""
-    templateVars.each{ v, k -> parameters = parameters + (v + "=" + k + " ")}
-    return parameters.trim()
+def stringizeParams(Map params) {
+    String ret = ""
+    params.each{ v, k -> ret = ret + (v + "=" + k + " ")}
+    return ret.trim()
 }
 
-def parseTemplateResources(String template) {
+def parseTemplate(String yaml) {
     def resources = [:]
-    readYaml(text: template).items.each {
+    readYaml(text: yaml).items.each {
         r -> resources[r.kind] = r
     }
     return resources
