@@ -7,11 +7,12 @@ import groovy.json.*
 def call(Map args) {
     stage("Build application") {
         Events.emit("build.start")
-        def status = ""
         def namespace = args.namespace ?: new Utils().getUsersNamespace()
+        def image = config.runtime() ?: 'oc'
 
+        def status = ""
         try {
-          spawn(image: "oc") {
+          spawn(image: image) {
             createImageStream(args.app.ImageStream, namespace)
             buildProject(args.app.BuildConfig, namespace)
           }
