@@ -9,6 +9,10 @@ def runtime() {
   return Globals.config.runtime
 }
 
+def version() {
+  return Globals.config.version
+}
+
 def values() {
   return Globals.config
 }
