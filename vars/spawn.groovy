@@ -29,17 +29,25 @@ def specForImage(image, version){
   def specs = [
     "node": [
       "latest": [
-            image: "piyushgarg/test${image}:latest",
+            image: "openshift/jenkins-agent-nodejs-8-centos7",
             shell: '/bin/bash'
         ],
       "8.9": [
-            image: "piyushgarg/test${image}:${version}",
+            image: "openshift/jenkins-agent-nodejs-8-centos7",
+            shell: '/bin/bash'
+      ],
+      "4.6": [
+            image: "openshift/jenkins-slave-nodejs-centos7",
             shell: '/bin/bash'
       ],
     ],
     "oc": [
       "latest": [
-            image: "piyushgarg/testnode:latest",
+            image: "openshift/jenkins-agent-nodejs-8-centos7",
+            shell: '/bin/bash'
+      ],
+      "3.11": [
+            image: "openshift/jenkins-agent-nodejs-8-centos7",
             shell: '/bin/bash'
       ],
     ],
