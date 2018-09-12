@@ -1,13 +1,11 @@
 #!/usr/bin/groovy
-import io.fabric8.Fabric8Commands
 
 def call(Map args = [:], body = null) {
-    def flow = new Fabric8Commands()
     def label = buildId(args.name)
 
     podTemplate(
       label: label,
-      cloud: flow.getCloudConfig(),
+      cloud: 'openshift',
       serviceAccount: 'jenkins',
       inheritFrom: 'base',
       containers: [

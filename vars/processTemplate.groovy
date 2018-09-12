@@ -1,5 +1,5 @@
 #!/usr/bin/groovy
-
+import io.openshift.Utils
 
 def call(args=[:]) {
     def file = args.file ?: ".openshiftio/application.yaml"
@@ -16,7 +16,7 @@ def call(args=[:]) {
     inputs.each{k, v -> params[k.toUpperCase()] = v }
     params = applyDefaults(params)
 
-    def yaml = shWithOutput("oc process -f $file ${stringizeParams(params)} -o yaml")
+    def yaml = Utils.shWithOutput(this, "oc process -f $file ${stringizeParams(params)} -o yaml")
     def resources = parseTemplate(yaml)
     resources.tag = params.RELEASE_VERSION
 
@@ -26,9 +26,9 @@ def call(args=[:]) {
 def applyDefaults(override=[:]) {
     def ret = [:]
     ret["SUFFIX_NAME"] = override["SUFFIX_NAME"] ?: "-${env.BRANCH_NAME}".toLowerCase()
-    ret["SOURCE_REPOSITORY_URL"] = override["SOURCE_REPOSITORY_URL"] ?: shWithOutput("git config remote.origin.url")
-    ret["SOURCE_REPOSITORY_REF"] = override["SOURCE_REPOSITORY_REF"] ?: shWithOutput("git rev-parse --short HEAD")
-    ret["RELEASE_VERSION"] = override["RELEASE_VERSION"] ?: shWithOutput("git rev-list --count HEAD")
+    ret["SOURCE_REPOSITORY_URL"] = override["SOURCE_REPOSITORY_URL"] ?: Utils.shWithOutput(this, "git config remote.origin.url")
+    ret["SOURCE_REPOSITORY_REF"] = override["SOURCE_REPOSITORY_REF"] ?: Utils.shWithOutput(this, "git rev-parse --short HEAD")
+    ret["RELEASE_VERSION"] = override["RELEASE_VERSION"] ?: Utils.shWithOutput(this, "git rev-list --count HEAD")
     return ret
 }
 
@@ -44,11 +44,4 @@ def parseTemplate(String yaml) {
         r -> resources[r.kind] = r
     }
     return resources
-}
-
-def shWithOutput(String command) {
-    return sh(
-        script: command,
-        returnStdout: true
-    ).trim()
 }

@@ -1,13 +1,11 @@
 #!/usr/bin/groovy
-import io.fabric8.Events
-import io.fabric8.Utils
-import groovy.json.*
-
+import io.openshift.Events
+import io.openshift.Utils
 
 def call(Map args) {
     stage("Build application") {
         Events.emit("build.start")
-        def namespace = args.namespace ?: new Utils().getUsersNamespace()
+        def namespace = args.namespace ?: Utils.usersNamespace()
         def image = config.runtime() ?: 'oc'
 
         def status = ""
@@ -29,31 +27,15 @@ def call(Map args) {
 
 def createImageStream(imageStream, namespace) {
     def isName = imageStream.metadata.name
-    def isFound = shWithOutput("oc get is/$isName -n $namespace --ignore-not-found")
+    def isFound = Utils.shWithOutput(this, "oc get is/$isName -n $namespace --ignore-not-found")
     if (!isFound) {
-        ocApplyResource(imageStream, namespace)
+        Utils.ocApply(this, imageStream, namespace)
     } else {
         echo "image stream exist ${isName}"
     }
 }
 
 def buildProject(buildConfig, namespace) {
-    ocApplyResource(buildConfig, namespace)
+    Utils.ocApply(this, buildConfig, namespace)
     openshiftBuild(buildConfig: "${buildConfig.metadata.name}", showBuildLogs: 'true')
-}
-
-def shWithOutput(String command) {
-    return sh(
-            script: command,
-            returnStdout: true
-    ).trim()
-}
-
-def ocApplyResource(resource, namespace) {
-    def resourceFile = ".openshiftio/.tmp-${namespace}-${env.BUILD_NUMBER}-${resource.kind.toLowerCase()}.yaml"
-    writeYaml file: resourceFile, data: resource
-    sh """
-        oc apply -f ${resourceFile} -n ${namespace}
-        rm ${resourceFile}
-    """
 }

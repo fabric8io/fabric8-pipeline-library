@@ -1,4 +1,4 @@
-package io.fabric8
+package io.openshift
 
 class Events implements Serializable {
 

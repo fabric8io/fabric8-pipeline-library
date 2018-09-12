@@ -1,8 +1,8 @@
 #!/usr/bin/groovy
-import io.fabric8.Utils;
+import io.openshift.Utils;
 
 def call(Map args = [:]) {
-    def userNamespace = new Utils().getUsersNamespace();
+    def userNamespace = Utils.usersNamespace();
     def deployNamespace = userNamespace + "-" + args.env;
 
     if (args.approval == 'manual') {
@@ -45,10 +45,10 @@ def tagImageToDeployEnv(deployNamespace, userNamespace, is, tag) {
 }
 
 def deployEnvironment(deployNamespace, dc, service, route) {
-    ocApplyResource(dc, deployNamespace)
+    Utils.ocApply(this, dc, deployNamespace)
     openshiftVerifyDeployment(depCfg: "${dc.metadata.name}", namespace: "${deployNamespace}")
-    ocApplyResource(service, deployNamespace)
-    ocApplyResource(route, deployNamespace)
+    Utils.ocApply(this, service, deployNamespace)
+    Utils.ocApply(this, route, deployNamespace)
     return displayRouteURL(deployNamespace, route)
 
 }
@@ -61,32 +61,16 @@ serviceUrls:
 deploymentVersions:
   $route.metadata.name: "$version"
 """
-    new Utils().addAnnotationToBuild("environment.services.fabric8.io/$namespace", routeMetadata);
+    Utils.addAnnotationToBuild(this, "environment.services.fabric8.io/$namespace", routeMetadata);
 }
 
 def displayRouteURL(namespace, route) {
     try {
-        def routeUrl = shWithOutput("oc get route -n ${namespace} ${route.metadata.name} --template 'http://{{.spec.host}}'")
+        def routeUrl = Utils.shWithOutput(this, "oc get route -n ${namespace} ${route.metadata.name} --template 'http://{{.spec.host}}'")
         echo namespace.capitalize() + " URL: ${routeUrl}"
         return routeUrl
     } catch (err) {
         error "Error running OpenShift command ${err}"
     }
     return null
-}
-
-def ocApplyResource(resource, namespace) {
-    def resourceFile = ".openshiftio/.tmp-${namespace}-${env.BUILD_NUMBER}-${resource.kind.toLowerCase()}.yaml"
-    writeYaml file: resourceFile, data: resource
-    sh """
-        oc apply -f ${resourceFile} -n ${namespace}
-        rm ${resourceFile}
-    """
-}
-
-def shWithOutput(String command) {
-    return sh(
-        script: command,
-        returnStdout: true
-    ).trim()
 }

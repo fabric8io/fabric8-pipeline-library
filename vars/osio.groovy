@@ -1,6 +1,6 @@
 #!/usr/bin/groovy
 
-import io.fabric8.Events
+import io.openshift.Events
 import io.fabric8.Plugins
 
 def call(body) {

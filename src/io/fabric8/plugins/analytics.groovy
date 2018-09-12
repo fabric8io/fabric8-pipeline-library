@@ -2,7 +2,7 @@
 
 package io.fabric8.plugins
 
-import io.fabric8.Events
+import io.openshift.Events
 
 def register() {
     Events.on("build.pass") {
