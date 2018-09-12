@@ -12,7 +12,7 @@ def call(Map args) {
 
         def status = ""
         try {
-          spawn(image: image) {
+          spawn(image: image, version: config.version(), commands: args.commands) {
             createImageStream(args.app.ImageStream, namespace)
             buildProject(args.app.BuildConfig, namespace)
           }

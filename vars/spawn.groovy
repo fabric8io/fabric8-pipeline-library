@@ -1,7 +1,7 @@
 #!/usr/bin/groovy
 
 def call(Map args = [:], body = null){
-    if (args.command == null && body == null) {
+    if (args.commands == null && body == null) {
         error "Please specify either command or body; aborting ..."
         currentBuild.result = 'ABORTED'
         return
@@ -14,8 +14,8 @@ def call(Map args = [:], body = null){
         checkout scm
       }
 
-      if (args.command != null) {
-          sh args.command
+      if (args.commands != null) {
+          sh args.commands
       }
 
       if (body != null) {
