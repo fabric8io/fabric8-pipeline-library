@@ -16,8 +16,8 @@ def call(body) {
             try {
                 sh '''
                     mvn io.github.stackinfo:stackinfo-maven-plugin:0.2:prepare 
-                    mvn org.apache.maven.plugins:maven-dependency-plugin:3.1.1:resolve -DoutputFile=direct-dependencies.txt -DincludeScope=runtime -DexcludeTransitive=true 
-                    mvn org.apache.maven.plugins:maven-dependency-plugin:3.1.1:resolve -DoutputFile=transitive-dependencies.txt -DincludeScope=runtime -DexcludeTransitive=false
+                    mvn org.apache.maven.plugins:maven-dependency-plugin:3.1.1:collect -DoutputFile=direct-dependencies.txt -DincludeScope=runtime -DexcludeTransitive=true 
+                    mvn org.apache.maven.plugins:maven-dependency-plugin:3.1.1:collect -DoutputFile=transitive-dependencies.txt -DincludeScope=runtime -DexcludeTransitive=false
                    '''
                 retry(3) {
                     def project = flow.getGitHubProject()
