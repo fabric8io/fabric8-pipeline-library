@@ -8,7 +8,7 @@ def call(Map parameters = [:], body) {
     def label = parameters.get('label', defaultLabel)
 
     def clientsImage = parameters.get('clientsImage', 'fabric8/builder-clients:v703b6d9')
-    def mavenImage = parameters.get('mavenImage', 'fabric8/maven-builder:v7973e33')
+    def mavenImage = parameters.get('mavenImage', 'openshift/jenkins-slave-maven-centos7:v4.0')
     def inheritFrom = parameters.get('inheritFrom', 'base')
 
     def cloud = flow.getCloudConfig()
@@ -35,11 +35,11 @@ def call(Map parameters = [:], body) {
                             ttyEnabled: true,
                             workingDir: '/home/jenkins/',
                             envVars: [
-                                    envVar(key: 'MAVEN_OPTS', value: '-Duser.home=/root/')
+                                    envVar(key: 'MAVEN_OPTS', value: '-Duser.home=/home/jenkins/')
                             ])
             ],
             volumes: [
-                    secretVolume(secretName: 'jenkins-maven-settings', mountPath: '/root/.m2'),
+                    secretVolume(secretName: 'jenkins-maven-settings', mountPath: '/home/jenkins/.m2'),
                     secretVolume(secretName: 'gke-service-account', mountPath: '/root/home/.gke')
             ]) {
         body()

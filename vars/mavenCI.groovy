@@ -15,7 +15,7 @@ def call(body) {
         token = env.PASS
     }
 
-    container(name: 'maven') {
+    container(name: 'maven', shell:'/bin/bash') {
 
         if (!flow.isAuthorCollaborator(token, "")) {
             error 'Change author is not a collaborator on the project, failing build until we support the [test] comment'
@@ -29,13 +29,15 @@ def call(body) {
         def goal = config.goal ?: "install"
         def profile = config.profile ?: "openshift"
         def skipTests = config.skipTests ?: false
-        def buildCmd = config.buildCmd ?: "mvn clean -B -e -U ${goal} -Dmaven.test.skip=${skipTests} -P ${profile}"
+        def buildCmd = config.buildCmd ?: "#!/bin/bash \n" +
+                        "mvn clean -B -e -U ${goal} -Dmaven.test.skip=${skipTests} -P ${profile}"
 
         def version = 'PR-' + getNewVersion {} + "-${env.BUILD_NUMBER}"
 
         stage('Build + Unit test') {
             // set a unique temp version so we can download artifacts from nexus and run acceptance tests
-            sh "mvn -U versions:set -DnewVersion=${version}"
+            sh "#!/bin/bash \n" +
+                    "mvn -U versions:set -DnewVersion=${version}"
             sh buildCmd
         }
 
@@ -55,7 +57,8 @@ def call(body) {
 
                 } else {
                     retry(3) {
-                        sh "mvn fabric8:push -Ddocker.push.registry=${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}"
+                        sh "#!/bin/bash \n" +
+                                "mvn fabric8:push -Ddocker.push.registry=${env.FABRIC8_DOCKER_REGISTRY_SERVICE_HOST}:${env.FABRIC8_DOCKER_REGISTRY_SERVICE_PORT}"
                     }
                 }
             }

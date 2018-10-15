@@ -22,7 +22,10 @@ def call(body) {
     def autoUpdateFMP = config.autoUpdateFabric8Plugin ?: true
     def skipTests = config.skipTests ?: false
 
-    sh "git checkout -b ${env.JOB_NAME}-${config.version}"
+    sh "#!/bin/bash \n" +
+            "git config user.email fabric8-admin@googlegroups.com \n"
+        "git config user.name fabric8-release \n"
+        "git checkout -b ${env.JOB_NAME}-${config.version}"
 
     if (autoUpdateFMP) {
         try {
@@ -31,7 +34,8 @@ def call(body) {
             println "FMP patching failed due to ${err.message}"
         }
     }
-    sh "mvn org.codehaus.mojo:versions-maven-plugin:2.5:set -U -DnewVersion=${config.version}"
+    sh "#!/bin/bash \n" +
+            "mvn org.codehaus.mojo:versions-maven-plugin:2.5:set -U -DnewVersion=${config.version}"
 
     def buildName = ""
     try {
@@ -58,7 +62,8 @@ def call(body) {
 
     profile = config.profile ?: "openshift"
     goal = config.goal ?: "install"
-    cmd = config.cmd ?: "mvn clean -B -e -U ${goal} -Dmaven.test.skip=${skipTests} ${spaceLabelArg} -P ${profile}"
+    cmd = config.cmd ?: "#!/bin/bash \n" +
+            "mvn clean -B -e -U ${goal} -Dmaven.test.skip=${skipTests} ${spaceLabelArg} -P ${profile}"
     sh cmd
 
 
@@ -269,8 +274,9 @@ def hasFMPProfileForOSIO() {
     try {
         // maven-help-plugin 3.0.0 fixes the following bug, which occasionally caused the wrong version
         // to be displayed: https://issues.apache.org/jira/browse/MPH-53
-        def desc = sh(script: 'mvn org.apache.maven.plugins:maven-help-plugin:3.0.0:describe -Popenshift \
-            -Dplugin=io.fabric8:fabric8-maven-plugin -Dminimal=true', returnStdout: true).toString()
+        def desc = sh(script: "#!/bin/bash \n " +
+                "mvn org.apache.maven.plugins:maven-help-plugin:3.0.0:describe -Popenshift \
+            -Dplugin=io.fabric8:fabric8-maven-plugin -Dminimal=true", returnStdout: true).toString()
         def lines = desc.split("\n")
         for (line in lines) {
             if (line.startsWith(versionPrefix)) {

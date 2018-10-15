@@ -262,7 +262,7 @@
     <dependency>
       <groupId>org.csanchez.jenkins.plugins</groupId>
       <artifactId>kubernetes</artifactId>
-      <version>0.12</version>
+      <version>1.12.6</version>
     </dependency>
     <!-- https://mvnrepository.com/artifact/org.apache.maven/maven-model -->
     <dependency>

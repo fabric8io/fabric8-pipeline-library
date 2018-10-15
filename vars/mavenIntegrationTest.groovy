@@ -38,7 +38,7 @@ def defaultTestCommand(config) {
         }
     }
 
-    return "mvn \
+    return "#!/bin/bash \n + mvn \
      org.apache.maven.plugins:maven-failsafe-plugin:integration-test \
      org.apache.maven.plugins:maven-failsafe-plugin:verify \
      -P openshift-it ${kubeNS} \
