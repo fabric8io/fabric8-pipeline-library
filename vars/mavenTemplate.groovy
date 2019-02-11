@@ -9,8 +9,8 @@ def call(Map parameters = [:], body) {
     def defaultLabel = buildId('maven')
     def label = parameters.get('label', defaultLabel)
 
-    def mavenImage = parameters.get('mavenImage', 'openshift/jenkins-slave-maven-centos7:v4.0')
-    def jnlpImage = (flow.isOpenShift()) ? 'openshift/jenkins-slave-base-centos7:v4.0' : 'jenkinsci/jnlp-slave:2.62'
+    def mavenImage = parameters.get('mavenImage', 'openshift/jenkins-slave-maven-centos7:v3.11')
+    def jnlpImage = (flow.isOpenShift()) ? 'quay.io/openshift/origin-jenkins-agent-base:v4.0' : 'jenkinsci/jnlp-slave:2.62'
     def inheritFrom = parameters.get('inheritFrom', 'base')
 
 
